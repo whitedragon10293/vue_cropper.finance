@@ -77,7 +77,7 @@ const web3Plugin: Plugin = async (ctx, inject) => {
 
   logger(`config from: ${configFrom}, strategy: ${strategy}, using ${endpoint}`)
 
-  endpoint = 'https://api.devnet.solana.com'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
+ // endpoint = 'https://api.devnet.solana.com'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
   const web3 = createWeb3Instance(endpoint)
 
   ctx.$web3 = web3

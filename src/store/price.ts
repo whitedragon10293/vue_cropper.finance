@@ -45,16 +45,23 @@ export const mutations = mutationTree(state, {
   }
 })
 
+
 export const actions = actionTree(
   { state, getters, mutations },
   {
     async requestPrices({ commit }) {
       commit('setLoading', true)
 
-      const prices: PricesData = await this.$api.getPrices()
+      const baseprices = await this.$api.getPrices();
+      const prices: PricesData = {}
+
+      Object.entries(baseprices).forEach(
+        ([key, value]) => {
+          prices[value['symbol']] = value['price']
+        }
+      );
 
       commit('setPrices', prices)
-      logger('Price updated')
 
       commit('setInitialized')
       commit('setLoading', false)

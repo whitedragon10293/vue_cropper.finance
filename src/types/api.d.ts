@@ -1,5 +1,5 @@
 export interface PricesData {
-  [key: string]: number
+  [key: string]: any
 }
 
 export interface InfoData {

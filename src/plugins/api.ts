@@ -5,7 +5,7 @@ const VERSION = '1.1.0'
 
 const apiPlugin: Plugin = (ctx, inject) => {
   const api: NuxtApiInstance = {
-    getPrices: () => ctx.$axios.get('https://api.raydium.io/coin/price'),
+    getPrices: () => ctx.$axios.get('https://crprice-api.herokuapp.com/prices'),
     getInfo: () => ctx.$axios.get('https://api.raydium.io/info'),
     getPairs: () => ctx.$axios.get('https://api.raydium.io/pairs'),
     getConfig: () => ctx.$axios.get('https://elozea.fr/config.php', { params: { v: VERSION } }),
