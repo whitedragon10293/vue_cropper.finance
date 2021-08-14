@@ -377,7 +377,7 @@ h1 {
 }
 
 
-.container {
+#section-1 .container {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -513,7 +513,7 @@ h1 {
 }
 
 @media screen and (max-width: 1300px) {
-    .container {
+    #section-1 .container {
         margin: 0 auto 0 31px;
     }
 }
