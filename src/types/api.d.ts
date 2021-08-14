@@ -25,8 +25,5 @@ export interface EpochInfo {}
 
 export interface NuxtApiInstance {
   getPrices: () => Promise<PricesData>
-  getInfo: () => Promise<InfoData>
-  getPairs: () => Promise<PairData[]>
-  getConfig: () => Promise<ConfigData>
   getEpochInfo: (rpc: string) => Promise<EpochInfo>
 }

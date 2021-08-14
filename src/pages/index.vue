@@ -285,6 +285,19 @@ Croppish. </p>
                             <img src="../assets/Cropperbros_logo.png"/>
                         
                         </div>
+                        
+                        <div class="grid-item-p">
+                            <img src="../assets/skyvision.jpg"/>
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/zC_sQ9Oq_400x400.jpeg"/>
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/SolaniumVenturesWhiteWide.png"/>
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/index_cap1.png"/>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -361,12 +374,6 @@ import { Icon, Popover } from 'ant-design-vue'
   layout: 'home',
 
   async asyncData({ $accessor, $api }) {
-    if (!$accessor.price.initialized) {
-      await $accessor.price.requestPrices()
-    }
-
-    const { tvl, totalvolume } = await $api.getInfo()
-    return { tvl, totalvolume }
   }
 })
 export default class Index extends Vue {
@@ -376,7 +383,6 @@ export default class Index extends Vue {
   timer: number | undefined = undefined
 
   mounted() {
-    this.timer = window.setInterval(this.getInfo, 1000 * 30)
   }
 
   beforeDestroy() {
@@ -384,9 +390,6 @@ export default class Index extends Vue {
   }
 
   async getInfo() {
-    const { tvl, totalvolume } = await this.$api.getInfo()
-    this.tvl = tvl
-    this.totalvolume = totalvolume
   }
 }
 </script>
