@@ -12,8 +12,19 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
 } from '@solana/web3.js'
+import { Token, MintLayout, AccountLayout } from "@solana/spl-token";
+
 import {
-  LIQUIDITY_POOL_PROGRAM_ID_V4,
+  createSplAccount,
+  AMM_INFO_LAYOUT_V5,
+  createLiquidityPool,
+  LIQUIDITY_TOKEN_PRECISION,
+  DEFAULT_DENOMINATOR
+} from "@/utils/new_fcn"
+
+import {
+  LIQUIDITY_POOL_PROGRAM_ID_V5,
+  SWAP_PROGRAM_OWNER_FEE_ADDRESS,
   SERUM_PROGRAM_ID_V3,
   TOKEN_PROGRAM_ID,
   SYSTEM_PROGRAM_ID,
@@ -54,7 +65,7 @@ export async function getMarket(conn: any, marketAddress: string): Promise<any |
   try {
     const expectAmmId = (
       await createAssociatedId(
-        new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
+        new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
         new PublicKey(marketAddress),
         AMM_ASSOCIATED_SEED
       )
@@ -123,146 +134,279 @@ export async function createAmm(
   userInputBaseValue: number,
   userInputQuoteValue: number
 ) {
-  const transaction = new Transaction()
-  const signers: any = []
-  const owner = wallet.publicKey
 
-  const { publicKey, nonce } = await createAmmAuthority(new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4))
-  const ammAuthority = publicKey
+  const options = {
+    curveType: 0,
+    tradeFeeNumerator: 25,
+    tradeFeeDenominator: DEFAULT_DENOMINATOR,
+    ownerTradeFeeNumerator: 5,
+    ownerTradeFeeDenominator: DEFAULT_DENOMINATOR,
+    ownerWithdrawFeeNumerator: 0,
+    ownerWithdrawFeeDenominator: DEFAULT_DENOMINATOR,
+    hostFeeNumerator: 20,
+    hostFeeDenominator: 100,
+  }
+
   const ammId: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
+    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
     market.address,
     AMM_ASSOCIATED_SEED
   )
+  let instructions: TransactionInstruction[] = [];
+  let cleanupInstructions: TransactionInstruction[] = [];
 
-  const poolCoinTokenAccount: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    COIN_VAULT_ASSOCIATED_SEED
-  )
-  const poolPcTokenAccount: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    PC_VAULT_ASSOCIATED_SEED
-  )
-  const lpMintAddress: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    LP_MINT_ASSOCIATED_SEED
-  )
-  const poolTempLpTokenAccount: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    TEMP_LP_TOKEN_ASSOCIATED_SEED
-  )
-  const ammTargetOrders: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    TARGET_ASSOCIATED_SEED
-  )
-  const poolWithdrawQueue: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    WITHDRAW_ASSOCIATED_SEED
-  )
-
-  const ammOpenOrders: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-    market.address,
-    OPEN_ORDER_ASSOCIATED_SEED
-  )
-
-  let accountSuccessFlag = false
-  let accountAllSuccessFlag = false
-
-  const multipleInfo = await getMultipleAccounts(conn, [lpMintAddress], commitment)
-  if (multipleInfo.length > 0 && multipleInfo[0] !== null) {
-    const tempLpMint = MINT_LAYOUT.decode(multipleInfo[0]?.account.data)
-    if (getBigNumber(tempLpMint.supply) === 0) {
-      accountSuccessFlag = true
-    } else {
-      accountAllSuccessFlag = true
-    }
-  } else {
-    accountSuccessFlag = false
-  }
-  console.log('init flag: ', accountSuccessFlag, accountAllSuccessFlag)
-
-  transaction.add(
-    preInitialize(
-      new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-      ammTargetOrders,
-      poolWithdrawQueue,
-      ammAuthority,
-      lpMintAddress,
-      market.baseMintAddress,
-      market.quoteMintAddress,
-      poolCoinTokenAccount,
-      poolPcTokenAccount,
-      poolTempLpTokenAccount,
-      market.address,
-      owner,
-      nonce
-    )
-  )
-
-  const destLpToken = await createAssociatedTokenAccount(lpMintAddress, owner, transaction)
-
-  if (!accountSuccessFlag) {
-    const txid = await sendTransaction(conn, wallet, transaction, signers)
-    console.log('txid', txid)
-    let txidSuccessFlag = 0
-    await conn.onSignature(txid, function (_signatureResult: any, _context: any) {
-      if (_signatureResult.err) {
-        txidSuccessFlag = -1
-      } else {
-        txidSuccessFlag = 1
-      }
+  const liquidityTokenAccount = new Account();
+  // Create account for pool liquidity token
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: wallet.publicKey,
+      newAccountPubkey: liquidityTokenAccount.publicKey,
+      lamports: await conn.getMinimumBalanceForRentExemption(
+        MintLayout.span
+      ),
+      space: MintLayout.span,
+      programId: TOKEN_PROGRAM_ID,
     })
+  );
 
-    const timeAwait = new Date().getTime()
-    let outOfWhile = false
-    while (!outOfWhile) {
-      console.log('txid', outOfWhile, txidSuccessFlag, (new Date().getTime() - timeAwait) / 1000)
-      if (txidSuccessFlag !== 0) {
-        outOfWhile = true
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-    }
-    if (txidSuccessFlag !== 1) {
-      throw new Error('create tx1 error')
-    }
-  }
+  const tokenSwapAccount = new Account();
 
-  const ammKeys = {
-    ammId,
-    ammAuthority,
-    poolCoinTokenAccount,
-    poolPcTokenAccount,
-    lpMintAddress,
-    ammOpenOrders,
-    ammTargetOrders,
-    poolWithdrawQueue,
-    poolTempLpTokenAccount,
-    destLpToken,
-    nonce
-  }
+  const [authority, nonce] = await PublicKey.findProgramAddress(
+    [tokenSwapAccount.publicKey.toBuffer()],
+    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5)
+  );
 
-  if (!accountAllSuccessFlag) {
-    await initAmm(
-      conn,
-      wallet,
-      market,
-      new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-      new PublicKey(SERUM_PROGRAM_ID_V3),
-      // ammId,
-      ammKeys,
-      userInputBaseValue,
-      userInputQuoteValue,
-      poolCoinTokenAccount,
-      poolPcTokenAccount
+  // create mint for pool liquidity token
+  instructions.push(
+    Token.createInitMintInstruction(
+      TOKEN_PROGRAM_ID,
+      liquidityTokenAccount.publicKey,
+      LIQUIDITY_TOKEN_PRECISION,
+      // pass control of liquidity mint to swap program
+      authority,
+      // swap program can freeze liquidity token mint
+      null
     )
+  );
+
+  // Create holding accounts for
+  const accountRentExempt = await conn.getMinimumBalanceForRentExemption(
+    AccountLayout.span
+  );
+  const holdingAccounts: Account[] = [];
+  let signers: Account[] = [];
+
+  [market.baseMintAddress, market.quoteMintAddress].forEach((mintPublicKey) => {
+
+    // component account to store tokens I of N in liquidity poll
+    holdingAccounts.push(
+      createSplAccount(
+        instructions,
+        wallet.publicKey,
+        accountRentExempt,
+        mintPublicKey,
+        authority,
+        AccountLayout.span
+      )
+    );
+  });
+
+  // creating depositor pool account
+  const depositorAccount = createSplAccount(
+    instructions,
+    wallet.publicKey,
+    accountRentExempt,
+    liquidityTokenAccount.publicKey,
+    wallet.publicKey,
+    AccountLayout.span
+  );
+
+  // creating fee pool account its set from env variable or to creater of the pool
+  // creater of the pool is not allowed in some versions of token-swap program
+  const feeAccount = createSplAccount(
+    instructions,
+    wallet.publicKey,
+    accountRentExempt,
+    liquidityTokenAccount.publicKey,
+    SWAP_PROGRAM_OWNER_FEE_ADDRESS || wallet.publicKey,
+    AccountLayout.span
+  );
+  let transaction = new Transaction()
+  instructions.forEach((instruction)=>{
+    transaction.add(instruction)
+  })
+  // create all accounts in one transaction
+  let tx = await sendTransaction(conn, wallet, transaction, [
+    liquidityTokenAccount,
+    depositorAccount,
+    feeAccount,
+    ...holdingAccounts,
+    ...signers,
+  ]);
+
+  signers = [];
+  instructions = [];
+  cleanupInstructions = [];
+
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: wallet.publicKey,
+      newAccountPubkey: tokenSwapAccount.publicKey,
+      lamports: await conn.getMinimumBalanceForRentExemption(
+        AMM_INFO_LAYOUT_V5.span
+      ),
+      space: AMM_INFO_LAYOUT_V5.span,
+      programId: new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
+    })
+  );
+  
+  const baseMintDecimals = new BigNumber(await getMintDecimals(conn, market.baseMintAddress as PublicKey))
+  const quoteMintDecimals = new BigNumber(await getMintDecimals(conn, market.quoteMintAddress as PublicKey))
+
+  const coinVol = new BigNumber(10).exponentiatedBy(baseMintDecimals).multipliedBy(userInputBaseValue)
+  const pcVol = new BigNumber(10).exponentiatedBy(quoteMintDecimals).multipliedBy(userInputQuoteValue)
+
+  const owner = wallet.publicKey
+  const baseTokenAccount = await getFilteredTokenAccountsByOwner(conn, owner, market.baseMintAddress)
+  const quoteTokenAccount = await getFilteredTokenAccountsByOwner(conn, owner, market.quoteMintAddress)
+
+  const baseTokenList: any = baseTokenAccount.value.map((item: any) => {
+    if (item.account.data.parsed.info.tokenAmount.amount >= getBigNumber(coinVol)) {
+      return item.pubkey
+    }
+    return null
+  })
+
+  const quoteTokenList: any = quoteTokenAccount.value.map((item: any) => {
+    if (item.account.data.parsed.info.tokenAmount.amount >= getBigNumber(pcVol)) {
+      return item.pubkey
+    }
+    return null
+  })
+
+  let baseToken: string | null = null
+  for (const item of baseTokenList) {
+    if (item !== null) {
+      baseToken = item
+    }
   }
+  let quoteToken: string | null = null
+  for (const item of quoteTokenList) {
+    if (item !== null) {
+      quoteToken = item
+    }
+  }
+
+  let src_dst = [{
+    account : baseToken,
+    amount: coinVol,
+    mintAddress: market.baseMintAddress,
+  },{
+    account : quoteToken,
+    amount: pcVol,
+    mintAddress: market.quoteMintAddress,
+  }]
+
+  if (
+    (baseToken === null && market.baseMintAddress.toString() !== TOKENS.WSOL.mintAddress) ||
+    (quoteToken === null && market.quoteMintAddress.toString() !== TOKENS.WSOL.mintAddress)
+  ) {
+    throw new Error('no money')
+  }
+
+  src_dst.forEach((leg, i) => {
+  
+    if (leg.mintAddress.toString() === TOKENS.WSOL.mintAddress) {
+      const newAccount = new Account()
+      instructions.push(
+        SystemProgram.createAccount({
+          fromPubkey: owner,
+          newAccountPubkey: newAccount.publicKey,
+          lamports: parseInt(leg.amount.toFixed()) + 1e7,
+          space: ACCOUNT_LAYOUT.span,
+          programId: TOKEN_PROGRAM_ID
+        })
+      )
+
+      instructions.push(
+        initializeAccount({
+          account: newAccount.publicKey,
+          mint: new PublicKey(TOKENS.WSOL.mintAddress),
+          owner
+        })
+      )
+  
+      instructions.push(transfer(newAccount.publicKey, holdingAccounts[i].publicKey, owner, parseInt(leg.amount.toFixed())))
+      instructions.push(
+        closeAccount({
+          source: newAccount.publicKey,
+          destination: owner,
+          owner
+        })
+      )
+  
+      signers.push(newAccount)
+    } else {
+      instructions.push(
+        // @ts-ignore
+        transfer(new PublicKey(leg.account), holdingAccounts[i].publicKey, owner, parseInt(leg.amount.toFixed()))
+      )
+    }
+  });
+  transaction = new Transaction()
+  instructions.forEach((instruction)=>{
+    transaction.add(instruction)
+  })
+  tx = await sendTransaction(
+    conn,
+    wallet,
+    transaction,
+    [tokenSwapAccount, ...signers]
+  );
+  instructions = []
+
+  instructions.push(
+    createLiquidityPool(
+      tokenSwapAccount,
+      authority,
+      ammId,
+      holdingAccounts[0].publicKey,
+      holdingAccounts[1].publicKey,
+      liquidityTokenAccount.publicKey,
+      feeAccount.publicKey,
+      depositorAccount.publicKey,
+      TOKEN_PROGRAM_ID,
+      new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
+      market.address,
+      new PublicKey(SERUM_PROGRAM_ID_V3),
+      nonce,
+      options.curveType,
+      options.tradeFeeNumerator,
+      options.tradeFeeDenominator,
+      options.ownerTradeFeeNumerator,
+      options.ownerTradeFeeDenominator,
+      options.ownerWithdrawFeeNumerator,
+      options.ownerWithdrawFeeDenominator,
+      options.hostFeeNumerator,
+      options.hostFeeDenominator,
+    )
+  );
+
+  transaction = new Transaction()
+  instructions.forEach((instruction)=>{
+    transaction.add(instruction)
+  })
+  cleanupInstructions.forEach((instruction)=>{
+    transaction.add(instruction)
+  })
+    // initialize and provide inital liquidity to swap in 2nd (this prevents loss of funds)
+  tx = await sendTransaction(
+    conn,
+    wallet,
+    transaction,
+    // [tokenSwapAccount, ...signers]
+    [tokenSwapAccount]
+  );
 
   return ammId.toBase58()
 }

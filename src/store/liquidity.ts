@@ -1,16 +1,17 @@
 import { getterTree, mutationTree, actionTree } from 'typed-vuex'
 
 import { ACCOUNT_LAYOUT, getBigNumber, MINT_LAYOUT } from '@/utils/layouts'
-import { AMM_INFO_LAYOUT, AMM_INFO_LAYOUT_V3, AMM_INFO_LAYOUT_V4, getLpMintListDecimals } from '@/utils/liquidity'
+import { AMM_INFO_LAYOUT, AMM_INFO_LAYOUT_V3, getLpMintListDecimals } from '@/utils/liquidity'
 import { LIQUIDITY_POOLS, getAddressForWhat, LiquidityPoolInfo } from '@/utils/pools'
-import { commitment, createAmmAuthority, getFilteredProgramAccounts, getMultipleAccounts } from '@/utils/web3'
+import { commitment, createAmmAuthority, getFilteredProgramAccounts, getMultipleAccounts, getMintDecimals } from '@/utils/web3'
 
 import { OpenOrders } from '@project-serum/serum'
 import { PublicKey } from '@solana/web3.js'
 import { TokenAmount } from '@/utils/safe-math'
 import { cloneDeep } from 'lodash-es'
 import logger from '@/utils/logger'
-import { LIQUIDITY_POOL_PROGRAM_ID_V4, SERUM_PROGRAM_ID_V3 } from '@/utils/ids'
+import { AMM_INFO_LAYOUT_V5 } from '@/utils/new_fcn'
+import { LIQUIDITY_POOL_PROGRAM_ID_V5, SERUM_PROGRAM_ID_V3 } from '@/utils/ids'
 import { _MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum/lib/market'
 import { LP_TOKENS, NATIVE_SOL, TOKENS } from '@/utils/tokens'
 
@@ -67,16 +68,18 @@ export const actions = actionTree(
 
       const conn = this.$web3
 
-      const ammAll = await getFilteredProgramAccounts(conn, new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4), [
+      const ammAll = await getFilteredProgramAccounts(conn, new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5), [
         {
-          dataSize: AMM_INFO_LAYOUT_V4.span
+          dataSize: AMM_INFO_LAYOUT_V5.span
         }
       ])
+
       const marketAll = await getFilteredProgramAccounts(conn, new PublicKey(SERUM_PROGRAM_ID_V3), [
         {
           dataSize: _MARKET_STATE_LAYOUT_V2.span
         }
       ])
+
       const marketToLayout: { [name: string]: any } = {}
       marketAll.forEach((item) => {
         marketToLayout[item.publicKey.toString()] = _MARKET_STATE_LAYOUT_V2.decode(item.accountInfo.data)
@@ -84,9 +87,10 @@ export const actions = actionTree(
 
       const lpMintAddressList: string[] = []
       ammAll.forEach((item) => {
-        const ammLayout = AMM_INFO_LAYOUT_V4.decode(Buffer.from(item.accountInfo.data))
+        const ammLayout = AMM_INFO_LAYOUT_V5.decode(Buffer.from(item.accountInfo.data))
+        console.log(ammLayout)
         if (
-          ammLayout.pcMintAddress.toString() === ammLayout.serumMarket.toString() ||
+          // ammLayout.pcMintAddress.toString() === ammLayout.serumMarket.toString() ||
           ammLayout.lpMintAddress.toString() === '11111111111111111111111111111111'
         ) {
           return
@@ -94,17 +98,19 @@ export const actions = actionTree(
         lpMintAddressList.push(ammLayout.lpMintAddress.toString())
       })
       const lpMintListDecimls = await getLpMintListDecimals(conn, lpMintAddressList)
-
+      console.log(lpMintListDecimls)
       for (let indexAmmInfo = 0; indexAmmInfo < ammAll.length; indexAmmInfo += 1) {
-        const ammInfo = AMM_INFO_LAYOUT_V4.decode(Buffer.from(ammAll[indexAmmInfo].accountInfo.data))
+        const ammInfo = AMM_INFO_LAYOUT_V5.decode(Buffer.from(ammAll[indexAmmInfo].accountInfo.data))
         if (
           !Object.keys(lpMintListDecimls).includes(ammInfo.lpMintAddress.toString()) ||
-          ammInfo.pcMintAddress.toString() === ammInfo.serumMarket.toString() ||
-          ammInfo.lpMintAddress.toString() === '11111111111111111111111111111111' ||
-          !Object.keys(marketToLayout).includes(ammInfo.serumMarket.toString())
+          // ammInfo.pcMintAddress.toString() === ammInfo.serumMarket.toString() ||
+          ammInfo.lpMintAddress.toString() === '11111111111111111111111111111111'
+          //  ||
+          // !Object.keys(marketToLayout).includes(ammInfo.serumMarket.toString())
         ) {
           continue
         }
+
         const fromCoin =
           ammInfo.coinMintAddress.toString() === TOKENS.WSOL.mintAddress
             ? NATIVE_SOL.mintAddress
@@ -114,12 +120,13 @@ export const actions = actionTree(
             ? NATIVE_SOL.mintAddress
             : ammInfo.pcMintAddress.toString()
         let coin = Object.values(TOKENS).find((item) => item.mintAddress === fromCoin)
+        
         if (!coin) {
           TOKENS[`unknow-${ammInfo.coinMintAddress.toString()}`] = {
             symbol: 'unknown',
             name: 'unknown',
             mintAddress: ammInfo.coinMintAddress.toString(),
-            decimals: getBigNumber(ammInfo.coinDecimals),
+            decimals: await getMintDecimals(conn, ammInfo.coinMintAddress as PublicKey),
             cache: true,
             tags: []
           }
@@ -135,7 +142,7 @@ export const actions = actionTree(
             symbol: 'unknown',
             name: 'unknown',
             mintAddress: ammInfo.pcMintAddress.toString(),
-            decimals: getBigNumber(ammInfo.pcDecimals),
+            decimals: await getMintDecimals(conn, ammInfo.pcMintAddress as PublicKey),
             cache: true,
             tags: []
           }
@@ -144,6 +151,7 @@ export const actions = actionTree(
         if (!pc.tags.includes('unofficial')) {
           pc.tags.push('unofficial')
         }
+        console.log("12312312")
 
         if (coin.mintAddress === TOKENS.WSOL.mintAddress) {
           coin.symbol = 'SOL'
@@ -164,7 +172,7 @@ export const actions = actionTree(
           decimals: lpMintListDecimls[ammInfo.lpMintAddress]
         }
 
-        const { publicKey } = await createAmmAuthority(new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4))
+        const { publicKey } = await createAmmAuthority(new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5))
 
         const market = marketToLayout[ammInfo.serumMarket]
 
@@ -179,7 +187,7 @@ export const actions = actionTree(
           pc,
           lp,
           version: 4,
-          programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+          programId: LIQUIDITY_POOL_PROGRAM_ID_V5,
           ammId: ammAll[indexAmmInfo].publicKey.toString(),
           ammAuthority: publicKey.toString(),
           ammOpenOrders: ammInfo.ammOpenOrders.toString(),
@@ -280,7 +288,7 @@ export const actions = actionTree(
                 } else if (version === 3) {
                   parsed = AMM_INFO_LAYOUT_V3.decode(data)
                 } else {
-                  parsed = AMM_INFO_LAYOUT_V4.decode(data)
+                  parsed = AMM_INFO_LAYOUT_V5.decode(data)
 
                   const { swapFeeNumerator, swapFeeDenominator } = parsed
                   poolInfo.fees = {

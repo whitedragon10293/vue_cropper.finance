@@ -780,9 +780,9 @@ export async function getLpMintListDecimals(
   }
   const reInfo: { [name: string]: number } = {}
   for (const key of Object.keys(reLpInfoDict)) {
-    if (reLpInfoDict[key] !== null) {
+    // if (reLpInfoDict[key] !== null) {
       reInfo[key] = reLpInfoDict[key]
-    }
+    // }
   }
   return reInfo
 }

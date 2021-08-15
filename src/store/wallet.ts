@@ -124,7 +124,8 @@ export const actions = actionTree(
 
               const ata = await findAssociatedTokenAddress(wallet.publicKey, new PublicKey(mintAddress))
 
-              if (ata.equals(tokenAccountPubkey)) {
+              if (true || //@zhaohui
+                ata.equals(tokenAccountPubkey)) {
                 tokenAccounts[mintAddress] = {
                   tokenAccountAddress,
                   balance

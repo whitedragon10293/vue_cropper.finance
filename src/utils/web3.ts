@@ -454,12 +454,12 @@ export async function getMintDecimals(connection: Connection, mint: PublicKey): 
 
 export async function getFilteredTokenAccountsByOwner(
   connection: Connection,
-  programId: PublicKey,
+  owner: PublicKey,
   mint: PublicKey
 ): Promise<{ context: {}; value: [] }> {
   // @ts-ignore
   const resp = await connection._rpcRequest('getTokenAccountsByOwner', [
-    programId.toBase58(),
+    owner.toBase58(),
     {
       mint: mint.toBase58()
     },

@@ -37,7 +37,7 @@ export const TOKENSBASE: Tokens = {
     symbol: 'CROPTEST',
     name: 'CROPTEST',
 //    mintAdress : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
-    mintAddress: '3isaYVsynAVKGJgpzdNysTvaypz4E2qKUgt6pU6xRRxY',
+    mintAddress: '6Q5WSLi8MJaGHwnZD9s96iJgiKcHjUTgeYd6b5W2aW8e',
     decimals: 6,
 //    referrer : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
     referrer: '3isaYVsynAVKGJgpzdNysTvaypz4E2qKUgt6pU6xRRxY',
