@@ -1,7 +1,7 @@
 <template>
   <div class="container" :class="isMobile ? 'create-pool-mobile' : 'create-pool'">
     <div class="page-head fs-container">
-      <span class="title">Create Pool</span>
+      <span class="title">Create a farm</span>
     </div>
     <div class="card">
       <div class="card-body" style="grid-row-gap: 0; row-gap: 0; padding-bottom: 15px">
@@ -38,8 +38,15 @@
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 3 && stepsStatus !== 'error'">Pool Created</div>
-              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">Pool Created</div>
+              <div v-if="current > 3 || (current === 3 && stepsStatus !== 'error')">Farm informations</div>
+              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">Farm informations</div>
+              <div v-else style="color: rgb(87, 117, 147)">Farm informations</div>
+            </template></Step
+          >
+          <Step
+            ><template slot="title">
+              <div v-if="current > 4 && stepsStatus !== 'error'">Pool Created</div>
+              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Pool Created</div>
               <div v-else slot="title" style="color: rgb(87, 117, 147)">Pool Created</div>
             </template></Step
           >
@@ -47,32 +54,34 @@
         <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
-              This tool is for advanced users. Before attempting to create a new liquidity pool, we suggest going
+              $$This tool is for advanced users. Before attempting to create a new liquidity pool, we suggest going
               through this
-              <a href="https://raydium.gitbook.io/raydium/permissionless/creating-a-pool" target="_blank">
+              <a href="#" target="_blank">
                 detailed guide.</a
-              >
+              >$$
             </div>
             <div>Input Serum Market ID:</div>
           </Col>
           <Col style="line-height: 20px" :span="24"><input v-model="inputMarket" :disabled="!marketInputFlag" /></Col>
 
-          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px">
-            <Button v-if="!wallet.connected" size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
-              Connect
-            </Button>
-            <Button
-              v-else
-              size="large"
-              ghost
-              class="button_div"
-              :disabled="!wallet.connected"
-              style="position: absolute; z-index: 999; width: 100%"
-              :loading="getMarketLoading"
-              @click="marketInputFlag ? getMarketMsg() : rewriteMarket()"
-            >
-              {{ !wallet.connected ? 'Connect' : getMarketLoading ? '' : marketInputFlag ? 'Confirm' : 'Cancel' }}
-            </Button>
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div class="btncontainer">
+              <Button v-if="!wallet.connected" size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
+              </Button>
+              <Button
+                v-else
+                size="large"
+                ghost
+                class="button_div"
+                :disabled="!wallet.connected"
+                style="position: absolute; z-index: 999; width: 100%"
+                :loading="getMarketLoading"
+                @click="marketInputFlag ? getMarketMsg() : rewriteMarket()"
+              >
+                {{ !wallet.connected ? 'Connect' : getMarketLoading ? '' : marketInputFlag ? 'Confirm' : 'Cancel' }}
+              </Button>
+            </div>
           </Col>
         </Row>
         <div v-if="current >= 1" style="margin-top: 10px" class="msgClass">
@@ -511,8 +520,43 @@ export default class CreatePool extends Vue {
 }
 </script>
 <style lang="less" scoped>
+
+  .btncontainer {
+    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    display: inline-block;
+    width: unset;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 2px;
+    border-radius: 30px;
+    max-height: 50px;
+
+    button{
+      background:#000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+    }
+
+  }
+
+
+main{
+  background-color:#000;
+  background-image:unset;
+  background-size:cover;
+  background-position:center bottom;
+}
+
+
 .create-pool {
   max-width: 570px;
+
+  .card-body{
+      padding: 60px 60px 15px;
+  }
 }
 .create-pool-mobile {
   width: 100%;

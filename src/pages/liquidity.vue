@@ -840,6 +840,16 @@ export default Vue.extend({
 </style>
 
 <style lang="less">
+
+
+main{
+  background-color:#000;
+  background-image:unset;
+  background-size:cover;
+  background-position:center bottom;
+}
+
+
 .ant-alert-warning {
   width: 500px;
   margin-top: 30px;

@@ -1,14 +1,26 @@
 <template>
-  <div class="fusion container">
+  <div class="farm container">
     <div class="page-head fs-container">
-      <span class="title"> Fusion Pools </span>
+      <span class="title">Farms</span>
       <div class="buttons">
-        <span>
+        <!-- <span>
           <RadioGroup v-model="poolType" style="display: inline-block; margin: 0 auto; padding-right: 30px">
             <RadioButton class="radioButtonStyle" :value="true"> Active </RadioButton>
             <RadioButton class="radioButtonStyle" :value="false"> Ended </RadioButton>
           </RadioGroup>
-        </span>
+        </span> -->
+
+
+        <NuxtLink to="/farms/create-farm/">
+          <div class="btncontainer">
+            <Button size="large" ghost>
+              Create a farm
+            </Button>
+          </div>
+        </NuxtLink>
+
+
+
         <Tooltip v-if="farm.initialized" placement="bottomRight">
           <template slot="title">
             <span>
@@ -53,13 +65,13 @@
 
     <div v-if="farm.initialized">
       <div class="card">
-        <div class="card-body" style="background: #000829">
+        <div class="card-body">
           <Collapse v-model="showCollapse" expand-icon-position="right">
             <CollapsePanel
               v-for="farm in farms"
               v-show="
-                (!endedFarmsPoolId.includes(farm.farmInfo.poolId) && poolType) ||
-                (endedFarmsPoolId.includes(farm.farmInfo.poolId) && !poolType)
+                (!endedFarmsPoolId.includes(farm.farmInfo.poolId) && !farm.farmInfo.legacy && poolType) ||
+                ((endedFarmsPoolId.includes(farm.farmInfo.poolId) || farm.farmInfo.legacy) && !poolType)
               "
               :key="farm.farmInfo.poolId"
               :show-arrow="poolType"
@@ -71,17 +83,10 @@
                     <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
                   </div>
                   {{ isMobile ? farm.farmInfo.lp.symbol : farm.farmInfo.lp.name }}
-
-                  <span v-if="farm.farmInfo.dual" class="tag">DUAL YIELD</span>
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
                   <div class="title">{{ isMobile ? 'Reward' : 'Pending Reward' }}</div>
-                  <div class="value">
-                    <div v-if="farm.farmInfo.dual">
-                      {{ farm.userInfo.pendingReward.format() }} {{ farm.farmInfo.reward.symbol }}
-                    </div>
-                    <div>{{ farm.userInfo.pendingRewardB.format() }} {{ farm.farmInfo.rewardB.symbol }}</div>
-                  </div>
+                  <div class="value">{{ farm.userInfo.pendingReward.format() }}</div>
                 </Col>
                 <Col v-if="!isMobile" class="state" :span="4">
                   <div class="title">Staked</div>
@@ -90,11 +95,8 @@
                   </div>
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
-                  <div class="title">Total Apr {{ farm.farmInfo.aprTotal }}%</div>
-                  <div class="value">
-                    <div v-if="farm.farmInfo.dual">{{ farm.farmInfo.reward.symbol }} {{ farm.farmInfo.apr }}%</div>
-                    <div>{{ farm.farmInfo.rewardB.symbol }} {{ farm.farmInfo.aprB }}%</div>
-                  </div>
+                  <div class="title">Apr</div>
+                  <div class="value">{{ farm.farmInfo.apr }}%</div>
                 </Col>
                 <Col v-if="!isMobile && poolType" class="state" :span="4">
                   <div class="title">Liquidity</div>
@@ -112,10 +114,10 @@
                   </Button>
                   <div v-else class="fs-container">
                     <Button
-                      :disabled="farm.userInfo.depositBalance.isNullOrZero()"
+                      :disabled="!wallet.connected || farm.userInfo.depositBalance.isNullOrZero()"
                       size="large"
                       ghost
-                      @click="openUnstakeModal(farm.farmInfo, farm.farmInfo.lp, farm.userInfo.depositBalance)"
+                      @click.stop="openUnstakeModal(farm.farmInfo, farm.farmInfo.lp, farm.userInfo.depositBalance)"
                     >
                       Harvest & Unstake
                     </Button>
@@ -123,11 +125,11 @@
                 </Col>
               </Row>
 
-              <Row :class="isMobile ? 'is-mobile' : ''" :gutter="48">
+              <Row v-if="poolType" :class="isMobile ? 'is-mobile' : ''" :gutter="48">
                 <Col :span="isMobile ? 24 : 4">
                   <p>Add liquidity:</p>
                   <NuxtLink
-                    :to="`/liquidity/?from=${farm.farmInfo.lp.coin.mintAddress}&to=${farm.farmInfo.lp.pc.mintAddress}`"
+                    :to="`/liquidity?from=${farm.farmInfo.lp.coin.mintAddress}&to=${farm.farmInfo.lp.pc.mintAddress}`"
                   >
                     {{ farm.farmInfo.lp.name }}
                   </NuxtLink>
@@ -135,29 +137,22 @@
 
                 <Col :span="isMobile ? 24 : 10">
                   <div class="harvest">
-                    <div class="title">Pending Rewards</div>
+                    <div class="title">Pending {{ farm.farmInfo.reward.symbol }} Reward</div>
                     <div class="pending fs-container">
                       <div class="reward">
-                        <div v-if="farm.farmInfo.dual" class="token">
-                          {{ farm.userInfo.pendingReward.format() }} {{ farm.farmInfo.reward.symbol }}
-                        </div>
-                        <div class="token">
-                          {{ farm.userInfo.pendingRewardB.format() }} {{ farm.farmInfo.rewardB.symbol }}
-                        </div>
+                        <div class="token">{{ farm.userInfo.pendingReward.format() }}</div>
                       </div>
+                      <div class="btncontainer">
                       <Button
                         size="large"
                         ghost
-                        :disabled="
-                          !wallet.connected ||
-                          harvesting ||
-                          (farm.userInfo.pendingReward.isNullOrZero() && farm.userInfo.pendingRewardB.isNullOrZero())
-                        "
+                        :disabled="!wallet.connected || harvesting || farm.userInfo.pendingReward.isNullOrZero()"
                         :loading="harvesting"
                         @click="harvest(farm.farmInfo)"
                       >
                         Harvest
                       </Button>
+                      </div>
                     </div>
                   </div>
                 </Col>
@@ -165,10 +160,13 @@
                 <Col :span="isMobile ? 24 : 10">
                   <div class="start">
                     <div class="title">Start farming</div>
-                    <Button v-if="!wallet.connected" size="large" ghost @click="$accessor.wallet.openModal">
+                    <div v-if="!wallet.connected" @click="$accessor.wallet.openModal" class="btncontainer">
+                    <Button size="large" ghost>
                       Connect Wallet
                     </Button>
+                    </div>
                     <div v-else class="fs-container">
+                      <div class="btncontainer">
                       <Button
                         v-if="!farm.userInfo.depositBalance.isNullOrZero()"
                         class="unstake"
@@ -178,9 +176,12 @@
                       >
                         <Icon type="minus" />
                       </Button>
-                      <Button size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
-                        Stake LP
-                      </Button>
+                      </div>
+                      <div class="btncontainer">
+                        <Button size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
+                          Stake LP
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Col>
@@ -207,7 +208,7 @@ import { Tooltip, Progress, Collapse, Spin, Icon, Row, Col, Button, Radio } from
 import { get, cloneDeep } from 'lodash-es'
 import { TokenAmount } from '@/utils/safe-math'
 import { FarmInfo } from '@/utils/farms'
-import { depositV4, withdrawV4 } from '@/utils/stake'
+import { deposit, withdraw } from '@/utils/stake'
 import { getUnixTs } from '@/utils'
 import { getBigNumber } from '@/utils/layouts'
 
@@ -226,10 +227,12 @@ export default Vue.extend({
     Icon,
     Row,
     Col,
-    Button,
-    RadioGroup,
-    RadioButton
+    Button
   },
+
+//    ,
+//    RadioGroup,
+//    RadioButton
 
   data() {
     return {
@@ -251,11 +254,11 @@ export default Vue.extend({
   },
 
   head: {
-    title: 'CropperFinance Fusion'
+    title: 'Raydium Farm'
   },
 
   computed: {
-    ...mapState(['wallet', 'farm', 'url', 'price', 'liquidity'])
+    ...mapState(['app', 'wallet', 'farm', 'url', 'price', 'liquidity'])
   },
 
   watch: {
@@ -279,7 +282,6 @@ export default Vue.extend({
       },
       deep: true
     },
-
     showCollapse: {
       handler() {
         if (!this.poolType && this.showCollapse.length > 0) {
@@ -303,18 +305,17 @@ export default Vue.extend({
 
       for (const [poolId, farmInfo] of Object.entries(this.farm.infos)) {
         // @ts-ignore
-        if (!farmInfo.isStake && [4, 5].includes(farmInfo.version) && farmInfo.fusion) {
+        if (!farmInfo.isStake && ![4, 5].includes(farmInfo.version)) {
           let userInfo = get(this.farm.stakeAccounts, poolId)
           // @ts-ignore
-          const { perShare, perBlock, perShareB, perBlockB } = farmInfo.poolInfo
+          const { rewardPerShareNet, rewardPerBlock } = farmInfo.poolInfo
           // @ts-ignore
-          const { reward, rewardB, lp } = farmInfo
+          const { reward, lp } = farmInfo
 
           const newFarmInfo = cloneDeep(farmInfo)
 
-          if (reward && rewardB && lp) {
-            const rewardPerBlockAmount = new TokenAmount(getBigNumber(perBlock), reward.decimals)
-            const rewardBPerBlockAmount = new TokenAmount(getBigNumber(perBlockB), rewardB.decimals)
+          if (reward && lp) {
+            const rewardPerBlockAmount = new TokenAmount(getBigNumber(rewardPerBlock), reward.decimals)
             const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
 
             const rewardPerBlockAmountTotalValue =
@@ -325,14 +326,6 @@ export default Vue.extend({
               24 *
               365 *
               this.price.prices[reward.symbol as string]
-            const rewardBPerBlockAmountTotalValue =
-              getBigNumber(rewardBPerBlockAmount.toEther()) *
-              2 *
-              60 *
-              60 *
-              24 *
-              365 *
-              this.price.prices[rewardB.symbol as string]
 
             const liquidityCoinValue =
               getBigNumber((liquidityItem?.coin.balance as TokenAmount).toEther()) *
@@ -347,59 +340,45 @@ export default Vue.extend({
 
             const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue
             const apr = ((rewardPerBlockAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
-            const aprB = ((rewardBPerBlockAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
-            const aprTotal = (
-              (rewardPerBlockAmountTotalValue / liquidityUsdValue) * 100 +
-              (rewardBPerBlockAmountTotalValue / liquidityUsdValue) * 100
-            ).toFixed(2)
 
             // @ts-ignore
             newFarmInfo.apr = apr
             // @ts-ignore
-            newFarmInfo.aprB = aprB
-            // @ts-ignore
-            newFarmInfo.aprTotal = aprTotal
-            // @ts-ignore
             newFarmInfo.liquidityUsdValue = liquidityUsdValue
-            if (
-              rewardPerBlockAmount.toEther().toString() === '0' &&
-              rewardBPerBlockAmount.toEther().toString() === '0'
-            ) {
-              endedFarmsPoolId.push(poolId)
+
+            if (rewardPerBlockAmount.toEther().toString() === '0') {
+              if (
+                [
+                  'HUDr9BDaAGqi37xbQHzxCyXvfMCKPTPNF8g9c9bPu1Fu',
+                  'CHYrUBX2RKX8iBg7gYTkccoGNBzP44LdaazMHCLcdEgS',
+                  'B6fbnZZ7sbKHR18ffEDD5Nncgp54iKN1GbCgjTRdqhS1',
+                  '5DFbcYNLLy5SJiBpCCDzNSs7cWCsUbYnCkLXzcPQiKnR'
+                ].includes(poolId)
+              ) {
+                console.log('temp')
+              } else {
+                endedFarmsPoolId.push(poolId)
+              }
             }
           }
 
           if (userInfo) {
             userInfo = cloneDeep(userInfo)
 
-            const { rewardDebt, rewardDebtB, depositBalance } = userInfo
+            const { rewardDebt, depositBalance } = userInfo
 
-            let d = 0
-            // @ts-ignore
-            if (newFarmInfo.version === 5) {
-              d = 1e15
-            } else {
-              d = 1e9
-            }
             const pendingReward = depositBalance.wei
-              .multipliedBy(getBigNumber(perShare))
-              .dividedBy(d)
+              .multipliedBy(getBigNumber(rewardPerShareNet))
+              .dividedBy(1e9)
               .minus(rewardDebt.wei)
-            const pendingRewardB = depositBalance.wei
-              .multipliedBy(getBigNumber(perShareB))
-              .dividedBy(d)
-              .minus(rewardDebtB.wei)
 
             userInfo.pendingReward = new TokenAmount(pendingReward, rewardDebt.decimals)
-            userInfo.pendingRewardB = new TokenAmount(pendingRewardB, rewardDebtB.decimals)
           } else {
             userInfo = {
               // @ts-ignore
               depositBalance: new TokenAmount(0, farmInfo.lp.decimals),
               // @ts-ignore
-              pendingReward: new TokenAmount(0, farmInfo.reward.decimals),
-              // @ts-ignore
-              pendingRewardB: new TokenAmount(0, farmInfo.rewardB.decimals)
+              pendingReward: new TokenAmount(0, farmInfo.reward.decimals)
             }
           }
 
@@ -444,7 +423,6 @@ export default Vue.extend({
 
       const lpAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.tokenAccountAddress`)
       const rewardAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
-      const rewardAccountB = get(this.wallet.tokenAccounts, `${this.farmInfo.rewardB.mintAddress}.tokenAccountAddress`)
       const infoAccount = get(this.farm.stakeAccounts, `${this.farmInfo.poolId}.stakeAccountAddress`)
 
       const key = getUnixTs().toString()
@@ -455,7 +433,7 @@ export default Vue.extend({
         duration: 0
       })
 
-      depositV4(conn, wallet, this.farmInfo, lpAccount, rewardAccount, rewardAccountB, infoAccount, amount)
+      deposit(conn, wallet, this.farmInfo, lpAccount, rewardAccount, infoAccount, amount)
         .then((txid) => {
           this.$notify.info({
             key,
@@ -506,7 +484,6 @@ export default Vue.extend({
 
       const lpAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.tokenAccountAddress`)
       const rewardAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
-      const rewardAccountB = get(this.wallet.tokenAccounts, `${this.farmInfo.rewardB.mintAddress}.tokenAccountAddress`)
       const infoAccount = get(this.farm.stakeAccounts, `${this.farmInfo.poolId}.stakeAccountAddress`)
 
       const key = getUnixTs().toString()
@@ -517,7 +494,7 @@ export default Vue.extend({
         duration: 0
       })
 
-      withdrawV4(conn, wallet, this.farmInfo, lpAccount, rewardAccount, rewardAccountB, infoAccount, amount)
+      withdraw(conn, wallet, this.farmInfo, lpAccount, rewardAccount, infoAccount, amount)
         .then((txid) => {
           this.$notify.info({
             key,
@@ -559,8 +536,6 @@ export default Vue.extend({
 
       const lpAccount = get(this.wallet.tokenAccounts, `${farmInfo.lp.mintAddress}.tokenAccountAddress`)
       const rewardAccount = get(this.wallet.tokenAccounts, `${farmInfo.reward.mintAddress}.tokenAccountAddress`)
-      // @ts-ignore
-      const rewardAccountB = get(this.wallet.tokenAccounts, `${farmInfo.rewardB.mintAddress}.tokenAccountAddress`)
       const infoAccount = get(this.farm.stakeAccounts, `${farmInfo.poolId}.stakeAccountAddress`)
 
       const key = getUnixTs().toString()
@@ -571,7 +546,7 @@ export default Vue.extend({
         duration: 0
       })
 
-      depositV4(conn, wallet, farmInfo, lpAccount, rewardAccount, rewardAccountB, infoAccount, '0')
+      deposit(conn, wallet, farmInfo, lpAccount, rewardAccount, infoAccount, '0')
         .then((txid) => {
           this.$notify.info({
             key,
@@ -582,8 +557,8 @@ export default Vue.extend({
                 h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
               ])
           })
-          // @ts-ignore
-          const description = `Harvest ${farmInfo.reward.symbol} and ${farmInfo.rewardB.symbol} from ${farmInfo.lp.name}`
+
+          const description = `Harvest ${farmInfo.reward.symbol} from ${farmInfo.lp.name}`
           this.$accessor.transaction.sub({ txid, description })
         })
         .catch((error) => {
@@ -605,44 +580,17 @@ export default Vue.extend({
 ::-webkit-scrollbar {
   display: none; /* Chrome Safari */
 }
-.pool-filter {
-  padding-bottom: 5px;
-  margin-left: 10px;
-  border: 1px solid #ccc;
+.card-body {
+  padding: 0;
+  margin: 0;
 }
-.pool-filter-select {
-  background: rgb(37, 41, 97);
-  color: #fff;
-  padding-top: 10px;
-  padding-bottom: 5px;
-  height: 37px;
-  font-weight: bold;
-  border: 1px solid #ccc;
-}
-.pool-filter-unselect {
-  background: transparent;
-  border: transparent;
-  padding-top: 10px;
-  padding-bottom: 5px;
-  height: 37px;
-  font-weight: bold;
-  color: #ccc;
-}
-.pool-filter-select:hover {
-  color: #fff;
-}
-.pool-filter-unselect:hover {
-  color: #ccc;
-}
-
-.fusion.container {
+.farm.container {
   max-width: 1200px;
 
   .card {
     .card-body {
       padding: 0;
       overflow-x: scroll;
-      background: #131a35;
       scrollbar-width: none;
       -ms-overflow-style: none;
 
@@ -701,9 +649,6 @@ export default Vue.extend({
       margin-bottom: 8px;
     }
 
-    button {
-      height: 48px;
-    }
   }
 
   .farm-head {
@@ -713,14 +658,6 @@ export default Vue.extend({
     .lp-icons {
       .icons {
         margin-right: 8px;
-      }
-      .tag {
-        margin-left: 8px;
-        padding: 0 7px;
-        font-size: 10px;
-        color: #c200fb;
-        border: 1px solid #c200fb;
-        border-radius: 4px;
       }
     }
 
@@ -763,7 +700,7 @@ export default Vue.extend({
 </style>
 
 <style lang="less">
-.fusion {
+.farm {
   .farm-head {
     padding: 24px 32px !important;
   }
@@ -790,6 +727,34 @@ export default Vue.extend({
   .anticon-close {
     color: #fff;
   }
+}
+
+  .btncontainer {
+    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    display: inline-block;
+    width: unset;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 2px;
+    border-radius: 30px;
+    max-height: 50px;
+
+    button{
+      background:#000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+    }
+
+  }
+
+main{
+  background-color:#000;
+  background-image:unset;
+  background-size:cover;
+  background-position:center bottom;
 }
 
 .ant-table-thead > tr > th.ant-table-column-sort {
