@@ -139,8 +139,8 @@ export default Vue.extend({
 @import '../styles/variables';
 
 .coin-select {
-  background: #000829;
-  border-radius: 4px;
+  background: rgba(0,0,0,0.9471);
+  border-radius: 13px;
 
   .label {
     padding: 0.75rem 1rem 0;

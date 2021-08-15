@@ -1,12 +1,17 @@
 <template>
   <div>
-    <img src="@/assets/icons/connect.svg" width="138" style="aspect-ratio: auto;height: auto;" v-if="!wallet.connected" ghost @click="$accessor.wallet.openModal" />
-    <Button v-else ghost @click="$accessor.wallet.openModal">
+    <div v-if="!wallet.connected" ghost @click="$accessor.wallet.openModal" class="btncontainer">
+      <Button>Connect wallet</Button>
+    </div>
+
+    <div v-else ghost @click="$accessor.wallet.openModal" class="btncontainer">
+    <Button>
       <Icon type="wallet" />
       {{ wallet.address.substr(0, 4) }}
       ...
       {{ wallet.address.substr(wallet.address.length - 4, 4) }}
     </Button>
+    </div>
 
     <Modal
       :title="!wallet.connected ? 'Connect to a wallet' : 'Your wallet'"
@@ -495,6 +500,28 @@ export default class Wallet extends Vue {
     font-size: 17px;
   }
 }
+
+  .btncontainer {
+    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    display: block;
+    text-align: center;
+    position: relative;
+    margin: auto;
+    padding: 2px;
+    border-radius: 30px;
+    height: 36px;
+    line-height: 36px;
+
+    button{
+      background: #000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+      top: -2px;
+    }
+
+  }
+
 .tx-history-panel {
   h2 {
     margin-top: 32px;

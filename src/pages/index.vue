@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="landing">
 <div class="vecteur-1">
             <img src="../assets/GroupVector1.png">
         </div>

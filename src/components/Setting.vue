@@ -5,13 +5,19 @@
         <h3>Slippage tolerance</h3>
         <Row class="slippage-setting" :gutter="30">
           <Col :span="6">
-            <button :class="slippage === '0.1' ? 'active' : ''" @click="() => (slippage = '0.1')">0.1%</button>
+            <div :class="slippage === '0.1' ? 'active btncontainer' : 'btncontainer'" @click="() => (slippage = '0.1')">
+              <button>0.1%</button>
+            </div>
           </Col>
           <Col :span="6">
-            <button :class="slippage === '0.5' ? 'active' : ''" @click="() => (slippage = '0.5')">0.5%</button>
+            <div :class="slippage === '0.5' ? 'active btncontainer' : 'btncontainer'" @click="() => (slippage = '0.5')">
+              <button>0.5%</button>
+            </div>
           </Col>
           <Col :span="6">
-            <button :class="slippage === '1' ? 'active' : ''" @click="() => (slippage = '1')">1%</button>
+            <div :class="slippage === '1' ? 'active btncontainer' : 'btncontainer'" @click="() => (slippage = '1')">
+              <button>1%</button>
+            </div>
           </Col>
           <Col :span="6">
             <Input v-model="slippage" :class="errorMsg ? 'has-error' : ''" size="large" suffix="%" />
@@ -88,6 +94,33 @@ export default class Setting extends Vue {
   flex-direction: column;
   gap: 32px;
 
+  .btncontainer {
+    display: inline-block;
+    width: unset;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 2px;
+    border-radius: 30px;
+    transition: ease all .3s;
+
+    button{
+      background:#000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+    }
+
+    &.active,
+    &:hover,
+    &:focus{
+      background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    }
+
+  }
+
+
   .field {
     &.row {
       display: flex;
@@ -114,12 +147,12 @@ export default class Setting extends Vue {
         color: @text-color;
         padding: 10px 12px;
         border: 0;
-        border-radius: 4px;
         font-size: 12px;
         line-height: 20px;
         font-weight: 600;
         cursor: pointer;
         opacity: 1;
+        min-width: 100px;
 
         &:active,
         &:focus,
