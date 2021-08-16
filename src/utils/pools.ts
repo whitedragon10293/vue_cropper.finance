@@ -132,7 +132,7 @@ export function getLpListByTokenMintAddresses(
   coinMintAddress: string,
   pcMintAddress: string,
   ammIdOrMarket: string | undefined,
-  version = [4]
+  version = [5]
 ): LiquidityPoolInfo[] {
   const pool = LIQUIDITY_POOLS.filter((pool) => {
     if (coinMintAddress && pcMintAddress) {

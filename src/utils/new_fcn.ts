@@ -67,16 +67,16 @@ export const AMM_INFO_LAYOUT_V5 =  struct(
     u8('nonce'),
     publicKey('ammId'),
     publicKey('dexProgramId'),
-    publicKey('marketId'),
+    publicKey('serumMarket'),
     publicKey('tokenProgramId'),
-    publicKey('tokenAccountA'),
-    publicKey('tokenAccountB'),
+    publicKey('poolCoinTokenAccount'),
+    publicKey('poolPcTokenAccount'),
     publicKey('lpMintAddress'),
     publicKey('coinMintAddress'),
     publicKey('pcMintAddress'),
     publicKey('feeAccount'),
-    u64('tradeFeeNumerator'),
-    u64('tradeFeeDenominator'),
+    u64('swapFeeNumerator'),
+    u64('swapFeeDenominator'),
     u64('ownerTradeFeeNumerator'),
     u64('ownerTradeFeeDenominator'),
     u64('ownerWithdrawFeeNumerator'),
@@ -180,24 +180,24 @@ export const depositInstruction = (
   poolAccount: PublicKey,
   swapProgramId: PublicKey,
   tokenProgramId: PublicKey,
-  poolTokenAmount: number | nu64,
-  maximumTokenA: number | nu64,
-  maximumTokenB: number | nu64
+  poolTokenAmount: number,
+  maximumTokenA: number,
+  maximumTokenB: number
 ): TransactionInstruction => {
   const dataLayout = struct([
     u8("instruction"),
-    u64("poolTokenAmount"),
-    u64("maximumTokenA"),
-    u64("maximumTokenB"),
+    nu64("poolTokenAmount"),
+    nu64("maximumTokenA"),
+    nu64("maximumTokenB"),
   ]);
-
-  const data = Buffer.alloc(dataLayout.span);
+  let data = Buffer.alloc(dataLayout.span);
   dataLayout.encode(
     {
       instruction: 2, // Deposit instruction
-      poolTokenAmount: new nu64(poolTokenAmount).toBuffer(),
-      maximumTokenA: new nu64(maximumTokenA).toBuffer(),
-      maximumTokenB: new nu64(maximumTokenB).toBuffer(),
+      poolTokenAmount,
+      maximumTokenA,
+      maximumTokenB
+
     },
     data
   );
@@ -214,6 +214,7 @@ export const depositInstruction = (
     { pubkey: poolAccount, isSigner: false, isWritable: true },
     { pubkey: tokenProgramId, isSigner: false, isWritable: false },
   ];
+  console.log("Added Deposit Transaction")
   return new TransactionInstruction({
     keys,
     programId: swapProgramId,

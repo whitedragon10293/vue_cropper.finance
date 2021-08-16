@@ -88,9 +88,8 @@ export const actions = actionTree(
       const lpMintAddressList: string[] = []
       ammAll.forEach((item) => {
         const ammLayout = AMM_INFO_LAYOUT_V5.decode(Buffer.from(item.accountInfo.data))
-        console.log(ammLayout)
         if (
-          // ammLayout.pcMintAddress.toString() === ammLayout.serumMarket.toString() ||
+          ammLayout.pcMintAddress.toString() === ammLayout.serumMarket.toString() ||
           ammLayout.lpMintAddress.toString() === '11111111111111111111111111111111'
         ) {
           return
@@ -98,14 +97,15 @@ export const actions = actionTree(
         lpMintAddressList.push(ammLayout.lpMintAddress.toString())
       })
       const lpMintListDecimls = await getLpMintListDecimals(conn, lpMintAddressList)
-      console.log(lpMintListDecimls)
+      
       for (let indexAmmInfo = 0; indexAmmInfo < ammAll.length; indexAmmInfo += 1) {
         const ammInfo = AMM_INFO_LAYOUT_V5.decode(Buffer.from(ammAll[indexAmmInfo].accountInfo.data))
+
         if (
           !Object.keys(lpMintListDecimls).includes(ammInfo.lpMintAddress.toString()) ||
-          // ammInfo.pcMintAddress.toString() === ammInfo.serumMarket.toString() ||
+          ammInfo.pcMintAddress.toString() === ammInfo.serumMarket.toString() ||
           ammInfo.lpMintAddress.toString() === '11111111111111111111111111111111'
-          //  ||
+          //  || @zhaohui
           // !Object.keys(marketToLayout).includes(ammInfo.serumMarket.toString())
         ) {
           continue
@@ -151,7 +151,6 @@ export const actions = actionTree(
         if (!pc.tags.includes('unofficial')) {
           pc.tags.push('unofficial')
         }
-        console.log("12312312")
 
         if (coin.mintAddress === TOKENS.WSOL.mintAddress) {
           coin.symbol = 'SOL'
@@ -171,39 +170,42 @@ export const actions = actionTree(
           mintAddress: ammInfo.lpMintAddress.toString(),
           decimals: lpMintListDecimls[ammInfo.lpMintAddress]
         }
-
-        const { publicKey } = await createAmmAuthority(new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5))
-
+ 
+        // const { publicKey } = await createAmmAuthority(new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5))
+        const [authority, nonce] = await PublicKey.findProgramAddress(
+          [ammAll[indexAmmInfo].publicKey.toBuffer()],
+          new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5)
+        );
         const market = marketToLayout[ammInfo.serumMarket]
 
-        const serumVaultSigner = await PublicKey.createProgramAddress(
+        const serumVaultSigner = new PublicKey(SERUM_PROGRAM_ID_V3) ;/*@zhaohui await PublicKey.createProgramAddress(
           [ammInfo.serumMarket.toBuffer(), market.vaultSignerNonce.toArrayLike(Buffer, 'le', 8)],
           new PublicKey(SERUM_PROGRAM_ID_V3)
-        )
+        )*/
 
         const itemLiquidity: LiquidityPoolInfo = {
           name: `${coin.symbol}-${pc.symbol}`,
           coin,
           pc,
           lp,
-          version: 4,
+          version: 5,
           programId: LIQUIDITY_POOL_PROGRAM_ID_V5,
           ammId: ammAll[indexAmmInfo].publicKey.toString(),
-          ammAuthority: publicKey.toString(),
-          ammOpenOrders: ammInfo.ammOpenOrders.toString(),
-          ammTargetOrders: ammInfo.ammTargetOrders.toString(),
+          ammAuthority: authority.toString(),
+          ammOpenOrders: "", // ammInfo.ammOpenOrders.toString(),
+          ammTargetOrders: "", //ammInfo.ammTargetOrders.toString(),
           ammQuantities: NATIVE_SOL.mintAddress,
           poolCoinTokenAccount: ammInfo.poolCoinTokenAccount.toString(),
           poolPcTokenAccount: ammInfo.poolPcTokenAccount.toString(),
-          poolWithdrawQueue: ammInfo.poolWithdrawQueue.toString(),
-          poolTempLpTokenAccount: ammInfo.poolTempLpTokenAccount.toString(),
+          poolWithdrawQueue: "", //ammInfo.poolWithdrawQueue.toString(),
+          poolTempLpTokenAccount: "", //ammInfo.poolTempLpTokenAccount.toString(),
           serumProgramId: SERUM_PROGRAM_ID_V3,
           serumMarket: ammInfo.serumMarket.toString(),
-          serumBids: market.bids.toString(),
-          serumAsks: market.asks.toString(),
-          serumEventQueue: market.eventQueue.toString(),
-          serumCoinVaultAccount: market.baseVault.toString(),
-          serumPcVaultAccount: market.quoteVault.toString(),
+          serumBids: "",//market.bids.toString(),
+          serumAsks: "",//market.asks.toString(),
+          serumEventQueue: "", //market.eventQueue.toString(),
+          serumCoinVaultAccount: "", //market.baseVault.toString(),
+          serumPcVaultAccount: "", //market.quoteVault.toString(),
           serumVaultSigner: serumVaultSigner.toString(),
           official: false
         }
@@ -231,7 +233,7 @@ export const actions = actionTree(
         publicKeys.push(
           new PublicKey(poolCoinTokenAccount),
           new PublicKey(poolPcTokenAccount),
-          new PublicKey(ammOpenOrders),
+          // new PublicKey(ammOpenOrders), @zhaohui
           new PublicKey(ammId),
           new PublicKey(lp.mintAddress)
         )
@@ -289,18 +291,17 @@ export const actions = actionTree(
                   parsed = AMM_INFO_LAYOUT_V3.decode(data)
                 } else {
                   parsed = AMM_INFO_LAYOUT_V5.decode(data)
-
                   const { swapFeeNumerator, swapFeeDenominator } = parsed
                   poolInfo.fees = {
                     swapFeeNumerator: getBigNumber(swapFeeNumerator),
                     swapFeeDenominator: getBigNumber(swapFeeDenominator)
                   }
                 }
-
-                const { status, needTakePnlCoin, needTakePnlPc } = parsed
-                poolInfo.status = getBigNumber(status)
-                poolInfo.coin.balance.wei = poolInfo.coin.balance.wei.minus(getBigNumber(needTakePnlCoin))
-                poolInfo.pc.balance.wei = poolInfo.pc.balance.wei.minus(getBigNumber(needTakePnlPc))
+                //@zhaohui
+                // const { status, needTakePnlCoin, needTakePnlPc } = parsed
+                // poolInfo.status = getBigNumber(status)
+                // poolInfo.coin.balance.wei = poolInfo.coin.balance.wei.minus(getBigNumber(needTakePnlCoin))
+                // poolInfo.pc.balance.wei = poolInfo.pc.balance.wei.minus(getBigNumber(needTakePnlPc))
 
                 break
               }

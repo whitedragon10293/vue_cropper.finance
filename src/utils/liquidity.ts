@@ -1,4 +1,4 @@
-import { getBigNumber, MINT_LAYOUT } from './layouts'
+import { ACCOUNT_LAYOUT, getBigNumber, MINT_LAYOUT } from './layouts'
 import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
 import {
   LiquidityPoolInfo,
@@ -14,16 +14,18 @@ import {
   sendTransaction,
   commitment,
   getMultipleAccounts,
-  createAssociatedTokenAccountIfNotExist
+  createAssociatedTokenAccountIfNotExist,
+  getFilteredTokenAccountsByOwner
 } from '@/utils/web3'
 // @ts-ignore
 import { nu64, struct, u8 } from 'buffer-layout'
 import { publicKey, u64, u128 } from '@project-serum/borsh'
 
 import BigNumber from 'bignumber.js'
-import { TOKEN_PROGRAM_ID } from '@/utils/ids'
+import { LIQUIDITY_POOL_PROGRAM_ID_V5, TOKEN_PROGRAM_ID } from '@/utils/ids'
 import { TokenAmount } from '@/utils/safe-math'
 import { closeAccount } from '@project-serum/serum/lib/token-instructions'
+import { depositInstruction } from './new_fcn'
 
 export { getLpMintByTokenMintAddresses, getPoolByLpMintAddress, getPoolByTokenMintAddresses, canWrap }
 
@@ -115,6 +117,12 @@ export async function addLiquidity(
   const userPcTokenAccount = userAccounts[1]
   const coinAmount = getBigNumber(new TokenAmount(userAmounts[0], poolInfo.coin.decimals, false).wei)
   const pcAmount = getBigNumber(new TokenAmount(userAmounts[1], poolInfo.pc.decimals, false).wei)
+  
+  let lpAmount = Math.min(
+            coinAmount / getBigNumber(poolInfo.coin.balance?.wei) * getBigNumber(poolInfo.lp.totalSupply?.wei),
+            pcAmount / getBigNumber(poolInfo.pc.balance?.wei) * getBigNumber(poolInfo.lp.totalSupply?.wei)
+  )
+  lpAmount = getBigNumber(new TokenAmount(lpAmount, 0, false).wei)
 
   let wrappedCoinSolAccount
   if (poolInfo.coin.mintAddress === NATIVE_SOL.mintAddress) {
@@ -140,28 +148,53 @@ export async function addLiquidity(
       signers
     )
   }
+  //@zhaohui
+  // let userLpTokenAccount = await createAssociatedTokenAccountIfNotExist(
+  //   lpAccount,
+  //   owner,
+  //   poolInfo.lp.mintAddress,
+  //   transaction
+  // )
+  let userLpTokenAccount;
+  let lpTokenAccount_t = await getFilteredTokenAccountsByOwner(connection, owner, new PublicKey(poolInfo.lp.mintAddress))
+  
+  const userLpTokenAccountList: any = lpTokenAccount_t.value.map((item: any) => {
+      return item.pubkey
+  })
+  for (const item of userLpTokenAccountList) {
+    if (item !== null) {
+      userLpTokenAccount = item
+    }
+  }
 
-  let userLpTokenAccount = await createAssociatedTokenAccountIfNotExist(
-    lpAccount,
+  userLpTokenAccount = await createTokenAccountIfNotExist(
+    connection,
+    userLpTokenAccount,
     owner,
     poolInfo.lp.mintAddress,
-    transaction
+    await connection.getMinimumBalanceForRentExemption(
+      ACCOUNT_LAYOUT.span
+    ),
+    transaction,
+    signers
   )
+  console.log("Checked instruction")
+
 
   transaction.add(
-    poolInfo.version === 4
-      ? addLiquidityInstructionV4(
+    poolInfo.version === 5
+      ? addLiquidityInstructionV5(
           new PublicKey(poolInfo.programId),
 
           new PublicKey(poolInfo.ammId),
           new PublicKey(poolInfo.ammAuthority),
-          new PublicKey(poolInfo.ammOpenOrders),
-          new PublicKey(poolInfo.ammTargetOrders),
+          // new PublicKey(poolInfo.ammOpenOrders),
+          // new PublicKey(poolInfo.ammTargetOrders),
           new PublicKey(poolInfo.lp.mintAddress),
           new PublicKey(poolInfo.poolCoinTokenAccount),
           new PublicKey(poolInfo.poolPcTokenAccount),
 
-          new PublicKey(poolInfo.serumMarket),
+          // new PublicKey(poolInfo.serumMarket),
 
           wrappedCoinSolAccount ? wrappedCoinSolAccount : userCoinTokenAccount,
           wrappedSolAccount ? wrappedSolAccount : userPcTokenAccount,
@@ -170,7 +203,7 @@ export async function addLiquidity(
 
           coinAmount,
           pcAmount,
-          fixedCoin === poolInfo.coin.mintAddress ? 0 : 1
+          lpAmount
         )
       : addLiquidityInstruction(
           new PublicKey(poolInfo.programId),
@@ -461,6 +494,49 @@ export function addLiquidityInstructionV4(
     data
   })
 }
+
+export function addLiquidityInstructionV5(
+  programId: PublicKey,
+  // tokenProgramId: PublicKey,
+  // amm
+  ammId: PublicKey,
+  ammAuthority: PublicKey,
+  // ammOpenOrders: PublicKey,
+  // ammTargetOrders: PublicKey,
+  lpMintAddress: PublicKey,
+  poolCoinTokenAccount: PublicKey,
+  poolPcTokenAccount: PublicKey,
+  // serum
+  // serumMarket: PublicKey,
+  // user
+  userCoinTokenAccount: PublicKey,
+  userPcTokenAccount: PublicKey,
+  userLpTokenAccount: PublicKey,
+  userOwner: PublicKey,
+
+  maxCoinAmount: number,
+  maxPcAmount: number,
+  lpAmount: number
+): TransactionInstruction {
+  
+  return depositInstruction(
+    ammId,
+    ammAuthority,
+    userOwner,
+    userCoinTokenAccount,
+    userPcTokenAccount,
+    poolCoinTokenAccount,
+    poolPcTokenAccount,
+    lpMintAddress,
+    userLpTokenAccount,
+    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
+    TOKEN_PROGRAM_ID,
+    lpAmount,
+    maxCoinAmount,
+    maxPcAmount
+  )
+}
+
 
 export function removeLiquidityInstruction(
   programId: PublicKey,
