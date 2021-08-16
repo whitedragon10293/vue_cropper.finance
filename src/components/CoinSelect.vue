@@ -1,5 +1,5 @@
 <template>
-  <Modal v-if="!showSelectSourceFlag" title="Select a token" :visible="true" @cancel="$emit('onClose')">
+  <Modal class="nofooter" v-if="!showSelectSourceFlag" title="Select a token" :visible="true" @cancel="$emit('onClose')">
     <div class="select-token">
       <input ref="userInput" v-model="keyword" placeholder="Search name or mint address" />
       <div v-if="!addUserCoin" class="sort fs-container">
@@ -19,38 +19,6 @@
             <CoinIcon :mint-address="token.mintAddress" />
             <div>
               <span>{{ token.symbol }}</span>
-              <button
-                v-if="token.tags.includes('userAdd') && showUserButton[token.symbol + token.mintAddress]"
-                style="
-                  margin: 0 10px;
-                  color: rgb(90, 196, 190);
-                  outline: none;
-                  background-color: transparent;
-                  padding: 0;
-                  border: 0 solid transparent;
-                "
-                @click.stop="delCoinToAttention(token)"
-              >
-                (Remove Token)
-              </button>
-              <button
-                v-if="
-                  !token.tags.includes('userAdd') &&
-                  showUserButton[token.symbol + token.mintAddress] &&
-                  !token.tags.find((item) => tokensTags[item].mustShow)
-                "
-                style="
-                  margin: 0 10px;
-                  color: rgb(90, 196, 190);
-                  outline: none;
-                  background-color: transparent;
-                  padding: 2px;
-                  border: 0 solid transparent;
-                "
-                @click.stop="addCoinToAttention(token)"
-              >
-                (Add Token)
-              </button>
             </div>
             <span></span>
             <div class="balance">
@@ -89,17 +57,6 @@
         </div>
       </div>
     </div>
-    <template slot="footer">
-      <Button
-        class="source-manager"
-        @click="
-          () => {
-            showSelectSourceFlag = true
-          }
-        "
-        >View Token Lists</Button
-      >
-    </template>
   </Modal>
   <CoinSelectSource v-else @onClose="() => (showSelectSourceFlag = false)" />
 </template>
@@ -433,6 +390,10 @@ export default Vue.extend({
 }
 .source-manager:hover {
   color: #5ac4be;
+}
+
+.nodisplay{
+  display:none !important
 }
 
 .select-token {

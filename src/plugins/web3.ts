@@ -11,27 +11,6 @@ const createWeb3Instance = (endpoint: string) => {
   return web3
 }
 
-async function getFastEndpoint(api: NuxtApiInstance, endpoints: Rpc[]) {
-  let rpc = ''
-
-  for (const endpoint of endpoints) {
-    api.getEpochInfo(endpoint.url).then(() => {
-      if (!rpc) {
-        rpc = endpoint.url
-      }
-    })
-  }
-
-  while (true) {
-    if (rpc) {
-      break
-    }
-    await sleep(10)
-  }
-
-  return rpc
-}
-
 export function getWeightEndpoint(endpoints: Rpc[]) {
   let pointer = 0
   const random = Math.random() * 100
@@ -53,32 +32,21 @@ export function getWeightEndpoint(endpoints: Rpc[]) {
 }
 
 const web3Plugin: Plugin = async (ctx, inject) => {
-  const { $api } = ctx
 
   let config
   let endpoint
   let configFrom
 
-  try {
-    config = await $api.getConfig()
-    configFrom = 'remote'
-  } catch (error) {
-    config = web3Config
-    configFrom = 'local'
-  }
+  config = web3Config
+  configFrom = 'local'
+  
 
   const { rpcs, strategy } = config
 
-  if (strategy === 'weight') {
-    endpoint = getWeightEndpoint(rpcs)
-  } else {
-    endpoint = await getFastEndpoint($api, rpcs)
-  }
-
-  logger(`config from: ${configFrom}, strategy: ${strategy}, using ${endpoint}`)
+  endpoint = getWeightEndpoint(rpcs)
+  
 
  // endpoint = 'https://api.devnet.solana.com'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
-  endpoint = 'http://localhost:8899'
   const web3 = createWeb3Instance(endpoint)
 
   ctx.$web3 = web3

@@ -214,7 +214,6 @@ export const depositInstruction = (
     { pubkey: poolAccount, isSigner: false, isWritable: true },
     { pubkey: tokenProgramId, isSigner: false, isWritable: false },
   ];
-  console.log("Added Deposit Transaction")
   return new TransactionInstruction({
     keys,
     programId: swapProgramId,

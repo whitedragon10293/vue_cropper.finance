@@ -854,6 +854,14 @@ export default Vue.extend({
 </style>
 
 <style lang="less">
+
+main{
+  background-color:#000;
+  background-image:unset;
+  background-size:cover;
+  background-position:center bottom;
+}
+
 .ant-steps-item-content {
   width: auto !important;
 }

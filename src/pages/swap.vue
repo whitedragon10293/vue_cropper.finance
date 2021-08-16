@@ -2,29 +2,35 @@
   <div class="container">
     <div class="page-head fs-container">
       <span class="title">Swap</span>
-      <div class="buttons">
-        <Tooltip placement="bottomRight">
-          <template slot="title">
-            <span>
-              Displayed data will auto-refresh after
-              {{ autoRefreshTime - countdown }} seconds. Click this circle to update manually.
-            </span>
-          </template>
-          <Progress
-            type="circle"
-            :width="20"
-            :stroke-width="10"
-            :percent="(100 / autoRefreshTime) * countdown"
-            :show-info="false"
-            :class="marketAddress && loading ? 'disabled' : ''"
-            @click="
-              () => {
-                getOrderBooks()
-                $accessor.wallet.getTokenAccounts()
-              }
-            "
-          />
-        </Tooltip>
+      
+    </div>
+
+    <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
+    <AmmIdSelect
+      :show="ammIdSelectShow"
+      :liquidity-list="ammIdSelectList"
+      :user-close="true"
+      @onClose="() => ((ammIdSelectShow = false), (ammIdSelectOld = true))"
+      @onSelect="onAmmIdSelect"
+    />
+
+    <UnofficialPoolConfirmUser
+      v-if="userCheckUnofficialShow"
+      @onClose="() => (userCheckUnofficialShow = false)"
+      @onSelect="onUserCheckUnofficialSelect"
+    />
+
+    <InputAmmIdOrMarket
+      v-if="ammIdOrMarketSearchShow"
+      @onClose="() => (ammIdOrMarketSearchShow = false)"
+      @onInput="onAmmIdOrMarketInput"
+    ></InputAmmIdOrMarket>
+
+    <div class="card">
+      <div class="card-body">
+
+
+<div class="buttons">
         <Tooltip placement="bottomRight">
           <template slot="title">
             <p>Addresses</p>
@@ -90,39 +96,35 @@
               </div>
             </div>
           </template>
-          <Icon type="info-circle" />
+          <Icon type="question-circle" />
         </Tooltip>
         <Icon type="setting" @click="$accessor.setting.open" />
         <Tooltip placement="bottomRight">
-          <template slot="title"> Search for a pool </template>
-          <Icon type="search" @click="ammIdOrMarketSearchShow = true" />
+          <template slot="title">
+            <span>
+              Displayed data will auto-refresh after
+              {{ autoRefreshTime - countdown }} seconds. Click this circle to update manually.
+            </span>
+          </template>
+          <Progress
+            type="circle"
+            :width="20"
+            :stroke-width="10"
+            :percent="(100 / autoRefreshTime) * countdown"
+            :show-info="false"
+            :class="marketAddress && loading ? 'disabled' : ''"
+            @click="
+              () => {
+                getOrderBooks()
+                $accessor.wallet.getTokenAccounts()
+              }
+            "
+          />
         </Tooltip>
       </div>
-    </div>
 
-    <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
-    <AmmIdSelect
-      :show="ammIdSelectShow"
-      :liquidity-list="ammIdSelectList"
-      :user-close="true"
-      @onClose="() => ((ammIdSelectShow = false), (ammIdSelectOld = true))"
-      @onSelect="onAmmIdSelect"
-    />
 
-    <UnofficialPoolConfirmUser
-      v-if="userCheckUnofficialShow"
-      @onClose="() => (userCheckUnofficialShow = false)"
-      @onSelect="onUserCheckUnofficialSelect"
-    />
 
-    <InputAmmIdOrMarket
-      v-if="ammIdOrMarketSearchShow"
-      @onClose="() => (ammIdOrMarketSearchShow = false)"
-      @onInput="onAmmIdOrMarketInput"
-    ></InputAmmIdOrMarket>
-
-    <div class="card">
-      <div class="card-body">
         <CoinInput
           v-model="fromCoinAmount"
           label="From"
@@ -148,7 +150,7 @@
 
         <div class="change-side fc-container">
           <div class="fc-container" @click="changeCoinPosition">
-            <Icon type="swap" :rotate="90" />
+            <Icon class="fst" type="arrow-up" /><Icon class="lst" type="arrow-down" />
           </div>
         </div>
 
@@ -273,12 +275,16 @@
             </div>
           </div>
         </div>
-        <Button v-if="!wallet.connected" size="large" ghost @click="$accessor.wallet.openModal">
+
+        <div v-if="!wallet.connected" class="btncontainer">
+        <Button size="large" ghost @click="$accessor.wallet.openModal">
           Connect Wallet
         </Button>
+        </div>
 
+        <div v-else-if="!(officialPool || (!officialPool && userCheckUnofficial))" class="btncontainer">
         <Button
-          v-else-if="!(officialPool || (!officialPool && userCheckUnofficial))"
+          
           size="large"
           ghost
           @click="
@@ -291,8 +297,10 @@
         >
           Confirm Risk Warning
         </Button>
+        </div>
+
+        <div v-else class="btncontainer">
         <Button
-          v-else
           size="large"
           ghost
           :disabled="
@@ -356,6 +364,7 @@
           </template>
           <template v-else>{{ isWrap ? 'Unwrap' : priceImpact > 5 ? 'Swap Anyway' : 'Swap' }}</template>
         </Button>
+        </div>
         <div v-if="solBalance && +solBalance.balance.fixed() - 0.05 <= 0" class="not-enough-sol-alert">
           <span class="caution-text">Caution: Your SOL balance is low</span>
 
@@ -438,7 +447,7 @@ import {
   LiquidityPoolInfo
 } from '@/utils/pools'
 
-const RAY = getTokenBySymbol('RAY')
+const CROPTEST = getTokenBySymbol('CROPTEST')
 
 export default Vue.extend({
   components: {
@@ -482,7 +491,7 @@ export default Vue.extend({
       selectFromCoin: true,
       fixedFromCoin: true,
 
-      fromCoin: RAY as TokenInfo | null,
+      fromCoin: CROPTEST as TokenInfo | null,
       toCoin: null as TokenInfo | null,
       fromCoinAmount: '',
       toCoinAmount: '',
@@ -506,7 +515,7 @@ export default Vue.extend({
       hasPriceSwapped: false,
 
       officialPool: true,
-      userCheckUnofficial: false,
+      userCheckUnofficial: true,
       userCheckUnofficialMint: undefined as string | undefined,
       userCheckUnofficialShow: false,
       findUrlAmmId: false,
@@ -759,28 +768,12 @@ export default Vue.extend({
       if (!this.wallet.connected) {
         return
       }
-      if (this.officialPool) {
-        return
-      }
 
-      const localCheckStr = localStorage.getItem(`${this.wallet.address}--checkAmmId`)
-      const localCheckAmmIdList = localCheckStr ? localCheckStr.split('---') : []
-      if (localCheckAmmIdList.includes(ammId)) {
-        this.userCheckUnofficial = true
-        this.userCheckUnofficialMint = ammId
-        this.userCheckUnofficialShow = false
-        return
-      }
-      if (this.userCheckUnofficialMint === ammId) {
-        this.userCheckUnofficial = true
-        this.userCheckUnofficialShow = false
-        return
-      }
-      this.userCheckUnofficial = false
       this.closeAllModal('userCheckUnofficialShow')
       setTimeout(() => {
-        this.userCheckUnofficialShow = true
+        this.userCheckUnofficialShow = false
       }, 1)
+
     },
 
     onAmmIdSelect(liquidityInfo: LiquidityPoolInfo | undefined) {
@@ -789,7 +782,7 @@ export default Vue.extend({
         this.lpMintAddress = liquidityInfo.lp.mintAddress
         this.ammId = liquidityInfo.ammId
         this.userNeedAmmIdOrMarket = this.ammId
-        this.officialPool = liquidityInfo.official
+        this.officialPool = true
         this.findMarket()
       } else {
         this.ammIdSelectOld = true
@@ -921,12 +914,12 @@ export default Vue.extend({
           let officialPool = true
           if (liquidityListV4.length === 1 && !liquidityListV4[0].official && liquidityListV3.length > 0) {
             console.log('v3')
-          } else if (liquidityListV4.length === 1 && liquidityListV4[0].official) {
+          } else if (liquidityListV4.length === 1) {
             // official
             lpMintAddress = liquidityListV4[0].lp.mintAddress
             ammId = liquidityListV4[0].ammId
             // mark
-            officialPool = liquidityListV4[0].official
+            officialPool = true
             this.userCheckUnofficialMint = undefined
             marketAddress = liquidityListV4[0].serumMarket
           } else if (
@@ -938,11 +931,12 @@ export default Vue.extend({
             // user select
             ammId = liquidityListV4[0].ammId
             lpMintAddress = liquidityListV4[0].lp.mintAddress
-            officialPool = liquidityListV4[0].official
+            officialPool = true
             marketAddress = liquidityListV4[0].serumMarket
           } else if (liquidityListV4.length > 0 && this.ammIdSelectOld) {
             console.log('last user select none')
           } else if (liquidityListV4.length > 0) {
+          alert('here');
             // user select amm id
             this.coinSelectShow = false
             setTimeout(() => {
@@ -957,7 +951,7 @@ export default Vue.extend({
           this.lpMintAddress = lpMintAddress ?? ''
           this.initialized = true
           this.ammId = ammId
-          this.officialPool = officialPool
+          this.officialPool = true
           if (ammId !== this.userCheckUnofficialMint) {
             this.userCheckUnofficialMint = undefined
           }
@@ -1425,8 +1419,14 @@ export default Vue.extend({
   font-weight: normal;
 }
 
+main{
+  background-image:url(../assets/background1.png);
+  background-size:cover;
+  background-position:center bottom;
+}
+
 .container {
-  max-width: 450px;
+  max-width: 530px;
 
   .price-info {
     display: grid;
@@ -1440,7 +1440,6 @@ export default Vue.extend({
     .anticon-swap {
       margin-left: 10px;
       padding: 5px;
-      border-radius: 50%;
       background: #000829;
     }
     .price-base {
@@ -1451,6 +1450,27 @@ export default Vue.extend({
         opacity: 0.75;
       }
     }
+  }
+
+  .btncontainer {
+    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    display: inline;
+    width: unset;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 2px;
+    border-radius: 30px;
+    max-height: 50px;
+
+    button{
+      background:#000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+    }
+
   }
 
   .not-enough-sol-alert {
@@ -1467,8 +1487,19 @@ export default Vue.extend({
       height: 32px;
       width: 32px;
       border-radius: 50%;
-      background: #000829;
       cursor: pointer;
+
+      i.fst{
+        position: relative;
+        top: -3px;
+        left: 3px;
+      }
+
+      i.lst{
+        position: relative;
+        bottom: -3px;
+        right: 3px;
+      }
     }
   }
 
