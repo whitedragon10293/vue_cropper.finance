@@ -419,17 +419,16 @@ export default class CreatePool extends Vue {
   }
 
   async getMarketMsg() {
-
+    //@zhaohui
     let market_info = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-      baseMintAddress: new PublicKey(TOKENS.WSOL.mintAddress),
+      baseMintAddress: new PublicKey(TOKENS.MYTEST.mintAddress),
       quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
       ammId: new PublicKey('3gSjs6MqyHFsp8DXvaKvVUJjV7qg5itf9qmUGuhnSaWH')
     }
 
     createAmm(this.$web3, this.$wallet, market_info, 0.5, 1)
     return;
-
     this.getMarketLoading = true
     this.marketInputFlag = !this.marketInputFlag
     const { market, price, msg, baseMintDecimals, quoteMintDecimals } = await getMarket(this.$web3, this.inputMarket)

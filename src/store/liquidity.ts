@@ -197,6 +197,8 @@ export const actions = actionTree(
           ammQuantities: NATIVE_SOL.mintAddress,
           poolCoinTokenAccount: ammInfo.poolCoinTokenAccount.toString(),
           poolPcTokenAccount: ammInfo.poolPcTokenAccount.toString(),
+          feeCoinTokenAccount: ammInfo.feeCoinTokenAccount.toString(),
+          feePcTokenAccount: ammInfo.feePcTokenAccount.toString(),
           poolWithdrawQueue: "", //ammInfo.poolWithdrawQueue.toString(),
           poolTempLpTokenAccount: "", //ammInfo.poolTempLpTokenAccount.toString(),
           serumProgramId: SERUM_PROGRAM_ID_V3,
@@ -291,10 +293,11 @@ export const actions = actionTree(
                   parsed = AMM_INFO_LAYOUT_V3.decode(data)
                 } else {
                   parsed = AMM_INFO_LAYOUT_V5.decode(data)
-                  const { swapFeeNumerator, swapFeeDenominator } = parsed
+                  const { returnFeeNumerator, fixedFeeNumerator, feeDenominator } = parsed
                   poolInfo.fees = {
-                    swapFeeNumerator: getBigNumber(swapFeeNumerator),
-                    swapFeeDenominator: getBigNumber(swapFeeDenominator)
+                    returnFeeNumerator: getBigNumber(returnFeeNumerator),
+                    fixedFeeNumerator: getBigNumber(fixedFeeNumerator),
+                    feeDenominator: getBigNumber(feeDenominator)
                   }
                 }
                 //@zhaohui

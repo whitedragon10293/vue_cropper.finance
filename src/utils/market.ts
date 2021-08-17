@@ -138,11 +138,6 @@ export async function createAmm(
   userInputQuoteValue: number
 ) {
 
-  const ammId: PublicKey = await createAssociatedId(
-    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
-    market.address,
-    AMM_ASSOCIATED_SEED
-  )
   let instructions: TransactionInstruction[] = [];
   let cleanupInstructions: TransactionInstruction[] = [];
 
@@ -161,7 +156,12 @@ export async function createAmm(
   );
 
   const tokenSwapAccount = new Account();
-
+  // const ammId: PublicKey = await createAssociatedId(
+  //   new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
+  //   market.address,
+  //   AMM_ASSOCIATED_SEED
+  // )
+  const ammId: PublicKey = tokenSwapAccount.publicKey
   const [authority, nonce] = await PublicKey.findProgramAddress(
     [tokenSwapAccount.publicKey.toBuffer()],
     new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5)
@@ -220,6 +220,14 @@ export async function createAmm(
   // creating fee account for base & 
   let feeFromTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.baseMintAddress) as any
   let feeToTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.quoteMintAddress)  as any
+
+  if(!feeFromTokenAccount || !feeToTokenAccount)
+  {
+    throw("Cannot find fee token account")
+  }
+
+  feeFromTokenAccount = new PublicKey(feeFromTokenAccount)
+  feeToTokenAccount = new PublicKey(feeToTokenAccount)
 
   // create all accounts in one transaction
   let tx = await sendTransaction(conn, wallet, transaction, [

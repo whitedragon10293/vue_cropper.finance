@@ -81,7 +81,8 @@ export const AMM_INFO_LAYOUT_V5 =  struct(
     publicKey('lpMintAddress'),
     publicKey('coinMintAddress'),
     publicKey('pcMintAddress'),
-    publicKey('feeAccount'),
+    publicKey('feeCoinTokenAccount'),
+    publicKey('feePcTokenAccount'),
     u64('returnFeeNumerator'),
     u64('fixedFeeNumerator'),
     u64('feeDenominator'),
@@ -288,7 +289,6 @@ export const swapInstruction = (
     nu64("amountIn"),
     nu64("minimumAmountOut"),
   ]);
-
   const keys = [
     { pubkey: tokenSwap, isSigner: false, isWritable: false },
     { pubkey: authority, isSigner: false, isWritable: false },

@@ -56,14 +56,16 @@ export function getSwapOutAmount(
   slippage: number
 ) {
   const { coin, pc, fees } = poolInfo
-  const { swapFeeNumerator, swapFeeDenominator } = fees
+
+  const { returnFeeNumerator, fixedFeeNumerator, feeDenominator } = fees
+  const totalFeeNumerator = returnFeeNumerator + fixedFeeNumerator
 
   if (fromCoinMint === coin.mintAddress && toCoinMint === pc.mintAddress) {
     // coin2pc
     const fromAmount = new TokenAmount(amount, coin.decimals, false)
     const denominator = coin.balance.wei.plus(fromAmount.wei)
     const amountOut = pc.balance.wei.multipliedBy(fromAmount.wei).dividedBy(denominator)
-    const amountOutWithFee = amountOut.dividedBy(swapFeeDenominator).multipliedBy(swapFeeDenominator - swapFeeNumerator)
+    const amountOutWithFee = amountOut.dividedBy(feeDenominator).multipliedBy(feeDenominator - totalFeeNumerator)
     const amountOutWithSlippage = amountOutWithFee.dividedBy(1 + slippage / 100)
 
     const outBalance = pc.balance.wei.minus(amountOut)
@@ -93,7 +95,7 @@ export function getSwapOutAmount(
     const fromAmount = new TokenAmount(amount, pc.decimals, false)
     const denominator = pc.balance.wei.plus(fromAmount.wei)
     const amountOut = coin.balance.wei.multipliedBy(fromAmount.wei).dividedBy(denominator)
-    const amountOutWithFee = amountOut.dividedBy(swapFeeDenominator).multipliedBy(swapFeeDenominator - swapFeeNumerator)
+    const amountOutWithFee = amountOut.dividedBy(feeDenominator).multipliedBy(feeDenominator - totalFeeNumerator)
     const amountOutWithSlippage = amountOutWithFee.dividedBy(1 + slippage / 100)
 
     const outBalance = coin.balance.wei.minus(amountOut)
@@ -348,21 +350,24 @@ export async function swap(
     transaction,
     signers
   )
-  let feeAccount = new PublicKey(
-    "HfoTxFR1Tm6kGmWgYWD6J7YHVy1UwqSULUGVLXkJqaKN"
-  );
-  
+
+  let normal_dir = (fromCoinMint == poolInfo.coin.mintAddress)
+
+  let feeAccount = normal_dir ? poolInfo.feeCoinTokenAccount : poolInfo.feePcTokenAccount
+  let poolFromAccount = normal_dir? poolInfo.poolCoinTokenAccount: poolInfo.poolPcTokenAccount
+  let poolToAccount = normal_dir? poolInfo.poolPcTokenAccount: poolInfo.poolCoinTokenAccount
+
   transaction.add(
     swapInstruction(
       new PublicKey(poolInfo.ammId),
       new PublicKey(poolInfo.ammAuthority),
       owner,
       wrappedSolAccount ?? newFromTokenAccount,
-      new PublicKey(poolInfo.poolCoinTokenAccount),
-      new PublicKey(poolInfo.poolPcTokenAccount),
+      new PublicKey(poolFromAccount),
+      new PublicKey(poolToAccount),
       wrappedSolAccount2 ?? newToTokenAccount,
       new PublicKey(poolInfo.lp.mintAddress),
-      feeAccount,
+      new PublicKey(feeAccount),
       new PublicKey(poolInfo.programId),
       TOKEN_PROGRAM_ID,
       Math.floor(getBigNumber(amountIn.toWei())),
