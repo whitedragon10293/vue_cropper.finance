@@ -229,18 +229,18 @@ export const withdrawInstruction = (
 ): TransactionInstruction => {
   const dataLayout = struct([
     u8("instruction"),
-    u64("poolTokenAmount"),
-    u64("minimumTokenA"),
-    u64("minimumTokenB"),
+    nu64("poolTokenAmount"),
+    nu64("minimumTokenA"),
+    nu64("minimumTokenB"),
   ]);
 
   const data = Buffer.alloc(dataLayout.span);
   dataLayout.encode(
     {
       instruction: 3, // Withdraw instruction
-      poolTokenAmount: new nu64(poolTokenAmount).toBuffer(),
-      minimumTokenA: new nu64(minimumTokenA).toBuffer(),
-      minimumTokenB: new nu64(minimumTokenB).toBuffer(),
+      poolTokenAmount: poolTokenAmount,
+      minimumTokenA: minimumTokenA,
+      minimumTokenB: minimumTokenB,
     },
     data
   );

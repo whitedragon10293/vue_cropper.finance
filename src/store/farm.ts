@@ -92,6 +92,7 @@ export const actions = actionTree(
 
       const multipleInfo = await getMultipleAccounts(conn, publicKeys, commitment)
       multipleInfo.forEach((info) => {
+        /*
         if (info) {
           const address = info.publicKey.toBase58()
           const data = Buffer.from(info.account.data)
@@ -127,6 +128,7 @@ export const actions = actionTree(
             }
           }
         }
+        */
       })
 
       commit('setInfos', farms)

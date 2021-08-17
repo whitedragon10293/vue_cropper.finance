@@ -29,28 +29,28 @@ export const NATIVE_SOL: TokenInfo = {
   name: 'Native Solana',
   mintAddress: '11111111111111111111111111111111',
   decimals: 9,
-  tags: ['raydium']
+  tags:['cropper']
 }
 
 export const TOKENSBASE: Tokens = {
   CROPTEST: {
-    symbol: 'CROPTEST',
-    name: 'CROPTEST',
+    symbol: 'tCRP',
+    name: 'tCRP',
     // mintAddress : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
-    mintAddress: '7qjMd8XTz1wxjPkh9WyUwDKmAouBcX6cmSiyTzegedrT',
+    mintAddress: 'GGaUYeET8HXK34H2D1ieh4YYQPhkWcfWBZ4rdp6iCZtG',
     // decimals: 6,
-    decimals: 2,
+    decimals: 6,
     // referrer : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
-    referrer: '7qjMd8XTz1wxjPkh9WyUwDKmAouBcX6cmSiyTzegedrT',
-    tags: ['raydium']
+    referrer: 'GGaUYeET8HXK34H2D1ieh4YYQPhkWcfWBZ4rdp6iCZtG',
+    tags:['cropper']
   },
   MYTEST: {
-    symbol: 'MYTEST',
-    name: 'MYTEST',
-    mintAddress: 'DVtC2bno7fHwBBLCDfaL15g8knbgbqtLQdM5cRip1VxY',
-    decimals: 2,
-    referrer: 'DVtC2bno7fHwBBLCDfaL15g8knbgbqtLQdM5cRip1VxY',
-    tags: ['raydium']
+    symbol: 'tUSDC',
+    name: 'tUSDC',
+    mintAddress: '6MBRfPbzejwVpADXq3LCotZetje3N16m5Yn7LCs2ffU4',
+    decimals: 9,
+    referrer: '6MBRfPbzejwVpADXq3LCotZetje3N16m5Yn7LCs2ffU4',
+    tags:['cropper']
   },
   WSOL: {
     symbol: 'WSOL',
@@ -58,7 +58,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'So11111111111111111111111111111111111111112',
     decimals: 9,
     referrer: 'HTcarLHe7WRxBQCWvhVB8AP56pnEtJUV2jDGvcpY3xo5',
-    tags: ['raydium']
+    tags:['cropper']
   },
   BTC: {
     symbol: 'BTC',
@@ -66,7 +66,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
     decimals: 6,
     referrer: 'GZpS8cY8Nt8HuqxzJh6PXTdSxc38vFUjBmi7eEUkkQtG',
-    tags: ['raydium']
+    tags:['cropper']
   },
   ETH: {
     symbol: 'ETH',
@@ -74,7 +74,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk',
     decimals: 6,
     referrer: 'CXPTcSxxh4AT38gtv3SPbLS7oZVgXzLbMb83o4ziXjjN',
-    tags: ['raydium']
+    tags:['cropper']
   },
   USDT: {
     symbol: 'USDT',
@@ -82,7 +82,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     decimals: 6,
     referrer: '8DwwDNagph8SdwMUdcXS5L9YAyutTyDJmK6cTKrmNFk3',
-    tags: ['raydium']
+    tags:['cropper']
   },
   WUSDT: {
     symbol: 'WUSDT',
@@ -90,7 +90,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'BQcdHdAQW1hczDbBi9hiegXAR7A98Q9jx3X3iBBBDiq4',
     decimals: 6,
     referrer: 'CA98hYunCLKgBuD6N8MJSgq1GbW9CXdksLf5mw736tS3',
-    tags: ['raydium']
+    tags:['cropper']
   },
   USDC: {
     symbol: 'USDC',
@@ -98,14 +98,14 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     decimals: 6,
     referrer: '92vdtNjEg6Zth3UU1MgPgTVFjSEzTHx66aCdqWdcRkrg',
-    tags: ['raydium']
+    tags:['cropper']
   },
   WUSDC: {
     symbol: 'WUSDC',
     name: 'Wrapped USDC',
     mintAddress: 'BXXkv6z8ykpG1yuvUDPgh732wzVHB69RnB9YgSYh3itW',
     decimals: 6,
-    tags: ['raydium']
+    tags:['cropper']
   },
   YFI: {
     symbol: 'YFI',
@@ -113,7 +113,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '3JSf5tPeuscJGtaCp5giEiDhv51gQ4v3zWg8DGgyLfAB',
     decimals: 6,
     referrer: 'DZjgzKfYzZBBSTo5vytMYvGdNF933DvuX8TftDMrThrb',
-    tags: ['raydium']
+    tags:['cropper']
   },
   LINK: {
     symbol: 'LINK',
@@ -121,7 +121,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'CWE8jPTUYhdCTZYWPTe1o5DFqfdjzWKc9WKz6rSjQUdG',
     decimals: 6,
     referrer: 'DRSKKsYZaPEFkRgGywo7KWBGZikf71R9aDr8tjtpr41V',
-    tags: ['raydium']
+    tags:['cropper']
   },
   XRP: {
     symbol: 'XRP',
@@ -129,7 +129,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'Ga2AXHpfAF6mv2ekZwcsJFqu7wB4NV331qNH7fW9Nst8',
     decimals: 6,
     referrer: '6NeHPXG142tAE2Ej3gHgT2N66i1KH6PFR6PBZw6RyrwH',
-    tags: ['raydium']
+    tags:['cropper']
   },
   SUSHI: {
     symbol: 'SUSHI',
@@ -137,7 +137,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'AR1Mtgh7zAtxuxGd2XPovXPVjcSdY3i4rQYisNadjfKy',
     decimals: 6,
     referrer: '59QxHeHgb28tDc3gStnrW8FNKC9qWuRmRZHBaAqCerJX',
-    tags: ['raydium']
+    tags:['cropper']
   },
   ALEPH: {
     symbol: 'ALEPH',
@@ -145,7 +145,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'CsZ5LZkDS7h9TDKjrbL7VAwQZ9nsRu8vJLhRYfmGaN8K',
     decimals: 6,
     referrer: '8FKAKrenJMDd7V6cxnM5BsymHTjqxgodtHbLwZReMnWW',
-    tags: ['raydium']
+    tags:['cropper']
   },
   SXP: {
     symbol: 'SXP',
@@ -153,7 +153,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'SF3oTvfWzEP3DTwGSvUXRrGTvr75pdZNnBLAH9bzMuX',
     decimals: 6,
     referrer: '97Vyotr284UM2Fyq9gbfQ3azMYtgf7cjnsf8pN1PFfY9',
-    tags: ['raydium']
+    tags:['cropper']
   },
   HGET: {
     symbol: 'HGET',
@@ -161,7 +161,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'BtZQfWqDGbk9Wf2rXEiWyQBdBY1etnUUn6zEphvVS7yN',
     decimals: 6,
     referrer: 'AGY2wy1ANzLM2jJLSkVxPUYAY5iAYXYsLMQkoQsAhucj',
-    tags: ['raydium']
+    tags:['cropper']
   },
   CREAM: {
     symbol: 'CREAM',
@@ -169,7 +169,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '5Fu5UUgbjpUvdBveb3a1JTNirL8rXtiYeSMWvKjtUNQv',
     decimals: 6,
     referrer: '7WPzEiozJ69MQe8bfbss1t2unR6bHR4S7FimiUVRgu7P',
-    tags: ['raydium']
+    tags:['cropper']
   },
   UBXT: {
     symbol: 'UBXT',
@@ -177,7 +177,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '873KLxCbz7s9Kc4ZzgYRtNmhfkQrhfyWGZJBmyCbC3ei',
     decimals: 6,
     referrer: '9aocFzNkSVj9TCS6cJk2uYyuzEpXPWT7xoBBF9JcZ879',
-    tags: ['raydium']
+    tags:['cropper']
   },
   HNT: {
     symbol: 'HNT',
@@ -185,7 +185,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'HqB7uswoVg4suaQiDP3wjxob1G5WdZ144zhdStwMCq7e',
     decimals: 6,
     referrer: 'B61oHrGCFh8P75Z2cRDiw2nbEwbMyhVfZhMWiwxU2qCV',
-    tags: ['raydium']
+    tags:['cropper']
   },
   FRONT: {
     symbol: 'FRONT',
@@ -193,7 +193,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '9S4t2NEAiJVMvPdRYKVrfJpBafPBLtvbvyS3DecojQHw',
     decimals: 6,
     referrer: 'FnasnCc7c43hd2nanSmRjh9Sf9Cgz6aEvNj6wpDznS5h',
-    tags: ['raydium']
+    tags:['cropper']
   },
   AKRO: {
     symbol: 'AKRO',
@@ -201,7 +201,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '6WNVCuxCGJzNjmMZoKyhZJwvJ5tYpsLyAtagzYASqBoF',
     decimals: 6,
     referrer: 'FihBmWJbiLSEvq4QZpPPdjokdMgxqq6pESZ7oMkE1qJH',
-    tags: ['raydium']
+    tags:['cropper']
   },
   HXRO: {
     symbol: 'HXRO',
@@ -209,7 +209,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'DJafV9qemGp7mLMEn5wrfqaFwxsbLgUsGVS16zKRk9kc',
     decimals: 6,
     referrer: '4NgrGZDRCzyqiwYvKPEePTKfQXtWzKmSDBoZJjRw6wNC',
-    tags: ['raydium']
+    tags:['cropper']
   },
   UNI: {
     symbol: 'UNI',
@@ -217,7 +217,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'DEhAasscXF4kEGxFgJ3bq4PpVGp5wyUxMRvn6TzGVHaw',
     decimals: 6,
     referrer: '4ntxDv95ajBbXfZyGy3UhcQDx8xmH1yJ6eKvuNNH466x',
-    tags: ['raydium']
+    tags:['cropper']
   },
   SRM: {
     symbol: 'SRM',
@@ -225,7 +225,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt',
     decimals: 6,
     referrer: 'HYxa4Ea1dz7ya17Cx18rEGUA1WbCvKjXjFKrnu8CwugH',
-    tags: ['raydium']
+    tags:['cropper']
   },
   FTT: {
     symbol: 'FTT',
@@ -233,7 +233,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     decimals: 6,
     referrer: 'CafpgSh8KGL2GPTjdXfctD3vXngNZDJ3Q92FTfV71Hmt',
-    tags: ['raydium']
+    tags:['cropper']
   },
   MSRM: {
     symbol: 'MSRM',
@@ -241,7 +241,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'MSRMcoVyrFxnSgo5uXwone5SKcGhT1KEJMFEkMEWf9L',
     decimals: 0,
     referrer: 'Ge5q9x8gDUNYqqLA1MdnCzWNJGsbj3M15Yxse2cDbw9z',
-    tags: ['raydium']
+    tags:['cropper']
   },
   TOMO: {
     symbol: 'TOMO',
@@ -249,14 +249,14 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'GXMvfY2jpQctDqZ9RoU3oWPhufKiCcFEfchvYumtX7jd',
     decimals: 6,
     referrer: '9fexfN3eZomF5gfenG5L9ydbKRQkPhq6x74rb5iLrvXP',
-    tags: ['raydium']
+    tags:['cropper']
   },
   KARMA: {
     symbol: 'KARMA',
     name: 'Wrapped KARMA',
     mintAddress: 'EcqExpGNFBve2i1cMJUTR4bPXj4ZoqmDD2rTkeCcaTFX',
     decimals: 4,
-    tags: ['raydium']
+    tags:['cropper']
   },
   LUA: {
     symbol: 'LUA',
@@ -264,7 +264,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'EqWCKXfs3x47uVosDpTRgFniThL9Y8iCztJaapxbEaVX',
     decimals: 6,
     referrer: 'HuZwNApjVFuFSDgrwZA8GP2JD7WMby4qt6rkWDnaMo7j',
-    tags: ['raydium']
+    tags:['cropper']
   },
   MATH: {
     symbol: 'MATH',
@@ -272,21 +272,21 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'GeDS162t9yGJuLEHPWXXGrb1zwkzinCgRwnT8vHYjKza',
     decimals: 6,
     referrer: 'C9K1M8sJX8WMdsnFT7DuzdiHHunEj79EsLuz4DixQYGm',
-    tags: ['raydium']
+    tags:['cropper']
   },
   KEEP: {
     symbol: 'KEEP',
     name: 'Wrapped KEEP',
     mintAddress: 'GUohe4DJUA5FKPWo3joiPgsB7yzer7LpDmt1Vhzy3Zht',
     decimals: 6,
-    tags: ['raydium']
+    tags:['cropper']
   },
   SWAG: {
     symbol: 'SWAG',
     name: 'Wrapped SWAG',
     mintAddress: '9F9fNTT6qwjsu4X4yWYKZpsbw5qT7o6yR2i57JF2jagy',
     decimals: 6,
-    tags: ['raydium']
+    tags:['cropper']
   },
   FIDA: {
     symbol: 'FIDA',
@@ -294,7 +294,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp',
     decimals: 6,
     referrer: 'AeAsG75UmyPDB271c6NHonHxXAPXfkvhcf2xjfJhReS8',
-    tags: ['raydium']
+    tags:['cropper']
   },
   KIN: {
     symbol: 'KIN',
@@ -302,21 +302,21 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6',
     decimals: 5,
     referrer: 'AevFXmApVxN2yk1iemSxXc6Wy7Z1udUEfST11kuYKmr9',
-    tags: ['raydium']
+    tags:['cropper']
   },
   MAPS: {
     symbol: 'MAPS',
     name: 'MAPS',
     mintAddress: 'MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb',
     decimals: 6,
-    tags: ['raydium']
+    tags:['cropper']
   },
   OXY: {
     symbol: 'OXY',
     name: 'OXY',
     mintAddress: 'z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M',
     decimals: 6,
-    tags: ['raydium']
+    tags:['cropper']
   },
   RAY: {
     symbol: 'RAY',
@@ -324,7 +324,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
     decimals: 6,
     referrer: '33XpMmMQRf6tSPpmYyzpwU4uXpZHkFwCZsusD9dMYkjy',
-    tags: ['raydium']
+    tags:['cropper']
   },
   xCOPE: {
     symbol: 'xCOPE',
@@ -332,7 +332,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '3K6rftdAaQYMPunrtNRHgnK2UAtjm2JwyT2oCiTDouYE',
     decimals: 0,
     referrer: '8DTehuES4tfnd2SrqcjN52XofxWXGjiLZRgM12U9pB6f',
-    tags: ['raydium']
+    tags:['cropper']
   },
   COPE: {
     symbol: 'COPE',
@@ -340,7 +340,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '8HGyAAB1yoM1ttS7pXjHMa3dukTFGQggnFFH3hJZgzQh',
     decimals: 6,
     referrer: 'G7UYwWhkmgeL57SUKFF45K663V9TdXZw6Ho6ZLQ7p4p',
-    tags: ['raydium']
+    tags:['cropper']
   },
   STEP: {
     symbol: 'STEP',
@@ -348,7 +348,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'StepAscQoEioFxxWGnh2sLBDFp9d8rvKz2Yp39iDpyT',
     decimals: 9,
     referrer: 'EFQVX1S6dFroDDhJDAnMTX4fCfjt4fJXHdk1eEtJ2uRY',
-    tags: ['raydium']
+    tags:['cropper']
   },
   MEDIA: {
     symbol: 'MEDIA',
@@ -368,7 +368,7 @@ export const TOKENSBASE: Tokens = {
       Telegram: 'https://t.me/Media_FDN',
       Medium: 'https://mediafoundation.medium.com/'
     },
-    tags: ['raydium']
+    tags:['cropper']
   },
   ROPE: {
     symbol: 'ROPE',
@@ -376,7 +376,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '8PMHT4swUMtBzgHnh5U564N5sjPSiUz2cjEQzFnnP1Fo',
     decimals: 9,
     referrer: '5sGVVniBSPLTwRHDETShovq7STRH2rJwbvdvvH3NcVTF',
-    tags: ['raydium']
+    tags:['cropper']
   },
   MER: {
     symbol: 'MER',
@@ -396,7 +396,7 @@ export const TOKENSBASE: Tokens = {
       Telegram: 'https://t.me/MercurialFi',
       Medium: 'https://mercurialfi.medium.com/'
     },
-    tags: ['raydium']
+    tags:['cropper']
   },
   TULIP: {
     symbol: 'TULIP',
@@ -404,7 +404,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'TuLipcqtGVXP9XR62wM8WWCm6a9vhLs7T1uoWBk6FDs',
     decimals: 6,
     referrer: 'Bcw1TvX8jUj6CtY2a7GU2THeYVAudvmT8yzRypVMVsSH',
-    tags: ['raydium']
+    tags:['cropper']
   },
   SNY: {
     symbol: 'SNY',
@@ -425,7 +425,7 @@ export const TOKENSBASE: Tokens = {
       Telegram: 'https://t.me/synthetify',
       Medium: 'https://synthetify.medium.com/'
     },
-    tags: ['raydium']
+    tags:['cropper']
   },
   SLRS: {
     symbol: 'SLRS',
@@ -446,7 +446,7 @@ export const TOKENSBASE: Tokens = {
       Telegram: 'https://t.me/solrisefinance',
       Medium: 'https://blog.solrise.finance/'
     },
-    tags: ['raydium']
+    tags:['cropper']
   },
   WOO: {
     symbol: 'WOO',
@@ -454,7 +454,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'E5rk3nmgLUuKUiS94gg4bpWwWwyjCMtddsAXkTFLtHEy',
     decimals: 6,
     referrer: '7UbeAZxpza5zN3QawQ5KsUo88zXvohUncYB9Zk5QCiim',
-    tags: ['raydium']
+    tags:['cropper']
   },
   BOP: {
     symbol: 'BOP',
@@ -462,7 +462,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'BLwTnYKqf7u4qjgZrrsKeNs2EzWkMLqVCu6j8iHyrNA3',
     decimals: 8,
     referrer: 'FWxBZmNsvNckx8DnaL2NuyMtiQmT1x529WwV4e1UWiGk',
-    tags: ['raydium']
+    tags:['cropper']
   },
   SAMO: {
     symbol: 'SAMO',
@@ -470,7 +470,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
     decimals: 9,
     referrer: 'FnMDNFL9t8EpbADSU3hLWBtx7SuwRBB6NM84U3PzSkUu',
-    tags: ['raydium']
+    tags:['cropper']
   },
   renBTC: {
     symbol: 'renBTC',
@@ -478,7 +478,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5',
     decimals: 8,
     referrer: '7rr64uygy3o5RKVeNv12JGDUFMXVdr2YHvA3NTxzbZT6',
-    tags: ['raydium']
+    tags:['cropper']
   },
   renDOGE: {
     symbol: 'renDOGE',
@@ -486,7 +486,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'ArUkYE2XDKzqy77PRRGjo4wREWwqk6RXTfM9NeqzPvjU',
     decimals: 8,
     referrer: 'J5g7uvJRGnpRyLnRQjFs1MqMkiTVgjxVJCXocu4B4BcZ',
-    tags: ['raydium']
+    tags:['cropper']
   },
   LIKE: {
     symbol: 'LIKE',
@@ -508,7 +508,7 @@ export const TOKENSBASE: Tokens = {
       Medium: 'https://medium.com/@only1nft',
       Discord: 'https://discord.gg/sUu7KZwNCB'
     },
-    tags: ['raydium']
+    tags:['cropper']
   },
   DXL: {
     symbol: 'DXL',
@@ -516,7 +516,7 @@ export const TOKENSBASE: Tokens = {
     mintAddress: 'GsNzxJfFn6zQdJGeYsupJWzUAm57Ba7335mfhWvFiE9Z',
     decimals: 6,
     referrer: 'HF7mhT9YgD5CULAFDYQmhnUMi1FnNbKeBFCy9SZDh2XE',
-    tags: ['raydium']
+    tags:['cropper']
   }
 }
 

@@ -300,6 +300,9 @@ export default Vue.extend({
     TokenAmount,
 
     updateFarms() {
+      //by hongbo
+      return;
+
       const farms: any = []
       const endedFarmsPoolId: string[] = []
 
