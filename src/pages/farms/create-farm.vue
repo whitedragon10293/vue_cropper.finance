@@ -419,16 +419,48 @@ export default class CreatePool extends Vue {
   }
 
   async getMarketMsg() {
+
     //@zhaohui
-    let market_info = {
+    this.getMarketLoading = true
+
+    let market_t = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
       baseMintAddress: new PublicKey(TOKENS.MYTEST.mintAddress),
       quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
-      ammId: new PublicKey('3gSjs6MqyHFsp8DXvaKvVUJjV7qg5itf9qmUGuhnSaWH')
+      tickSize: 5,
+      minOrderSize: 10
     }
 
-    createAmm(this.$web3, this.$wallet, market_info, 0.5, 1)
+    this.expectAmmId = (
+        await createAssociatedId(
+          new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
+          new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
+          AMM_ASSOCIATED_SEED
+        )
+      ).toString()
+
+    let price_t = 3.5, baseMintDecimals_t = 9, quoteMintDecimals_t = 9
+    this.stepsStatus = 'process'
+    this.stepTitleInputMarket = 'Import Serum Market ID'
+    this.current = 1
+    this.marketMsg = market_t
+    this.marketPrice = price_t
+    this.marketTickSize = getBigNumber(new BigNumber(market_t.tickSize))
+    this.baseMintDecimals = baseMintDecimals_t
+    this.quoteMintDecimals = quoteMintDecimals_t
+    this.marketStr = this.inputMarket
+    this.getMarketLoading = false
+
+    // let market_info = {
+    //   address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
+    //   baseMintAddress: new PublicKey(TOKENS.MYTEST.mintAddress),
+    //   quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
+    //   ammId: new PublicKey('3gSjs6MqyHFsp8DXvaKvVUJjV7qg5itf9qmUGuhnSaWH')
+    // }
+
+    // createAmm(this.$web3, this.$wallet, market_info, 0.5, 1)
     return;
+
     this.getMarketLoading = true
     this.marketInputFlag = !this.marketInputFlag
     const { market, price, msg, baseMintDecimals, quoteMintDecimals } = await getMarket(this.$web3, this.inputMarket)
@@ -513,7 +545,7 @@ export default class CreatePool extends Vue {
           localStorage.getItem('userCreateAMMID') +
             `${new Date().getTime()}---${data}---${
               this.marketMsg.address
-            }---${this.marketMsg.baseMint.toString()}---${this.marketMsg.quoteMint.toString()}`
+            }---${this.marketMsg.baseMintAddress.toString()}---${this.marketMsg.quoteMintAddress.toString()}`
         )
         this.updateLocalData()
         this.createAmmFlag = true

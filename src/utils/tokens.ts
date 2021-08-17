@@ -76,7 +76,7 @@ export interface Tokens {
 }
 
 export const TOKENS_TAGS: { [key: string]: { mustShow: boolean; show: boolean; outName: string } } = {
-  raydium: { mustShow: true, show: true, outName: 'Raydium Default List' },
+  cropper: { mustShow: true, show: true, outName: 'Raydium Default List' },
   userAdd: { mustShow: true, show: true, outName: 'User Added Tokens' },
   solana: { mustShow: false, show: false, outName: 'Solana Token List' },
   unofficial: { mustShow: false, show: false, outName: 'Permissionless Pool Tokens' }
