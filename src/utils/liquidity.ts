@@ -15,7 +15,8 @@ import {
   commitment,
   getMultipleAccounts,
   createAssociatedTokenAccountIfNotExist,
-  getFilteredTokenAccountsByOwner
+  getFilteredTokenAccountsByOwner,
+  getOneFilteredTokenAccountsByOwner
 } from '@/utils/web3'
 // @ts-ignore
 import { nu64, struct, u8 } from 'buffer-layout'
@@ -155,17 +156,8 @@ export async function addLiquidity(
   //   poolInfo.lp.mintAddress,
   //   transaction
   // )
-  let userLpTokenAccount;
-  let lpTokenAccount_t = await getFilteredTokenAccountsByOwner(connection, owner, new PublicKey(poolInfo.lp.mintAddress))
-  
-  const userLpTokenAccountList: any = lpTokenAccount_t.value.map((item: any) => {
-      return item.pubkey
-  })
-  for (const item of userLpTokenAccountList) {
-    if (item !== null) {
-      userLpTokenAccount = item
-    }
-  }
+  let userLpTokenAccount = await getOneFilteredTokenAccountsByOwner(connection, owner, new PublicKey(poolInfo.lp.mintAddress)) as any
+
 
   userLpTokenAccount = await createTokenAccountIfNotExist(
     connection,

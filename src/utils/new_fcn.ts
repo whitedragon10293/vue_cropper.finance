@@ -19,6 +19,13 @@ import { nu64, blob } from 'buffer-layout'
 export const LIQUIDITY_TOKEN_PRECISION = 8
 export const DEFAULT_DENOMINATOR = 10000
 
+export const fee_options = {
+  curveType: 0,
+  fixedFeeNumerator: 20,
+  returnFeeNumerator: 10,
+  feeDenominator: DEFAULT_DENOMINATOR,
+}
+
 export function createSplAccount(
   instructions: TransactionInstruction[],
   payer: PublicKey,
@@ -75,14 +82,9 @@ export const AMM_INFO_LAYOUT_V5 =  struct(
     publicKey('coinMintAddress'),
     publicKey('pcMintAddress'),
     publicKey('feeAccount'),
-    u64('swapFeeNumerator'),
-    u64('swapFeeDenominator'),
-    u64('ownerTradeFeeNumerator'),
-    u64('ownerTradeFeeDenominator'),
-    u64('ownerWithdrawFeeNumerator'),
-    u64('ownerWithdrawFeeDenominator'),
-    u64('hostFeeNumerator'),
-    u64('hostFeeDenominator'),
+    u64('returnFeeNumerator'),
+    u64('fixedFeeNumerator'),
+    u64('feeDenominator'),
     u8('curveType'),
     blob(32, 'curveParameters'),
   ]
@@ -95,7 +97,8 @@ export const createLiquidityPool = (
   tokenAccountA: PublicKey,
   tokenAccountB: PublicKey,
   tokenPool: PublicKey,
-  feeAccount: PublicKey,
+  feeAccountA: PublicKey,
+  feeAccountB: PublicKey,
   tokenAccountPool: PublicKey,
   tokenProgramId: PublicKey,
   swapProgramId: PublicKey,
@@ -103,14 +106,9 @@ export const createLiquidityPool = (
   marketId:PublicKey,
   nonce: number,
   curveType: number,
-  tradeFeeNumerator: number,
-  tradeFeeDenominator: number,
-  ownerTradeFeeNumerator: number,
-  ownerTradeFeeDenominator: number,
-  ownerWithdrawFeeNumerator: number,
-  ownerWithdrawFeeDenominator: number,
-  hostFeeNumerator: number,
-  hostFeeDenominator: number
+  returnFeeNumerator: number,
+  fixedFeeNumerator: number,
+  feeDenominator: number,
 ): TransactionInstruction => {
   const keys = [
     { pubkey: tokenSwapAccount.publicKey, isSigner: false, isWritable: true },
@@ -119,7 +117,8 @@ export const createLiquidityPool = (
     { pubkey: tokenAccountA, isSigner: false, isWritable: false },
     { pubkey: tokenAccountB, isSigner: false, isWritable: false },
     { pubkey: tokenPool, isSigner: false, isWritable: true },
-    { pubkey: feeAccount, isSigner: false, isWritable: false },
+    { pubkey: feeAccountA, isSigner: false, isWritable: false },
+    { pubkey: feeAccountB, isSigner: false, isWritable: false },
     { pubkey: tokenAccountPool, isSigner: false, isWritable: true },
     { pubkey: tokenProgramId, isSigner: false, isWritable: false },
     
@@ -130,14 +129,9 @@ export const createLiquidityPool = (
   const commandDataLayout = struct([
     u8("instruction"),
     u8("nonce"),
-    nu64("tradeFeeNumerator"),
-    nu64("tradeFeeDenominator"),
-    nu64("ownerTradeFeeNumerator"),
-    nu64("ownerTradeFeeDenominator"),
-    nu64("ownerWithdrawFeeNumerator"),
-    nu64("ownerWithdrawFeeDenominator"),
-    nu64('hostFeeNumerator'),
-    nu64('hostFeeDenominator'),
+    nu64("returnFeeNumerator"),
+    nu64("fixedFeeNumerator"),
+    nu64('feeDenominator'),
     u8("curveType"),
     blob(32, 'curveParameters'),
   ]);
@@ -147,14 +141,9 @@ export const createLiquidityPool = (
       {
         instruction: 0, // InitializeSwap instruction
         nonce,
-        tradeFeeNumerator,
-        tradeFeeDenominator,
-        ownerTradeFeeNumerator,
-        ownerTradeFeeDenominator,
-        ownerWithdrawFeeNumerator,
-        ownerWithdrawFeeDenominator,
-        hostFeeNumerator,
-        hostFeeDenominator,
+        returnFeeNumerator,
+        fixedFeeNumerator,
+        feeDenominator,
         curveType,
       },
       data
@@ -296,8 +285,8 @@ export const swapInstruction = (
 ): TransactionInstruction => {
   const dataLayout = struct([
     u8("instruction"),
-    u64("amountIn"),
-    u64("minimumAmountOut"),
+    nu64("amountIn"),
+    nu64("minimumAmountOut"),
   ]);
 
   const keys = [
@@ -322,8 +311,8 @@ export const swapInstruction = (
   dataLayout.encode(
     {
       instruction: 1, // Swap instruction
-      amountIn: new nu64(amountIn).toBuffer(),
-      minimumAmountOut: new nu64(minimumAmountOut).toBuffer(),
+      amountIn,
+      minimumAmountOut,
     },
     data
   );

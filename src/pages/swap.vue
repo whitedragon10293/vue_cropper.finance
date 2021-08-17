@@ -28,102 +28,98 @@
 
     <div class="card">
       <div class="card-body">
-
-
-<div class="buttons">
-        <Tooltip placement="bottomRight">
-          <template slot="title">
-            <p>Addresses</p>
-            <div class="swap-info">
-              <div v-if="fromCoin" class="info">
-                <div class="symbol">{{ fromCoin.symbol }}</div>
-                <div class="address">
-                  {{ fromCoin.mintAddress.substr(0, 14) }}
-                  ...
-                  {{ fromCoin.mintAddress.substr(fromCoin.mintAddress.length - 14, 14) }}
+        <div class="buttons">
+          <Tooltip placement="bottomRight">
+            <template slot="title">
+              <p>Addresses</p>
+              <div class="swap-info">
+                <div v-if="fromCoin" class="info">
+                  <div class="symbol">{{ fromCoin.symbol }}</div>
+                  <div class="address">
+                    {{ fromCoin.mintAddress.substr(0, 14) }}
+                    ...
+                    {{ fromCoin.mintAddress.substr(fromCoin.mintAddress.length - 14, 14) }}
+                  </div>
+                  <div class="action">
+                    <Icon type="copy" @click="$accessor.copy(fromCoin.mintAddress)" />
+                    <a :href="`${url.explorer}/token/${fromCoin.mintAddress}`" target="_blank">
+                      <Icon type="link" />
+                    </a>
+                  </div>
                 </div>
-                <div class="action">
-                  <Icon type="copy" @click="$accessor.copy(fromCoin.mintAddress)" />
-                  <a :href="`${url.explorer}/token/${fromCoin.mintAddress}`" target="_blank">
-                    <Icon type="link" />
-                  </a>
+                <div v-if="toCoin" class="info">
+                  <div class="symbol">{{ toCoin.symbol }}</div>
+                  <div class="address">
+                    {{ toCoin.mintAddress.substr(0, 14) }}
+                    ...
+                    {{ toCoin.mintAddress.substr(toCoin.mintAddress.length - 14, 14) }}
+                  </div>
+                  <div class="action">
+                    <Icon type="copy" @click="$accessor.copy(toCoin.mintAddress)" />
+                    <a :href="`${url.explorer}/token/${toCoin.mintAddress}`" target="_blank">
+                      <Icon type="link" />
+                    </a>
+                  </div>
+                </div>
+                <div v-if="marketAddress" class="info">
+                  <div class="symbol">Market</div>
+                  <div class="address">
+                    {{ marketAddress.substr(0, 14) }}
+                    ...
+                    {{ marketAddress.substr(marketAddress.length - 14, 14) }}
+                  </div>
+                  <div class="action">
+                    <Icon type="copy" @click="$accessor.copy(marketAddress)" />
+                    <a v-if="!officialPool" :href="`${url.explorer}/account/${marketAddress}`" target="_blank">
+                      <Icon type="link" />
+                    </a>
+                    <a v-else :href="`${url.trade}/${marketAddress}`" target="_blank">
+                      <Icon type="link" />
+                    </a>
+                  </div>
+                </div>
+                <div v-if="ammId" class="info">
+                  <div class="symbol">AMM ID</div>
+                  <div class="address">
+                    {{ ammId ? ammId.substr(0, 14) : '' }}
+                    ...
+                    {{ ammId ? ammId.substr(ammId.length - 14, 14) : '' }}
+                  </div>
+                  <div class="action">
+                    <Icon type="copy" @click="$accessor.copy(ammId)" />
+                    <a :href="`${url.explorer}/account/${ammId}`" target="_blank">
+                      <Icon type="link" />
+                    </a>
+                  </div>
                 </div>
               </div>
-              <div v-if="toCoin" class="info">
-                <div class="symbol">{{ toCoin.symbol }}</div>
-                <div class="address">
-                  {{ toCoin.mintAddress.substr(0, 14) }}
-                  ...
-                  {{ toCoin.mintAddress.substr(toCoin.mintAddress.length - 14, 14) }}
-                </div>
-                <div class="action">
-                  <Icon type="copy" @click="$accessor.copy(toCoin.mintAddress)" />
-                  <a :href="`${url.explorer}/token/${toCoin.mintAddress}`" target="_blank">
-                    <Icon type="link" />
-                  </a>
-                </div>
-              </div>
-              <div v-if="marketAddress" class="info">
-                <div class="symbol">Market</div>
-                <div class="address">
-                  {{ marketAddress.substr(0, 14) }}
-                  ...
-                  {{ marketAddress.substr(marketAddress.length - 14, 14) }}
-                </div>
-                <div class="action">
-                  <Icon type="copy" @click="$accessor.copy(marketAddress)" />
-                  <a v-if="!officialPool" :href="`${url.explorer}/account/${marketAddress}`" target="_blank">
-                    <Icon type="link" />
-                  </a>
-                  <a v-else :href="`${url.trade}/${marketAddress}`" target="_blank">
-                    <Icon type="link" />
-                  </a>
-                </div>
-              </div>
-              <div v-if="ammId" class="info">
-                <div class="symbol">AMM ID</div>
-                <div class="address">
-                  {{ ammId ? ammId.substr(0, 14) : '' }}
-                  ...
-                  {{ ammId ? ammId.substr(ammId.length - 14, 14) : '' }}
-                </div>
-                <div class="action">
-                  <Icon type="copy" @click="$accessor.copy(ammId)" />
-                  <a :href="`${url.explorer}/account/${ammId}`" target="_blank">
-                    <Icon type="link" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </template>
-          <Icon type="question-circle" />
-        </Tooltip>
-        <Icon type="setting" @click="$accessor.setting.open" />
-        <Tooltip placement="bottomRight">
-          <template slot="title">
-            <span>
-              Displayed data will auto-refresh after
-              {{ autoRefreshTime - countdown }} seconds. Click this circle to update manually.
-            </span>
-          </template>
-          <Progress
-            type="circle"
-            :width="20"
-            :stroke-width="10"
-            :percent="(100 / autoRefreshTime) * countdown"
-            :show-info="false"
-            :class="marketAddress && loading ? 'disabled' : ''"
-            @click="
-              () => {
-                getOrderBooks()
-                $accessor.wallet.getTokenAccounts()
-              }
-            "
-          />
-        </Tooltip>
-      </div>
-
-
+            </template>
+            <Icon type="question-circle" />
+          </Tooltip>
+          <Icon type="setting" @click="$accessor.setting.open" />
+          <Tooltip placement="bottomRight">
+            <template slot="title">
+              <span>
+                Displayed data will auto-refresh after
+                {{ autoRefreshTime - countdown }} seconds. Click this circle to update manually.
+              </span>
+            </template>
+            <Progress
+              type="circle"
+              :width="20"
+              :stroke-width="10"
+              :percent="(100 / autoRefreshTime) * countdown"
+              :show-info="false"
+              :class="marketAddress && loading ? 'disabled' : ''"
+              @click="
+                () => {
+                  getOrderBooks()
+                  $accessor.wallet.getTokenAccounts()
+                }
+              "
+            />
+          </Tooltip>
+        </div>
 
         <CoinInput
           v-model="fromCoinAmount"
@@ -860,7 +856,6 @@ export default Vue.extend({
     findMarket() {
       if (this.fromCoin && this.toCoin && this.liquidity.initialized) {
         const InputAmmIdOrMarket = this.userNeedAmmIdOrMarket
-
         // let userSelectFlag = false
         // wrap & unwrap
         if (canWrap(this.fromCoin.mintAddress, this.toCoin.mintAddress)) {
@@ -1047,6 +1042,7 @@ export default Vue.extend({
       if (this.fromCoin && this.toCoin && this.ammId && this.fromCoinAmount) {
         // amm
         const poolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.ammId)
+        
         const { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
           poolInfo,
           this.fromCoin.mintAddress,

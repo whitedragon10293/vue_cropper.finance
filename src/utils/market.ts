@@ -19,12 +19,13 @@ import {
   AMM_INFO_LAYOUT_V5,
   createLiquidityPool,
   LIQUIDITY_TOKEN_PRECISION,
-  DEFAULT_DENOMINATOR
+  fee_options
 } from "@/utils/new_fcn"
+
 
 import {
   LIQUIDITY_POOL_PROGRAM_ID_V5,
-  SWAP_PROGRAM_OWNER_FEE_ADDRESS,
+  FIXED_FEE_ACCOUNT,
   SERUM_PROGRAM_ID_V3,
   TOKEN_PROGRAM_ID,
   SYSTEM_PROGRAM_ID,
@@ -44,8 +45,10 @@ import {
   createAmmAuthority,
   getMintDecimals,
   getFilteredTokenAccountsByOwner,
+  getOneFilteredTokenAccountsByOwner,
   createAssociatedId,
-  createAssociatedTokenAccount
+  createAssociatedTokenAccount,
+  createTokenAccountIfNotExist
 } from '@/utils/web3'
 // @ts-ignore
 import { struct, u8 } from 'buffer-layout'
@@ -135,18 +138,6 @@ export async function createAmm(
   userInputQuoteValue: number
 ) {
 
-  const options = {
-    curveType: 0,
-    tradeFeeNumerator: 25,
-    tradeFeeDenominator: DEFAULT_DENOMINATOR,
-    ownerTradeFeeNumerator: 5,
-    ownerTradeFeeDenominator: DEFAULT_DENOMINATOR,
-    ownerWithdrawFeeNumerator: 0,
-    ownerWithdrawFeeDenominator: DEFAULT_DENOMINATOR,
-    hostFeeNumerator: 20,
-    hostFeeDenominator: 100,
-  }
-
   const ammId: PublicKey = await createAssociatedId(
     new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
     market.address,
@@ -221,25 +212,19 @@ export async function createAmm(
     AccountLayout.span
   );
 
-  // creating fee pool account its set from env variable or to creater of the pool
-  // creater of the pool is not allowed in some versions of token-swap program
-  const feeAccount = createSplAccount(
-    instructions,
-    wallet.publicKey,
-    accountRentExempt,
-    liquidityTokenAccount.publicKey,
-    SWAP_PROGRAM_OWNER_FEE_ADDRESS || wallet.publicKey,
-    AccountLayout.span
-  );
   let transaction = new Transaction()
   instructions.forEach((instruction)=>{
     transaction.add(instruction)
   })
+
+  // creating fee account for base & 
+  let feeFromTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.baseMintAddress) as any
+  let feeToTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.quoteMintAddress)  as any
+
   // create all accounts in one transaction
   let tx = await sendTransaction(conn, wallet, transaction, [
     liquidityTokenAccount,
     depositorAccount,
-    feeAccount,
     ...holdingAccounts,
     ...signers,
   ]);
@@ -267,35 +252,8 @@ export async function createAmm(
   const pcVol = new BigNumber(10).exponentiatedBy(quoteMintDecimals).multipliedBy(userInputQuoteValue)
 
   const owner = wallet.publicKey
-  const baseTokenAccount = await getFilteredTokenAccountsByOwner(conn, owner, market.baseMintAddress)
-  const quoteTokenAccount = await getFilteredTokenAccountsByOwner(conn, owner, market.quoteMintAddress)
-
-  const baseTokenList: any = baseTokenAccount.value.map((item: any) => {
-    if (item.account.data.parsed.info.tokenAmount.amount >= getBigNumber(coinVol)) {
-      return item.pubkey
-    }
-    return null
-  })
-
-  const quoteTokenList: any = quoteTokenAccount.value.map((item: any) => {
-    if (item.account.data.parsed.info.tokenAmount.amount >= getBigNumber(pcVol)) {
-      return item.pubkey
-    }
-    return null
-  })
-
-  let baseToken: string | null = null
-  for (const item of baseTokenList) {
-    if (item !== null) {
-      baseToken = item
-    }
-  }
-  let quoteToken: string | null = null
-  for (const item of quoteTokenList) {
-    if (item !== null) {
-      quoteToken = item
-    }
-  }
+  const baseToken = await getOneFilteredTokenAccountsByOwner(conn, owner, market.baseMintAddress)
+  const quoteToken = await getOneFilteredTokenAccountsByOwner(conn, owner, market.quoteMintAddress)
 
   let src_dst = [{
     account : baseToken,
@@ -373,22 +331,18 @@ export async function createAmm(
       holdingAccounts[0].publicKey,
       holdingAccounts[1].publicKey,
       liquidityTokenAccount.publicKey,
-      feeAccount.publicKey,
+      feeFromTokenAccount,
+      feeToTokenAccount,
       depositorAccount.publicKey,
       TOKEN_PROGRAM_ID,
       new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
       market.address,
       new PublicKey(SERUM_PROGRAM_ID_V3),
       nonce,
-      options.curveType,
-      options.tradeFeeNumerator,
-      options.tradeFeeDenominator,
-      options.ownerTradeFeeNumerator,
-      options.ownerTradeFeeDenominator,
-      options.ownerWithdrawFeeNumerator,
-      options.ownerWithdrawFeeDenominator,
-      options.hostFeeNumerator,
-      options.hostFeeDenominator,
+      fee_options.curveType,
+      fee_options.returnFeeNumerator,
+      fee_options.fixedFeeNumerator,
+      fee_options.feeDenominator,
     )
   );
 

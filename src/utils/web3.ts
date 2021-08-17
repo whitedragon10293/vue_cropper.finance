@@ -472,3 +472,21 @@ export async function getFilteredTokenAccountsByOwner(
   }
   return resp.result
 }
+
+export async function getOneFilteredTokenAccountsByOwner(  connection: Connection,
+  owner: PublicKey,
+  mint: PublicKey
+): Promise<string> {
+  let tokenAccountList_t = await getFilteredTokenAccountsByOwner(connection, owner, mint)
+  
+  const tokenAccountList: any = tokenAccountList_t.value.map((item: any) => {
+      return item.pubkey
+  })
+  let tokenAccount
+  for (const item of tokenAccountList) {
+    if (item !== null) {
+      tokenAccount = item
+    }
+  }
+  return tokenAccount
+}

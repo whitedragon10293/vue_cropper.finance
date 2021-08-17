@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 
-export const SWAP_PROGRAM_OWNER_FEE_ADDRESS = new PublicKey('5Tpi3fWL6XwKqNAV8Th3HK5g6bW3ceKaJ5pqz8GtyL85')
+export const FIXED_FEE_ACCOUNT = new PublicKey('2Pv5mjmKYAtXNpr3mcsXf7HjtS3fieJeFoWPATVT5rWa')
 
 export const SYSTEM_PROGRAM_ID = new PublicKey('11111111111111111111111111111111')
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')

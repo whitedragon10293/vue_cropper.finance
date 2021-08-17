@@ -36,17 +36,12 @@ export const TOKENSBASE: Tokens = {
   CROPTEST: {
     symbol: 'CROPTEST',
     name: 'CROPTEST',
-    mintAdress : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
-    decimals: 6,
-    referrer : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
-    tags: ['raydium']
-  },
-  TEST: {
-    symbol: 'MY_TEST',
-    name: 'MY_TEST',
-    mintAddress: '5GRcpJwHY42ZdMp6LFbPPwWrfFQZkESr3jmJzfDbY6aK',
+    // mintAddress : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
+    mintAddress: 'CQdRoHW38dbFoEY17oTTqHwdhcyh31tavTQeGz24Wuqh',
+    // decimals: 6,
     decimals: 2,
-    referrer: '5GRcpJwHY42ZdMp6LFbPPwWrfFQZkESr3jmJzfDbY6aK',
+    // referrer : '67P8nMeC7dbqBVeJNRMfAj1Js8XZEPUhch9F7gVNH1nX',
+    referrer: 'CQdRoHW38dbFoEY17oTTqHwdhcyh31tavTQeGz24Wuqh',
     tags: ['raydium']
   },
   WSOL: {

@@ -77,8 +77,8 @@ export function getPoolListByTokenMintAddresses(
       if (
         ((pool.coin.mintAddress === coinMintAddress && pool.pc.mintAddress === pcMintAddress) ||
           (pool.coin.mintAddress === pcMintAddress && pool.pc.mintAddress === coinMintAddress)) &&
-        pool.version === 4 &&
-        pool.official
+        pool.version === 5
+        // && pool.official //@zhaohui
       ) {
         return !(ammIdOrMarket !== undefined && pool.ammId !== ammIdOrMarket && pool.serumMarket !== ammIdOrMarket)
       }

@@ -13,6 +13,8 @@ import {
   sendTransaction
 } from '@/utils/web3'
 import { TokenAmount } from '@/utils/safe-math'
+import { ACCOUNT_LAYOUT } from '@/utils/layouts'
+import { swapInstruction } from '@/utils/new_fcn'
 // eslint-disable-next-line
 import { TOKEN_PROGRAM_ID, MEMO_PROGRAM_ID, SERUM_PROGRAM_ID_V3 } from './ids'
 import { closeAccount } from '@project-serum/serum/lib/token-instructions'
@@ -323,36 +325,49 @@ export async function swap(
     )
   }
 
-  const newFromTokenAccount = await createAssociatedTokenAccountIfNotExist(
+  const newFromTokenAccount = await createTokenAccountIfNotExist(
+    connection,
     fromTokenAccount,
     owner,
     fromMint,
-    transaction
+    await connection.getMinimumBalanceForRentExemption(
+      ACCOUNT_LAYOUT.span
+    ),
+    transaction,
+    signers
   )
-  const newToTokenAccount = await createAssociatedTokenAccountIfNotExist(toTokenAccount, owner, toMint, transaction)
 
+  const newToTokenAccount = await createTokenAccountIfNotExist(
+    connection,
+    toTokenAccount,
+    owner,
+    toMint,
+    await connection.getMinimumBalanceForRentExemption(
+      ACCOUNT_LAYOUT.span
+    ),
+    transaction,
+    signers
+  )
+  let feeAccount = new PublicKey(
+    "HfoTxFR1Tm6kGmWgYWD6J7YHVy1UwqSULUGVLXkJqaKN"
+  );
+  
   transaction.add(
     swapInstruction(
-      new PublicKey(poolInfo.programId),
       new PublicKey(poolInfo.ammId),
       new PublicKey(poolInfo.ammAuthority),
-      new PublicKey(poolInfo.ammOpenOrders),
-      new PublicKey(poolInfo.ammTargetOrders),
+      owner,
+      wrappedSolAccount ?? newFromTokenAccount,
       new PublicKey(poolInfo.poolCoinTokenAccount),
       new PublicKey(poolInfo.poolPcTokenAccount),
-      new PublicKey(poolInfo.serumProgramId),
-      new PublicKey(poolInfo.serumMarket),
-      new PublicKey(poolInfo.serumBids),
-      new PublicKey(poolInfo.serumAsks),
-      new PublicKey(poolInfo.serumEventQueue),
-      new PublicKey(poolInfo.serumCoinVaultAccount),
-      new PublicKey(poolInfo.serumPcVaultAccount),
-      new PublicKey(poolInfo.serumVaultSigner),
-      wrappedSolAccount ?? newFromTokenAccount,
       wrappedSolAccount2 ?? newToTokenAccount,
-      owner,
+      new PublicKey(poolInfo.lp.mintAddress),
+      feeAccount,
+      new PublicKey(poolInfo.programId),
+      TOKEN_PROGRAM_ID,
       Math.floor(getBigNumber(amountIn.toWei())),
-      Math.floor(getBigNumber(amountOut.toWei()))
+      Math.floor(getBigNumber(amountOut.toWei())),
+      undefined
     )
   )
 
@@ -515,7 +530,7 @@ export async function place(
   ])
 }
 
-export function swapInstruction(
+export function swapInstruction_v1(
   programId: PublicKey,
   // tokenProgramId: PublicKey,
   // amm
