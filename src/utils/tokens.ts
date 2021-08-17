@@ -152,7 +152,7 @@ function addTokensSolana() {
           }
         } else {
           const token = Object.values(TOKENS).find((item) => item.mintAddress === itemToken.address)
-          if (token.symbol !== itemToken.symbol && !token.tags.includes('raydium')) {
+          if (token.symbol !== itemToken.symbol && !token.tags.includes('cropper')) {
             token.symbol = itemToken.symbol
             token.name = itemToken.name
             token.decimals = itemToken.decimals
