@@ -1,12 +1,12 @@
 import assert from 'assert';
 import BN from 'bn.js';
 import {Buffer} from 'buffer';
-import { bool, publicKey, u32,  u64, u8} from '@project-serum/borsh'
+import { bool, publicKey, u32,struct,  u64, u8} from '@project-serum/borsh'
 // @ts-ignore
-import * as BufferLayout from 'buffer-layout';
+import { nu64, blob } from 'buffer-layout'
 import {Connection, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from '@solana/web3.js';
 import {
-  Keypair,
+  Account,
   AccountInfo,
   PublicKey,
   SystemProgram,
@@ -17,6 +17,9 @@ import {
 //import * as Layout from './layout';
 import {sendAndConfirmTransaction} from './send-and-confirm-transaction';
 import {loadAccount} from './account';
+import { AccountLayout, MintLayout } from '@solana/spl-token';
+import { createSplAccount } from './new_fcn';
+import { sendTransaction } from './web3';
 
 enum StakeInstruction
 {
@@ -25,45 +28,7 @@ enum StakeInstruction
   Withdraw,
 }
 
-export const STAKE_PROGRAM_ID: PublicKey = new PublicKey(
-  '5ANWst26N8qmdLr4wGGTkUoxPKEDoh4DuRixJNu74dPa',
-);
-
-/**
- * Some amount of tokens
- */
-export class Numberu64 extends BN {
-  /**
-   * Convert to Buffer representation
-   */
-  toBuffer(): Buffer {
-    const a = super.toArray().reverse();
-    const b = Buffer.from(a);
-    if (b.length === 8) {
-      return b;
-    }
-    assert(b.length < 8, 'Numberu64 too large');
-
-    const zeroPad = Buffer.alloc(8);
-    b.copy(zeroPad);
-    return zeroPad;
-  }
-
-  /**
-   * Construct a Numberu64 from Buffer representation
-   */
-  static fromBuffer(buffer: Buffer): Numberu64 {
-    assert(buffer.length === 8, `Invalid buffer length: ${buffer.length}`);
-    return new Numberu64(
-      [...buffer]
-        .reverse()
-        .map(i => `00${i.toString(16)}`.slice(-2))
-        .join(''),
-      16,
-    );
-  }
-}
-export const StakeAccountLayout = BufferLayout.struct([
+export const StakeAccountLayout = struct([
   u64('state'),
   u8('nonce'),
   publicKey('pool_lp_token_account'),
@@ -79,7 +44,7 @@ export const StakeAccountLayout = BufferLayout.struct([
   u64('start_timestamp'),
   u64('end_timestamp'),
 ]);
-export const UserInfoAccountLayout = BufferLayout.struct([
+export const UserInfoAccountLayout = struct([
   publicKey('wallet'),
   publicKey('pool_id'),
   u64('deposit_balance'),
@@ -90,8 +55,8 @@ export class UserInfo {
     public userInfoAccount:PublicKey,
     public wallet: PublicKey,
     public poolId: PublicKey,
-    public depositBalance:Numberu64,
-    public rewardDebt:Numberu64,
+    public depositBalance:nu64,
+    public rewardDebt:nu64,
   ){
     this.wallet = wallet;
     this.poolId = poolId;
@@ -127,14 +92,14 @@ export class StakePool {
     public authority: PublicKey,
     public poolRewardTokenAccount: PublicKey,
     public poolLpTokenAccount: PublicKey,
-    public state: Numberu64,
+    public state: nu64,
     public nonce: number,
     public rewardPerShareNet: number,
-    public lastBlock: Numberu64,
-    public rewardPerBlock: Numberu64,
-    public startTimestamp: Numberu64,
-    public endTimestamp: Numberu64,
-    public staker: Keypair,
+    public lastBlock: nu64,
+    public rewardPerBlock: nu64,
+    public startTimestamp: nu64,
+    public endTimestamp: nu64,
+    public staker: Account,
   ) {
     this.connection = connection;
     this.stake = stake;
@@ -170,9 +135,9 @@ export class StakePool {
   }
 
   static createInitStakeInstruction(
-    stakeAccount: Keypair, // pool account 
+    stakeAccount: Account, // pool account 
     authority: PublicKey, //pool authority
-    staker: Keypair,
+    staker: Account,
     fee_owner: PublicKey,
     poolLpTokenAccount: PublicKey,
     poolRewardTokenAccount: PublicKey,
@@ -196,11 +161,11 @@ export class StakePool {
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       
     ];
-    const commandDataLayout = BufferLayout.struct([
+    const commandDataLayout = struct([
       u8('instruction'),
       u8('nonce'),
-      u64("start_timestamp"),
-      u64("end_timestamp"),
+      nu64("start_timestamp"),
+      nu64("end_timestamp"),
     ]); 
     let data = Buffer.alloc(1024);
     {
@@ -208,8 +173,8 @@ export class StakePool {
         {
           instruction: StakeInstruction.Initialize, // Initialize instruction
           nonce,
-          start_timestamp: new Numberu64(startTimestamp).toBuffer(),
-          end_timestamp: new Numberu64(endTimestamp).toBuffer(),
+          start_timestamp: startTimestamp,
+          end_timestamp: endTimestamp,
         },
         data,
       );
@@ -275,10 +240,10 @@ export class StakePool {
       
       const userStakeInfo = UserInfoAccountLayout.decode(data)
       
-      const wallet = new PublicKey(userStakeInfo.wallet);
-      const poolId = new PublicKey(userStakeInfo.pool_id).toBase58();
-      const depositBalance = new Numberu64(userStakeInfo.deposit_balance);
-      const rewardDebt = new Numberu64(userStakeInfo.reward_debt)
+      const wallet = userStakeInfo.wallet;
+      const poolId = userStakeInfo.pool_id.toBase58();
+      const depositBalance = userStakeInfo.deposit_balance;
+      const rewardDebt = userStakeInfo.reward_debt
 
       if(poolId == pool_id.toBase58())
       {
@@ -292,7 +257,7 @@ export class StakePool {
     connection:Connection,
     stakeProgramId:PublicKey,
     pool_id:PublicKey,
-    owner: Keypair,
+    owner: Account,
   ):Promise<UserInfo> {
     let userInfo = await StakePool.findUserInfoAccount(connection,stakeProgramId,pool_id,owner.publicKey);
     if(userInfo != undefined){
@@ -303,7 +268,7 @@ export class StakePool {
     const balanceNeeded = await StakePool.getMinBalanceRentForExemptStakePool(
       connection,
     );
-    const newAccount = new Keypair();
+    const newAccount = new Account();
     let transaction = new Transaction();
     
     transaction.add(
@@ -327,48 +292,44 @@ export class StakePool {
       newAccount.publicKey,
       owner.publicKey,
       pool_id,
-      new Numberu64(0),
-      new Numberu64(0),
+      0,
+      0,
     );
   }
   static async loadStakePool(
     connection: Connection,
     address: PublicKey,
     programId: PublicKey,
-    staker: Keypair,
+    staker: Account,
   ): Promise<StakePool> {
     const data = await loadAccount(connection, address, programId);
     const stakeData = StakeAccountLayout.decode(data);
-    
-
     const [authority] = await PublicKey.findProgramAddress(
       [address.toBuffer()],
       programId,
     );
-    const state = Numberu64.fromBuffer(
-      stakeData.state,
-    );
+    console.log("here1")
+    const state = stakeData.state;
+    console.log("here2")
     const nonce: number = stakeData.nonce;
-    const poolLpTokenAccount = new PublicKey(stakeData.pool_lp_token_account);
-    const poolRewardTokenAccount = new PublicKey(stakeData.pool_reward_token_account);
-    const lpTokenPoolMint = new PublicKey(stakeData.pool_mint_address);
-    const rewardTokenPoolMint = new PublicKey(stakeData.reward_mint_address);
-    const tokenProgramId = new PublicKey(stakeData.token_program_id);
-    const owner = new PublicKey(stakeData.owner);
-    const feeOwnerAccount = new PublicKey(stakeData.fee_owner);
+    console.log(stakeData.pool_lp_token_account)
+    const poolLpTokenAccount = stakeData.pool_lp_token_account;
+    console.log("here4")
+    const poolRewardTokenAccount = stakeData.pool_reward_token_account;
+    console.log("here5")
+    const lpTokenPoolMint = stakeData.pool_mint_address;
+    const rewardTokenPoolMint = stakeData.reward_mint_address;
+    const tokenProgramId = stakeData.token_program_id;
+    const owner = stakeData.owner;
+    const feeOwnerAccount = stakeData.fee_owner;
+    console.log("here6")
     const rewardPerShareNet:number = stakeData.reward_per_share_net;
-    const lastBlock = Numberu64.fromBuffer(
-      stakeData.last_block,
-    );
-    const rewardPerBlock = Numberu64.fromBuffer(
-      stakeData.reward_per_block,
-    );
-    const startTimestamp = Numberu64.fromBuffer(
-      stakeData.start_timestamp,
-    );
-    const endTimestamp = Numberu64.fromBuffer(
-      stakeData.end_timestamp,
-    );
+    const lastBlock = stakeData.last_block;
+    const rewardPerBlock = stakeData.reward_per_block;
+    const startTimestamp = stakeData.start_timestamp;
+    console.log("here7")
+    const endTimestamp = stakeData.end_timestamp;
+    console.log("here8")
 
     return new StakePool(
       connection,
@@ -392,10 +353,46 @@ export class StakePool {
       staker
     );
   }
+  static async createSPLTokenAccount(
+    connection:Connection,
+    payer:Account,
+    owner:PublicKey,
+    mint: PublicKey
+  ){
+    let instructions: TransactionInstruction[] = [];
+    let accountRentExempt = await connection.getMinimumBalanceForRentExemption(
+        MintLayout.span
+      );
+    let poolRewardTokenAccount = await createSplAccount(
+      instructions,
+      payer.publicKey,
+      accountRentExempt,
+      mint,
+      owner,
+      AccountLayout.span
+    );
+    let transaction = new Transaction()
+      instructions.forEach((instruction)=>{
+        transaction.add(instruction)
+      });
+    /*
+      await sendAndConfirmTransaction(
+      'createSplAccount',
+      connection,
+      transaction,
+      payer,
+      poolRewardTokenAccount,
+    );
+    */
+    let tx = await sendTransaction(connection, payer, transaction, [
+      poolRewardTokenAccount,
+    ]);
 
+    return poolRewardTokenAccount;
+  }
   static async createStakePool(
     connection: Connection,
-    stakeAccount: Keypair,
+    stakeAccount: Account,
     stakeProgramId: PublicKey,
     tokenProgramId: PublicKey,
     lpTokenPoolMint: PublicKey,
@@ -412,7 +409,7 @@ export class StakePool {
     rewardPerBlock: number,
     startTimestamp:number,
     endTimestamp:number,
-    staker: Keypair,
+    staker: Account,
   ): Promise<StakePool> {
     let transaction;
     const stake = new StakePool(
@@ -427,13 +424,13 @@ export class StakePool {
       authority, 
       poolRewardTokenAccount, 
       poolLpTokenAccount, 
-      new Numberu64(state), 
+      state, 
       nonce, 
       rewardPerShareNet, 
-      new Numberu64(lastBlock), 
-      new Numberu64(rewardPerBlock), 
-      new Numberu64(startTimestamp),
-      new Numberu64(endTimestamp),
+      lastBlock, 
+      rewardPerBlock, 
+      startTimestamp,
+      endTimestamp,
       staker
     );
 
@@ -469,7 +466,7 @@ export class StakePool {
     );
     transaction.add(instruction);
 
-    
+    /*
     await sendAndConfirmTransaction(
       'createAccount',
       connection,
@@ -477,13 +474,19 @@ export class StakePool {
       staker,
       stakeAccount,
     );
+    */
+
+    let tx = await sendTransaction(connection, staker, transaction, [
+      stakeAccount,
+    ]);
+    console.log(tx)
 
     return stake;
   }
   
   public async deposit( 
-    owner: Keypair,
-    userTransferAuthority: Keypair,
+    owner: Account,
+    userTransferAuthority: Account,
     userRewardTokenAccount: PublicKey,
     userLpTokenAccount: PublicKey, 
     harvestFeeAccount: PublicKey, 
@@ -525,7 +528,7 @@ export class StakePool {
   static createDepositInstruction(
     stakeAddress: PublicKey, // pool account 
     authority: PublicKey, //pool authority
-    owner: Keypair,
+    owner: Account,
     userInfoAccount:PublicKey,
     userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
@@ -555,16 +558,16 @@ export class StakePool {
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
     ];
-    const commandDataLayout = BufferLayout.struct([
+    const commandDataLayout = struct([
       u8('instruction'),
-      u64('amount'),
+      nu64('amount'),
     ]); 
     let data = Buffer.alloc(1024);
     {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: StakeInstruction.Deposit, // Initialize instruction
-          amount:new Numberu64(amount).toBuffer(),
+          amount:amount,
         },
         data,
       );
@@ -577,8 +580,8 @@ export class StakePool {
     });
   }
   public async withdraw( 
-    owner:Keypair,
-    userTransferAuthority: Keypair,
+    owner:Account,
+    userTransferAuthority: Account,
     userRewardTokenAccount: PublicKey,
     userLpTokenAccount: PublicKey,
     harvestFeeAccount: PublicKey, 
@@ -620,7 +623,7 @@ export class StakePool {
   static createWithdrawInstruction(
     stakeAddress: PublicKey, // pool account 
     authority: PublicKey, //pool authority
-    owner: Keypair,
+    owner: Account,
     userInfoAccount: PublicKey,
     userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
@@ -650,16 +653,16 @@ export class StakePool {
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
     ];
-    const commandDataLayout = BufferLayout.struct([
+    const commandDataLayout = struct([
       u8('instruction'),
-      u64('amount'),
+      nu64('amount'),
     ]); 
     let data = Buffer.alloc(1024);
     {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: StakeInstruction.Withdraw, // Initialize instruction
-          amount:new Numberu64(amount).toBuffer(),
+          amount:amount,
         },
         data,
       );

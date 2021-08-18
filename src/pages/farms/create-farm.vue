@@ -326,7 +326,7 @@
         </Row>
         <Row v-if="current === 5" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
-            <div>Farm was created successfully!</div>
+            <div>Farm has been successfully created!</div>
           </Col>
           <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
             <div class="btncontainer">
@@ -366,13 +366,16 @@ import { Steps, Row, Col, Button, Tooltip, Icon, DatePicker } from 'ant-design-v
 import { getMarket, createAmm, clearLocal } from '@/utils/market'
 import BigNumber from '@/../node_modules/bignumber.js/bignumber'
 import { TokenInfo, TOKENS } from '@/utils/tokens'
-import { createAssociatedId } from '@/utils/web3'
-import { PublicKey } from '@solana/web3.js'
-import { AMM_ASSOCIATED_SEED, LIQUIDITY_POOL_PROGRAM_ID_V4 } from '@/utils/ids'
+import { createAssociatedId, createAssociatedTokenAccountIfNotExist, sendTransaction } from '@/utils/web3'
+import { Account, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
+import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, LIQUIDITY_POOL_PROGRAM_ID_V5 } from '@/utils/ids'
 import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep } from 'lodash-es'
 import moment from 'moment'
-
+import {StakePool} from '@/utils/farm'
+import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { LIQUIDITY_POOLS } from '@/utils/pools'
+import { createSplAccount } from '@/utils/new_fcn'
 const Step = Steps.Step
 
 @Component({
@@ -522,7 +525,96 @@ export default class CreatePool extends Vue {
     }
     this.updateLocalData()
   }
-  confirmFarmInfo(){
+  async confirmFarmInfo(){
+    //dummy data to test
+    //this.userCreateAmmId = "62P29pgXzH2X4zq3n7BRShHMRzezv8wxG1L9iszB1vbM";
+
+    //check Initial reward token amount
+
+    //check if user paid Farm fee (500 CRP)
+
+    //check harvest fee address
+
+    //check start time and end time
+
+    //check wallet connection
+
+    const connection = this.$web3;
+    const wallet:any = this.$wallet;
+    if(connection != undefined)
+    {
+        console.log("wallet connected!");
+    }
+    else{
+        console.log("wallet is not connected!");
+        return;
+    }
+    
+    const stakeAccount = new Account();
+    const farmProgramPubkey = new PublicKey(FARM_PROGRAM_ID);
+
+    let [authority, nonce] = await PublicKey.findProgramAddress(
+      [stakeAccount.publicKey.toBuffer()],
+      farmProgramPubkey,
+    );
+
+    //get liquidity pool info
+    let liquidityPoolInfo = LIQUIDITY_POOLS.find((item) => item.ammId === this.userCreateAmmId);
+
+    //check liquidity pool
+    if(liquidityPoolInfo == undefined){
+      console.log("find liquidity pool error");
+      return;
+    }
+    let rewardTokenPubkey = new PublicKey(this.rewardCoin?.mintAddress as any);
+    
+    
+    let poolRewardTokenAccount = await StakePool.createSPLTokenAccount(
+      connection,
+      wallet,
+      authority,
+      rewardTokenPubkey
+    );
+    
+    let poolLpTokenAccount = await StakePool.createSPLTokenAccount(
+      connection,
+      wallet,
+      authority,
+      new PublicKey(liquidityPoolInfo.lp.mintAddress as any)
+    );
+    let startTimestamp:any = this.startTime.unix();
+    let endTimestamp:any = this.endTime.unix();
+
+    await StakePool.createStakePool(
+      connection,
+      stakeAccount,
+      farmProgramPubkey,
+      TOKEN_PROGRAM_ID,
+      new PublicKey(liquidityPoolInfo.lp.mintAddress),
+      new PublicKey(this.rewardCoin?.mintAddress as string),
+      new PublicKey(this.harvestFeeAccount),
+      wallet.pubkey,
+      authority,
+      poolRewardTokenAccount.publicKey,
+      poolLpTokenAccount.publicKey,
+      0,
+      nonce,
+      0,0,
+      0,
+      startTimestamp,
+      endTimestamp,
+      wallet
+    );
+    console.log(stakeAccount.publicKey.toBase58())
+    /*
+    const fetchedStakePool = await StakePool.loadStakePool(
+      connection,
+      stakeAccount.publicKey,
+      farmProgramPubkey,
+      wallet,
+    );
+    console.log(fetchedStakePool);
+    */
     this.current += 1;
   }
   gotoFarms(){
