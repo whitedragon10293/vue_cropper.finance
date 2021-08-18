@@ -1,13 +1,22 @@
 <template>
+
   <div class="container" :class="isMobile ? 'create-pool-mobile' : 'create-pool'">
+    <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
     <div class="page-head fs-container">
       <span class="title">Create a farm</span>
     </div>
     <div class="card">
       <div class="card-body" style="grid-row-gap: 0; row-gap: 0; padding-bottom: 15px">
         <Steps :current="current" size="small" direction="vertical" style="width: auto" :status="stepsStatus">
+          <Step
+            ><template slot="title">
+              <div v-if="current > 0 || (current === 0 && stepsStatus !== 'error')">Farm informations</div>
+              <div v-else-if="current === 0 && stepsStatus === 'error'" style="color: red">Farm informations</div>
+              <div v-else style="color: rgb(87, 117, 147)">Farm informations </div>
+            </template></Step
+          >
           <Step>
-            <p slot="title" style="word-break: break-word">
+            <p slot="title" :style="current < 1 ? 'color: rgb(87, 117, 147);':''">
               {{ stepTitleInputMarket }}
               <Tooltip placement="right">
                 <div slot="title">
@@ -22,8 +31,8 @@
           </Step>
           <Step
             ><template slot="title">
-              <div v-if="current > 1 || (current === 1 && stepsStatus !== 'error')">{{ stepTitleMarketInfo }}</div>
-              <div v-else-if="current === 1 && stepsStatus === 'error'" style="color: red">
+              <div v-if="current > 2 || (current === 2 && stepsStatus !== 'error')">{{ stepTitleMarketInfo }}</div>
+              <div v-else-if="current === 2 && stepsStatus === 'error'" style="color: red">
                 {{ stepTitleMarketInfo }}
               </div>
               <div v-else style="color: rgb(87, 117, 147)">{{ stepTitleMarketInfo }}</div>
@@ -31,27 +40,92 @@
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 2 || (current === 2 && stepsStatus !== 'error')">{{ stepTitleInit }}</div>
-              <div v-else-if="current === 2 && stepsStatus === 'error'" style="color: red">{{ stepTitleInit }}</div>
+              <div v-if="current > 3 || (current === 3 && stepsStatus !== 'error')">{{ stepTitleInit }}</div>
+              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">{{ stepTitleInit }}</div>
               <div v-else style="color: rgb(87, 117, 147)">{{ stepTitleInit }}</div>
             </template></Step
           >
+          
           <Step
             ><template slot="title">
-              <div v-if="current > 3 || (current === 3 && stepsStatus !== 'error')">Farm informations</div>
-              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">Farm informations</div>
-              <div v-else style="color: rgb(87, 117, 147)">Farm informations</div>
-            </template></Step
-          >
-          <Step
-            ><template slot="title">
-              <div v-if="current > 4 && stepsStatus !== 'error'">Pool Created</div>
-              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Pool Created</div>
-              <div v-else slot="title" style="color: rgb(87, 117, 147)">Pool Created</div>
+              <div v-if="current > 4 && stepsStatus !== 'error'">Pool & Farm Created</div>
+              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Pool & Farm Created</div>
+              <div v-else slot="title" style="color: rgb(87, 117, 147)">Pool & Farm Created</div>
             </template></Step
           >
         </Steps>
+
         <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+          <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <div>If not YourToken-CRP token pair, you have to pay 500 CRP when your farm is created</div>
+          </Col>
+          <Col style="line-height: 20px" :span="24">
+            <CoinInput
+              v-model="fromCoinAmount"
+              label="Initial Reward Token Amount"
+              :balance-offset="rewardCoin && rewardCoin.symbol === 'SOL' ? -0.05 : 0"
+              :mint-address="rewardCoin ? rewardCoin.mintAddress : ''"
+              :coin-name="rewardCoin ? rewardCoin.symbol : ''"
+              :balance="rewardCoin ? rewardCoin.balance : null"
+              :show-half="true"
+              @onInput="(amount) => (fromCoinAmount = amount)"
+              @onFocus="
+                () => {
+                  fixedFromCoin = true
+                }
+              "
+              @onMax="
+                () => {
+                  fixedFromCoin = true
+                  fromCoinAmount = rewardCoin && rewardCoin.balance ? rewardCoin.balance.fixed() : '0'
+                }
+              "
+              @onSelect="openFromCoinSelect"
+            />
+          </Col>
+          
+          
+
+          <Col style="line-height: 20px" :span="isMobile ? 24:12" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <DatePicker
+              v-model="startTime"
+              show-time
+              format="YYYY-MM-DD HH:mm:ss"
+              placeholder="Start"
+              @openChange="handleStartOpenChange"
+            />
+          </Col>
+          
+          <Col style="line-height: 20px" :span="isMobile ? 24:12" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <DatePicker
+              v-model="endTime"
+              show-time
+              format="YYYY-MM-DD HH:mm:ss"
+              placeholder="End"
+              @openChange="handleEndOpenChange"
+            />
+          </Col>
+          <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <div>Reward Per Second:&nbsp;{{rewardPerSecond}} &nbsp;{{rewardCoin != null?rewardCoin.symbol : ""}}</div>
+          </Col>
+          <Col style="line-height: 20px;margin-top:15px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <div>Harvest Fee Address:</div>
+          </Col>
+          <Col style="line-height: 20px" :span="24"><input v-model="harvestFeeAccount" /></Col>
+          
+
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div class="btncontainer">
+              <Button v-if="!wallet.connected" size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
+              </Button>
+              <Button v-else size="large" :disabled="!wallet.connected" ghost style="z-index: 999; width: 100%" @click="confirmFarmInfo">
+                Confirm
+              </Button>
+            </div>
+          </Col>
+        </Row>
+        <Row v-if="current === 1" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
               $$This tool is for advanced users. Before attempting to create a new liquidity pool, we suggest going
@@ -75,7 +149,7 @@
                 ghost
                 class="button_div"
                 :disabled="!wallet.connected"
-                style="position: absolute; z-index: 999; width: 100%"
+                style=" z-index: 999; width: 100%"
                 :loading="getMarketLoading"
                 @click="marketInputFlag ? getMarketMsg() : rewriteMarket()"
               >
@@ -84,7 +158,7 @@
             </div>
           </Col>
         </Row>
-        <div v-if="current >= 1" style="margin-top: 10px" class="msgClass">
+        <div v-if="current >= 2" style="margin-top: 10px" class="msgClass">
           <Row>
             <Col :span="isMobile ? 24 : 24" :class="isMobile ? 'item-title-mobile' : 'item-title'">Market Info:</Col>
             <Col :span="isMobile ? 24 : 24">
@@ -190,7 +264,7 @@
               >
                 Connect
               </Button>
-              <Row v-else-if="current == 3">
+              <Row v-else-if="current == 4">
                 <Col span="24" style="text-align: center; margin-top: 10px"
                   ><strong>Pool has been successfully created!</strong></Col
                 >
@@ -264,14 +338,16 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'nuxt-property-decorator'
-import { Steps, Row, Col, Button, Tooltip, Icon } from 'ant-design-vue'
+import { Steps, Row, Col, Button, Tooltip, Icon, DatePicker } from 'ant-design-vue'
 import { getMarket, createAmm, clearLocal } from '@/utils/market'
 import BigNumber from '@/../node_modules/bignumber.js/bignumber'
-import { TOKENS } from '@/utils/tokens'
+import { TokenInfo, TOKENS } from '@/utils/tokens'
 import { createAssociatedId } from '@/utils/web3'
 import { PublicKey } from '@solana/web3.js'
 import { AMM_ASSOCIATED_SEED, LIQUIDITY_POOL_PROGRAM_ID_V4 } from '@/utils/ids'
 import { getBigNumber } from '@/utils/layouts'
+import { cloneDeep } from 'lodash-es'
+import moment from 'moment'
 
 const Step = Steps.Step
 
@@ -286,10 +362,23 @@ const Step = Steps.Step
     Button,
     Step,
     Tooltip,
-    Icon
+    Icon,
+    DatePicker,
   }
 })
 export default class CreatePool extends Vue {
+  rewardCoin:TokenInfo | null = null
+  fromCoinAmount: string = ''
+  fixedFromCoin: boolean = true
+  selectFromCoin:boolean = true
+  coinSelectShow: boolean = false
+  harvestFeeAccount: string = ""
+  startTime: any = null
+  endTime:  any = null
+  endOpen: any = false
+  isCRPTokenPair:boolean = false
+  
+  
   current: number = 0
   marketInputFlag: boolean = true
   marketFlag: boolean = false
@@ -322,6 +411,9 @@ export default class CreatePool extends Vue {
 
   expectAmmId: undefined | string
 
+  get rewardPerSecond(){
+    return 0;
+  }
   get isMobile() {
     return this.$accessor.isMobile
   }
@@ -329,6 +421,12 @@ export default class CreatePool extends Vue {
   get wallet() {
     return this.$accessor.wallet
   }
+
+  @Watch('startTime')
+  onStartTimeChanged(val: any) {
+    console.log("start time changed !")
+  }
+
 
   @Watch('inputQuoteValue')
   oniIputQuoteValueChanged(val: string) {
@@ -399,6 +497,65 @@ export default class CreatePool extends Vue {
       clearLocal()
     }
     this.updateLocalData()
+  }
+  confirmFarmInfo(){
+    this.current += 1;
+  }
+
+  openFromCoinSelect() {
+    this.selectFromCoin = true
+    this.closeAllModal('coinSelectShow')
+    setTimeout(() => {
+      this.coinSelectShow = true
+    }, 1)
+  }
+  closeAllModal(showName: string) {
+    if (showName !== 'coinSelectShow') {
+      this.coinSelectShow = false
+    }
+  }
+  onCoinSelect(tokenInfo: TokenInfo) {
+    if (tokenInfo !== null) {
+      if (this.selectFromCoin) {
+        this.rewardCoin = cloneDeep(tokenInfo)
+      }
+    } else {
+      // check coin
+      if (this.rewardCoin !== null) {
+        const newFromCoin = Object.values(TOKENS).find((item) => item.mintAddress === this.rewardCoin?.mintAddress)
+        if (newFromCoin === null || newFromCoin === undefined) {
+          this.rewardCoin = null
+        }
+      }
+    }
+    this.coinSelectShow = false
+  }
+
+  disabledStartDate(startTime:any) {
+    const endTime = this.endTime;
+    if (!startTime || !endTime) {
+      return false;
+    }
+    if(startTime < moment().endOf('day'))
+    {
+      return true
+    }
+    return startTime.valueOf() > endTime.valueOf();
+  }
+  disabledEndDate(endTime:any) {
+    const startTime = this.startTime;
+    if (!endTime || !startTime) {
+      return false;
+    }
+    return startTime.valueOf() >= endTime.valueOf();
+  }
+  handleStartOpenChange(open:any) {
+    if (!open) {
+      this.endOpen = true;
+    }
+  }
+  handleEndOpenChange(open:any) {
+    this.endOpen = open;
   }
 
   updateLocalData() {
