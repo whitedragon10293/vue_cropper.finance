@@ -27,6 +27,7 @@ enum FarmInstruction
 }
 
 export const FarmAccountLayout = struct([
+  u8('is_allowed'),
   u8('nonce'),
   publicKey('pool_lp_token_account'),
   publicKey('pool_reward_token_account'),
@@ -77,10 +78,12 @@ export class UserInfo {
  * A program for farm
  */
 export class YieldFarm {
-  public paidAdditionalFee:boolean = false;
+  public isAllowed:boolean = false;
   public rewardPerTimestamp: nu64 = 0;
   public rewardPerShareNet: nu64 = 0;
   public lastTimestamp: nu64 = 0;
+  public feeOwner:PublicKey | any;
+
   constructor(
     private connection: Connection,
     public farmId: PublicKey,
@@ -295,6 +298,7 @@ export class YieldFarm {
       [farmId.toBuffer()],
       farmProgramId,
     );
+    const isAllowed = farmData.is_allowed;
     const nonce: number = farmData.nonce;
     const poolLpTokenAccount = farmData.pool_lp_token_account;
     const poolRewardTokenAccount = farmData.pool_reward_token_account;
@@ -307,6 +311,7 @@ export class YieldFarm {
     const rewardPerTimestamp = farmData.reward_per_timestamp;
     const startTimestamp = farmData.start_timestamp;
     const endTimestamp = farmData.end_timestamp;
+    const feeOwner = farmData.fee_owner;
 
     let farm = new YieldFarm(
       connection,
@@ -326,6 +331,15 @@ export class YieldFarm {
     farm.rewardPerShareNet = rewardPerShareNet;
     farm.lastTimestamp = lastTimestamp;
     farm.rewardPerTimestamp = rewardPerTimestamp;
+    farm.feeOwner = feeOwner;
+    
+    if(isAllowed > 0)
+    {
+      farm.isAllowed = true;
+    }
+    else{
+      farm.isAllowed = false;
+    }
     return farm;
   }
   static async createSPLTokenAccount(
@@ -499,7 +513,7 @@ export class YieldFarm {
       this.poolLpTokenAccount,
       this.poolRewardTokenAccount,
       this.lpTokenPoolMint,
-      this.rewardTokenPoolMint,
+      this.feeOwner,
       this.tokenProgramId,
       this.farmProgramId,
       amount,
@@ -518,7 +532,7 @@ export class YieldFarm {
   static createDepositInstruction(
     farmId: PublicKey, // farm account 
     authority: PublicKey, //farm authority
-    owner: Account,
+    depositor: Account,
     userInfoAccount:PublicKey,
     userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
@@ -526,7 +540,7 @@ export class YieldFarm {
     poolLpTokenAccount: PublicKey,
     poolRewardTokenAccount: PublicKey,
     poolLpTokenMint: PublicKey,
-    poolRewardTokenMint: PublicKey,
+    feeOwner: PublicKey,
     tokenProgramId: PublicKey,
     farmProgramId: PublicKey,
     amount: number
@@ -534,7 +548,7 @@ export class YieldFarm {
     const keys = [
       {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
-      {pubkey: owner.publicKey, isSigner: true, isWritable: false},
+      {pubkey: depositor.publicKey, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
       {pubkey: userTransferAuthority, isSigner: true, isWritable: false},
       {pubkey: userLpTokenAccount, isSigner: false, isWritable: true},
@@ -542,7 +556,7 @@ export class YieldFarm {
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenMint, isSigner: false, isWritable: true},
-      {pubkey: poolRewardTokenMint, isSigner: false, isWritable: true},
+      {pubkey: feeOwner, isSigner: false, isWritable: true},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
     ];
@@ -590,7 +604,7 @@ export class YieldFarm {
       this.poolLpTokenAccount,
       this.poolRewardTokenAccount,
       this.lpTokenPoolMint,
-      this.rewardTokenPoolMint,
+      this.feeOwner,
       this.tokenProgramId,
       this.farmProgramId,
       amount,
@@ -617,7 +631,7 @@ export class YieldFarm {
     poolLpTokenAccount: PublicKey,
     poolRewardTokenAccount: PublicKey,
     poolLpTokenMint: PublicKey,
-    poolRewardTokenMint: PublicKey,
+    feeOwner: PublicKey,
     tokenProgramId: PublicKey,
     farmProgramId: PublicKey,
     amount: number
@@ -633,7 +647,7 @@ export class YieldFarm {
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenMint, isSigner: false, isWritable: true},
-      {pubkey: poolRewardTokenMint, isSigner: false, isWritable: true},
+      {pubkey: feeOwner, isSigner: false, isWritable: true},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
     ];
