@@ -1,10 +1,8 @@
-import assert from 'assert';
-import BN from 'bn.js';
 import {Buffer} from 'buffer';
 import { bool, publicKey, u32,struct,  u64, u8} from '@project-serum/borsh'
 // @ts-ignore
-import { nu64, blob } from 'buffer-layout'
-import {Connection, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from '@solana/web3.js';
+import { nu64 } from 'buffer-layout'
+import {Connection, SYSVAR_CLOCK_PUBKEY} from '@solana/web3.js';
 import {
   Account,
   AccountInfo,
@@ -14,22 +12,21 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 
-//import * as Layout from './layout';
 import {sendAndConfirmTransaction} from './send-and-confirm-transaction';
 import {loadAccount} from './account';
-import { AccountLayout, MintLayout } from '@solana/spl-token';
+import { AccountLayout, MintLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createSplAccount } from './new_fcn';
 import { sendTransaction } from './web3';
+import { FARM_PROGRAM_ID } from './ids';
 
-enum StakeInstruction
+enum FarmInstruction
 {
   Initialize = 0,
   Deposit,
   Withdraw,
 }
 
-export const StakeAccountLayout = struct([
-  u64('state'),
+export const FarmAccountLayout = struct([
   u8('nonce'),
   publicKey('pool_lp_token_account'),
   publicKey('pool_reward_token_account'),
@@ -39,32 +36,32 @@ export const StakeAccountLayout = struct([
   publicKey('owner'),
   publicKey('fee_owner'),
   u64('reward_per_share_net'),
-  u64('last_block'),
-  u64('reward_per_block'),
+  u64('last_timestamp'),
+  u64('reward_per_timestamp'),
   u64('start_timestamp'),
   u64('end_timestamp'),
 ]);
 export const UserInfoAccountLayout = struct([
   publicKey('wallet'),
-  publicKey('pool_id'),
+  publicKey('farm_id'),
   u64('deposit_balance'),
   u64('reward_debt'),
 ]);
 export class UserInfo {
   constructor(
-    public userInfoAccount:PublicKey,
+    public userInfoId:PublicKey,
     public wallet: PublicKey,
-    public poolId: PublicKey,
+    public farmId: PublicKey,
     public depositBalance:nu64,
     public rewardDebt:nu64,
   ){
     this.wallet = wallet;
-    this.poolId = poolId;
+    this.farmId = farmId;
     this.depositBalance = depositBalance;
     this.rewardDebt = rewardDebt;
   }
   /**
-   * Get the minimum balance for the stake pool account to be rent exempt
+   * Get the minimum balance for the user info account to be rent exempt
    *
    * @return Number of lamports required
    */
@@ -77,52 +74,45 @@ export class UserInfo {
   }
 }
 /**
- * A program for stake pool
+ * A program for farm
  */
-export class StakePool {
+export class YieldFarm {
+  public paidAdditionalFee:boolean = false;
+  public rewardPerTimestamp: nu64 = 0;
+  public rewardPerShareNet: nu64 = 0;
+  public lastTimestamp: nu64 = 0;
   constructor(
     private connection: Connection,
-    public stake: PublicKey,
-    public stakeProgramId: PublicKey,
+    public farmId: PublicKey,
+    public farmProgramId: PublicKey,
     public tokenProgramId: PublicKey,
     public lpTokenPoolMint: PublicKey,
     public rewardTokenPoolMint: PublicKey,
-    public feeOwnerAccount: PublicKey,
-    public owner: PublicKey,
     public authority: PublicKey,
     public poolRewardTokenAccount: PublicKey,
     public poolLpTokenAccount: PublicKey,
-    public state: nu64,
     public nonce: number,
-    public rewardPerShareNet: number,
-    public lastBlock: nu64,
-    public rewardPerBlock: nu64,
     public startTimestamp: nu64,
     public endTimestamp: nu64,
-    public staker: Account,
+    public creator: Account,
   ) {
     this.connection = connection;
-    this.stake = stake;
-    this.stakeProgramId = stakeProgramId;
+    this.farmId = farmId;
+    this.farmProgramId = farmProgramId;
     this.tokenProgramId = tokenProgramId;
     this.lpTokenPoolMint = lpTokenPoolMint;
-    this.feeOwnerAccount = feeOwnerAccount;
-    this.owner = owner;
+    this.rewardTokenPoolMint = rewardTokenPoolMint;
     this.authority = authority;
     this.poolRewardTokenAccount = poolRewardTokenAccount;
     this.poolLpTokenAccount = poolLpTokenAccount;
-    this.state = state;
     this.nonce = nonce;
-    this.rewardPerBlock = rewardPerBlock;
-    this.lastBlock = lastBlock;
-    this.rewardPerBlock = rewardPerBlock;
     this.startTimestamp = startTimestamp;
     this.endTimestamp = endTimestamp;
-    this.staker = staker;
+    this.creator = creator;
   }
 
   /**
-   * Get the minimum balance for the stake pool account to be rent exempt
+   * Get the minimum balance for the farm account to be rent exempt
    *
    * @return Number of lamports required
    */
@@ -130,30 +120,28 @@ export class StakePool {
     connection: Connection,
   ): Promise<number> {
     return await connection.getMinimumBalanceForRentExemption(
-      StakeAccountLayout.span,
+      FarmAccountLayout.span,
     );
   }
 
-  static createInitStakeInstruction(
-    stakeAccount: Account, // pool account 
-    authority: PublicKey, //pool authority
-    staker: Account,
-    fee_owner: PublicKey,
+  static createInitFarmInstruction(
+    farmAccount: Account, // farm account 
+    authority: PublicKey, //farm authority
+    creator: Account,
     poolLpTokenAccount: PublicKey,
     poolRewardTokenAccount: PublicKey,
     poolMintAddress: PublicKey,
     rewardMintAddress: PublicKey,
     tokenProgramId: PublicKey,
     nonce: number,
-    stakeProgramId: PublicKey,
+    farmProgramId: PublicKey,
     startTimestamp: number,
     endTimestamp: number,
   ): TransactionInstruction {
     const keys = [
-      {pubkey: stakeAccount.publicKey, isSigner: false, isWritable: true},
+      {pubkey: farmAccount.publicKey, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
-      {pubkey: staker.publicKey, isSigner: true, isWritable: false},
-      {pubkey: fee_owner, isSigner: false, isWritable: false},
+      {pubkey: creator.publicKey, isSigner: true, isWritable: false},
       {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolMintAddress, isSigner: false, isWritable: false},
@@ -171,7 +159,7 @@ export class StakePool {
     {
       const encodeLength = commandDataLayout.encode(
         {
-          instruction: StakeInstruction.Initialize, // Initialize instruction
+          instruction: FarmInstruction.Initialize, // Initialize instruction
           nonce,
           start_timestamp: startTimestamp,
           end_timestamp: endTimestamp,
@@ -182,7 +170,7 @@ export class StakePool {
     }
     return new TransactionInstruction({
       keys,
-      programId: stakeProgramId,
+      programId: farmProgramId,
       data,
     });
   }
@@ -216,12 +204,12 @@ export class StakePool {
   }
   static async findUserInfoAccount(
     connection:Connection,
-    stakeProgramId:PublicKey,
-    pool_id:PublicKey,
+    farmProgramId:PublicKey,
+    farmId:PublicKey,
     owner:PublicKey,
   ):Promise<UserInfo>{
     // stake user info account
-    const stakeFilters = [
+    const filters = [
       {
         memcmp: {
           offset: 0,
@@ -232,22 +220,22 @@ export class StakePool {
         dataSize: UserInfoAccountLayout.span
       }
     ]
-    let stakeAccountInfos = await StakePool.getFilteredProgramAccounts(connection, stakeProgramId, stakeFilters)
+    let farmUserAccountInfos = await YieldFarm.getFilteredProgramAccounts(connection, farmProgramId, filters)
     let userInfo:any;
-    stakeAccountInfos.forEach((stakeAccountInfo) => {
+    farmUserAccountInfos.forEach((farmUserAccountInfo) => {
       
-      const { data} = stakeAccountInfo.accountInfo
+      const { data} = farmUserAccountInfo.accountInfo
       
-      const userStakeInfo = UserInfoAccountLayout.decode(data)
+      const userInfoData = UserInfoAccountLayout.decode(data)
       
-      const wallet = userStakeInfo.wallet;
-      const poolId = userStakeInfo.pool_id.toBase58();
-      const depositBalance = userStakeInfo.deposit_balance;
-      const rewardDebt = userStakeInfo.reward_debt
+      const wallet = userInfoData.wallet;
+      const _farmId = userInfoData.farmId.toBase58();
+      const depositBalance = userInfoData.deposit_balance;
+      const rewardDebt = userInfoData.reward_debt
 
-      if(poolId == pool_id.toBase58())
+      if(_farmId == farmId.toBase58())
       {
-        userInfo = new UserInfo(stakeAccountInfo.publicKey,wallet,pool_id,depositBalance,rewardDebt);
+        userInfo = new UserInfo(farmUserAccountInfo.publicKey,wallet,farmId,depositBalance,rewardDebt);
       }
     })
     return userInfo;
@@ -255,17 +243,17 @@ export class StakePool {
   }
   static async findOrCreateUserInfoAccount(
     connection:Connection,
-    stakeProgramId:PublicKey,
-    pool_id:PublicKey,
+    farmProgramId:PublicKey,
+    farmId:PublicKey,
     owner: Account,
   ):Promise<UserInfo> {
-    let userInfo = await StakePool.findUserInfoAccount(connection,stakeProgramId,pool_id,owner.publicKey);
+    let userInfo = await YieldFarm.findUserInfoAccount(connection,farmProgramId,farmId,owner.publicKey);
     if(userInfo != undefined){
       return userInfo;
     }
 
     // Allocate memory for the account
-    const balanceNeeded = await StakePool.getMinBalanceRentForExemptStakePool(
+    const balanceNeeded = await YieldFarm.getMinBalanceRentForExemptStakePool(
       connection,
     );
     const newAccount = new Account();
@@ -277,7 +265,7 @@ export class StakePool {
         newAccountPubkey: newAccount.publicKey,
         lamports: balanceNeeded,
         space: UserInfoAccountLayout.span,
-        programId: stakeProgramId,
+        programId: farmProgramId,
       }),
     );
 
@@ -291,67 +279,54 @@ export class StakePool {
     return new UserInfo(
       newAccount.publicKey,
       owner.publicKey,
-      pool_id,
+      farmId,
       0,
       0,
     );
   }
-  static async loadStakePool(
+  static async loadFarm(
     connection: Connection,
-    address: PublicKey,
-    programId: PublicKey,
-    staker: Account,
-  ): Promise<StakePool> {
-    const data = await loadAccount(connection, address, programId);
-    const stakeData = StakeAccountLayout.decode(data);
+    farmId: PublicKey,
+    farmProgramId: PublicKey,
+  ): Promise<YieldFarm> {
+    const data = await loadAccount(connection, farmId, farmProgramId);
+    const farmData = FarmAccountLayout.decode(data);
     const [authority] = await PublicKey.findProgramAddress(
-      [address.toBuffer()],
-      programId,
+      [farmId.toBuffer()],
+      farmProgramId,
     );
-    console.log("here1")
-    const state = stakeData.state;
-    console.log("here2")
-    const nonce: number = stakeData.nonce;
-    console.log(stakeData.pool_lp_token_account)
-    const poolLpTokenAccount = stakeData.pool_lp_token_account;
-    console.log("here4")
-    const poolRewardTokenAccount = stakeData.pool_reward_token_account;
-    console.log("here5")
-    const lpTokenPoolMint = stakeData.pool_mint_address;
-    const rewardTokenPoolMint = stakeData.reward_mint_address;
-    const tokenProgramId = stakeData.token_program_id;
-    const owner = stakeData.owner;
-    const feeOwnerAccount = stakeData.fee_owner;
-    console.log("here6")
-    const rewardPerShareNet:number = stakeData.reward_per_share_net;
-    const lastBlock = stakeData.last_block;
-    const rewardPerBlock = stakeData.reward_per_block;
-    const startTimestamp = stakeData.start_timestamp;
-    console.log("here7")
-    const endTimestamp = stakeData.end_timestamp;
-    console.log("here8")
+    const nonce: number = farmData.nonce;
+    const poolLpTokenAccount = farmData.pool_lp_token_account;
+    const poolRewardTokenAccount = farmData.pool_reward_token_account;
+    const lpTokenPoolMint = farmData.pool_mint_address;
+    const rewardTokenPoolMint = farmData.reward_mint_address;
+    const tokenProgramId = farmData.token_program_id;
+    const owner = farmData.owner;
+    const rewardPerShareNet:number = farmData.reward_per_share_net;
+    const lastTimestamp = farmData.last_timestamp;
+    const rewardPerTimestamp = farmData.reward_per_timestamp;
+    const startTimestamp = farmData.start_timestamp;
+    const endTimestamp = farmData.end_timestamp;
 
-    return new StakePool(
+    let farm = new YieldFarm(
       connection,
-      address,
-      programId,
+      farmId,
+      farmProgramId,
       tokenProgramId,
       lpTokenPoolMint, 
       rewardTokenPoolMint,
-      feeOwnerAccount, 
-      owner, 
       authority, 
       poolRewardTokenAccount, 
       poolLpTokenAccount, 
-      state, 
       nonce, 
-      rewardPerShareNet, 
-      lastBlock, 
-      rewardPerBlock, 
       startTimestamp,
       endTimestamp,
-      staker
+      owner
     );
+    farm.rewardPerShareNet = rewardPerShareNet;
+    farm.lastTimestamp = lastTimestamp;
+    farm.rewardPerTimestamp = rewardPerTimestamp;
+    return farm;
   }
   static async createSPLTokenAccount(
     connection:Connection,
@@ -375,113 +350,130 @@ export class StakePool {
       instructions.forEach((instruction)=>{
         transaction.add(instruction)
       });
-    /*
-      await sendAndConfirmTransaction(
-      'createSplAccount',
-      connection,
-      transaction,
-      payer,
-      poolRewardTokenAccount,
-    );
-    */
     let tx = await sendTransaction(connection, payer, transaction, [
       poolRewardTokenAccount,
     ]);
 
     return poolRewardTokenAccount;
   }
-  static async createStakePool(
+  static async createFarmWithParams(
+    connection:Connection,
+    wallet:any,
+    rewardMintPubkey:PublicKey,
+    lpMintPubkey:PublicKey,
+    startTimestamp:number,
+    endTimestamp:number,
+  ){
+    const farmAccount = new Account();
+    const farmProgramId = new PublicKey(FARM_PROGRAM_ID);
+
+    let [authority, nonce] = await PublicKey.findProgramAddress(
+      [farmAccount.publicKey.toBuffer()],
+      farmProgramId,
+    );
+
+    
+    let poolRewardTokenAccount = await YieldFarm.createSPLTokenAccount(
+      connection,
+      wallet,
+      authority,
+      rewardMintPubkey
+    );
+    
+    let poolLpTokenAccount = await YieldFarm.createSPLTokenAccount(
+      connection,
+      wallet,
+      authority,
+      lpMintPubkey
+    );
+    
+
+    return await YieldFarm.createFarm(
+      connection,
+      farmAccount,
+      farmProgramId,
+      TOKEN_PROGRAM_ID,
+      lpMintPubkey,
+      rewardMintPubkey,
+      authority,
+      poolRewardTokenAccount.publicKey,
+      poolLpTokenAccount.publicKey,
+      nonce,
+      startTimestamp,
+      endTimestamp,
+      wallet
+    );
+  }
+  static async createFarm(
     connection: Connection,
-    stakeAccount: Account,
-    stakeProgramId: PublicKey,
+    farmAccount: Account,
+    farmProgramId: PublicKey,
     tokenProgramId: PublicKey,
     lpTokenPoolMint: PublicKey,
     rewardTokenPoolMint: PublicKey,
-    feeOwnerAccount: PublicKey,
-    owner: PublicKey,
     authority: PublicKey,
     poolRewardTokenAccount: PublicKey,
     poolLpTokenAccount: PublicKey,
-    state: number,
     nonce: number,
-    rewardPerShareNet: number,
-    lastBlock: number,
-    rewardPerBlock: number,
     startTimestamp:number,
     endTimestamp:number,
-    staker: Account,
-  ): Promise<StakePool> {
+    creator: Account,
+  ): Promise<YieldFarm> {
     let transaction;
-    const stake = new StakePool(
+    const farm = new YieldFarm(
       connection,
-      stakeAccount.publicKey,
-      stakeProgramId,
+      farmAccount.publicKey,
+      farmProgramId,
       tokenProgramId,
       lpTokenPoolMint, 
       rewardTokenPoolMint, 
-      feeOwnerAccount, 
-      owner, 
       authority, 
       poolRewardTokenAccount, 
       poolLpTokenAccount, 
-      state, 
       nonce, 
-      rewardPerShareNet, 
-      lastBlock, 
-      rewardPerBlock, 
       startTimestamp,
       endTimestamp,
-      staker
+      creator
     );
 
     // Allocate memory for the account
-    const balanceNeeded = await StakePool.getMinBalanceRentForExemptStakePool(
+    const balanceNeeded = await YieldFarm.getMinBalanceRentForExemptStakePool(
       connection,
     );
     transaction = new Transaction();
     transaction.add(
       SystemProgram.createAccount({ 
-        fromPubkey: staker.publicKey,
-        newAccountPubkey: stakeAccount.publicKey,
+        fromPubkey: creator.publicKey,
+        newAccountPubkey: farmAccount.publicKey,
         lamports: balanceNeeded,
-        space: StakeAccountLayout.span,
-        programId: stakeProgramId,
+        space: FarmAccountLayout.span,
+        programId: farmProgramId,
       }),
     );
 
-    const instruction = StakePool.createInitStakeInstruction(
-      stakeAccount,
+    const instruction = YieldFarm.createInitFarmInstruction(
+      farmAccount,
       authority, 
-      staker, 
-      feeOwnerAccount, 
+      creator, 
       poolLpTokenAccount,  
       poolRewardTokenAccount, 
       lpTokenPoolMint, 
       rewardTokenPoolMint, 
       tokenProgramId,
       nonce, 
-      stakeProgramId,
+      farmProgramId,
       startTimestamp,
       endTimestamp,
     );
     transaction.add(instruction);
 
-    /*
-    await sendAndConfirmTransaction(
-      'createAccount',
-      connection,
-      transaction,
-      staker,
-      stakeAccount,
-    );
-    */
-
-    let tx = await sendTransaction(connection, staker, transaction, [
-      stakeAccount,
+    let tx = await sendTransaction(connection, creator, transaction, [
+      farmAccount,
     ]);
-    console.log(tx)
 
-    return stake;
+    //check transaction
+
+    return farm;
   }
   
   public async deposit( 
@@ -489,19 +481,18 @@ export class StakePool {
     userTransferAuthority: Account,
     userRewardTokenAccount: PublicKey,
     userLpTokenAccount: PublicKey, 
-    harvestFeeAccount: PublicKey, 
     amount: number,
   ) {
 
-    let userInfo = await StakePool.findOrCreateUserInfoAccount(this.connection,this.stakeProgramId,this.stake, owner)
+    let userInfo = await YieldFarm.findOrCreateUserInfoAccount(this.connection,this.farmProgramId,this.farmId, owner)
 
     let transaction;
     transaction = new Transaction();
-    const instruction = StakePool.createDepositInstruction(
-      this.stake,
+    const instruction = YieldFarm.createDepositInstruction(
+      this.farmId,
       this.authority,
       owner,
-      userInfo.userInfoAccount,
+      userInfo.userInfoId,
       userTransferAuthority.publicKey,
       userLpTokenAccount,
       userRewardTokenAccount,
@@ -510,8 +501,7 @@ export class StakePool {
       this.lpTokenPoolMint,
       this.rewardTokenPoolMint,
       this.tokenProgramId,
-      this.stakeProgramId,
-      harvestFeeAccount,
+      this.farmProgramId,
       amount,
     );
     transaction.add(instruction);
@@ -526,8 +516,8 @@ export class StakePool {
     );
   }
   static createDepositInstruction(
-    stakeAddress: PublicKey, // pool account 
-    authority: PublicKey, //pool authority
+    farmId: PublicKey, // farm account 
+    authority: PublicKey, //farm authority
     owner: Account,
     userInfoAccount:PublicKey,
     userTransferAuthority: PublicKey,
@@ -538,12 +528,11 @@ export class StakePool {
     poolLpTokenMint: PublicKey,
     poolRewardTokenMint: PublicKey,
     tokenProgramId: PublicKey,
-    stakeProgramId: PublicKey,
-    harvestFeeAccount: PublicKey,
+    farmProgramId: PublicKey,
     amount: number
   ): TransactionInstruction {
     const keys = [
-      {pubkey: stakeAddress, isSigner: false, isWritable: true},
+      {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: owner.publicKey, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
@@ -552,7 +541,6 @@ export class StakePool {
       {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
-      {pubkey: harvestFeeAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenMint, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenMint, isSigner: false, isWritable: true},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
@@ -566,7 +554,7 @@ export class StakePool {
     {
       const encodeLength = commandDataLayout.encode(
         {
-          instruction: StakeInstruction.Deposit, // Initialize instruction
+          instruction: FarmInstruction.Deposit, // Initialize instruction
           amount:amount,
         },
         data,
@@ -575,7 +563,7 @@ export class StakePool {
     }
     return new TransactionInstruction({
       keys,
-      programId: stakeProgramId,
+      programId: farmProgramId,
       data,
     });
   }
@@ -584,19 +572,18 @@ export class StakePool {
     userTransferAuthority: Account,
     userRewardTokenAccount: PublicKey,
     userLpTokenAccount: PublicKey,
-    harvestFeeAccount: PublicKey, 
     amount: number,
   ) {
-    let userInfo = await StakePool.findOrCreateUserInfoAccount(this.connection,this.stakeProgramId,this.stake, owner)
+    let userInfo = await YieldFarm.findOrCreateUserInfoAccount(this.connection,this.farmProgramId,this.farmId, owner)
 
     let transaction;
     transaction = new Transaction();
 
-    const instruction = StakePool.createWithdrawInstruction(
-      this.stake,
+    const instruction = YieldFarm.createWithdrawInstruction(
+      this.farmId,
       this.authority,
       owner,
-      userInfo.userInfoAccount,
+      userInfo.userInfoId,
       userTransferAuthority.publicKey,
       userLpTokenAccount,
       userRewardTokenAccount,
@@ -605,8 +592,7 @@ export class StakePool {
       this.lpTokenPoolMint,
       this.rewardTokenPoolMint,
       this.tokenProgramId,
-      this.stakeProgramId,
-      harvestFeeAccount,
+      this.farmProgramId,
       amount,
     );
     transaction.add(instruction);
@@ -621,8 +607,8 @@ export class StakePool {
     );
   }
   static createWithdrawInstruction(
-    stakeAddress: PublicKey, // pool account 
-    authority: PublicKey, //pool authority
+    farmId: PublicKey, // farm account 
+    authority: PublicKey, //farm authority
     owner: Account,
     userInfoAccount: PublicKey,
     userTransferAuthority: PublicKey,
@@ -633,12 +619,11 @@ export class StakePool {
     poolLpTokenMint: PublicKey,
     poolRewardTokenMint: PublicKey,
     tokenProgramId: PublicKey,
-    stakeProgramId: PublicKey,
-    harvestFeeAccount: PublicKey,
+    farmProgramId: PublicKey,
     amount: number
   ): TransactionInstruction {
     const keys = [
-      {pubkey: stakeAddress, isSigner: false, isWritable: true},
+      {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: owner.publicKey, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
@@ -647,7 +632,6 @@ export class StakePool {
       {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
-      {pubkey: harvestFeeAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenMint, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenMint, isSigner: false, isWritable: true},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
@@ -661,7 +645,7 @@ export class StakePool {
     {
       const encodeLength = commandDataLayout.encode(
         {
-          instruction: StakeInstruction.Withdraw, // Initialize instruction
+          instruction: FarmInstruction.Withdraw, // Initialize instruction
           amount:amount,
         },
         data,
@@ -670,7 +654,7 @@ export class StakePool {
     }
     return new TransactionInstruction({
       keys,
-      programId: stakeProgramId,
+      programId: farmProgramId,
       data,
     });
   }
