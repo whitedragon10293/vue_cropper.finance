@@ -215,7 +215,6 @@ export const withdrawInstruction = (
   tokenSwap: PublicKey,
   authority: PublicKey,
   poolMint: PublicKey,
-  feeAccount: PublicKey | undefined,
   sourcePoolAccount: PublicKey,
   fromA: PublicKey,
   fromB: PublicKey,
@@ -254,12 +253,8 @@ export const withdrawInstruction = (
     { pubkey: fromB, isSigner: false, isWritable: true },
     { pubkey: userAccountA, isSigner: false, isWritable: true },
     { pubkey: userAccountB, isSigner: false, isWritable: true },
+    { pubkey: tokenProgramId, isSigner: false, isWritable: false },
   ];
-
-  if (feeAccount) {
-    keys.push({ pubkey: feeAccount, isSigner: false, isWritable: true });
-  }
-  keys.push({ pubkey: tokenProgramId, isSigner: false, isWritable: false });
 
   return new TransactionInstruction({
     keys,

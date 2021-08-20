@@ -26,7 +26,7 @@ import BigNumber from 'bignumber.js'
 import { LIQUIDITY_POOL_PROGRAM_ID_V5, TOKEN_PROGRAM_ID } from '@/utils/ids'
 import { TokenAmount } from '@/utils/safe-math'
 import { closeAccount } from '@project-serum/serum/lib/token-instructions'
-import { depositInstruction } from './new_fcn'
+import { depositInstruction, withdrawInstruction } from './new_fcn'
 
 export { getLpMintByTokenMintAddresses, getPoolByLpMintAddress, getPoolByTokenMintAddresses, canWrap }
 
@@ -292,31 +292,23 @@ export async function removeLiquidity(
   }
 
   transaction.add(
-    poolInfo.version === 4
-      ? removeLiquidityInstructionV4(
+    poolInfo.version === 5
+      ? removeLiquidityV5(
           new PublicKey(poolInfo.programId),
-
+          
+          //amm info
           new PublicKey(poolInfo.ammId),
           new PublicKey(poolInfo.ammAuthority),
-          new PublicKey(poolInfo.ammOpenOrders),
-          new PublicKey(poolInfo.ammTargetOrders),
           new PublicKey(poolInfo.lp.mintAddress),
           new PublicKey(poolInfo.poolCoinTokenAccount),
           new PublicKey(poolInfo.poolPcTokenAccount),
-          new PublicKey(poolInfo.poolWithdrawQueue),
-          new PublicKey(poolInfo.poolTempLpTokenAccount),
 
-          new PublicKey(poolInfo.serumProgramId),
-          new PublicKey(poolInfo.serumMarket),
-          new PublicKey(poolInfo.serumCoinVaultAccount),
-          new PublicKey(poolInfo.serumPcVaultAccount),
-          new PublicKey(poolInfo.serumVaultSigner),
-
+          //user info
           new PublicKey(lpAccount),
           wrappedCoinSolAccount ? wrappedCoinSolAccount : new PublicKey(fromCoinAccount),
           wrappedSolAccount ? wrappedSolAccount : new PublicKey(toCoinAccount),
           owner,
-
+          
           lpAmount
         )
       : removeLiquidityInstruction(
@@ -529,7 +521,6 @@ export function addLiquidityInstructionV5(
   )
 }
 
-
 export function removeLiquidityInstruction(
   programId: PublicKey,
   // tokenProgramId: PublicKey,
@@ -662,6 +653,49 @@ export function removeLiquidityInstructionV4(
     programId,
     data
   })
+}
+
+export function removeLiquidityV5(
+  programId: PublicKey,
+  // tokenProgramId: PublicKey,
+  // amm
+  ammId: PublicKey,
+  ammAuthority: PublicKey,
+  lpMintAddress: PublicKey,
+  poolCoinTokenAccount: PublicKey,
+  poolPcTokenAccount: PublicKey,
+
+  // user
+  userLpTokenAccount: PublicKey,
+  userCoinTokenAccount: PublicKey,
+  userPcTokenAccount: PublicKey,
+  userOwner: PublicKey,
+
+  amount: number
+): Transaction {
+  let transaction = new Transaction()
+
+  transaction.add(withdrawInstruction(
+    ammId,
+    ammAuthority,
+    lpMintAddress,
+    userLpTokenAccount,
+    poolCoinTokenAccount,
+    poolPcTokenAccount,
+    userCoinTokenAccount,
+    userPcTokenAccount,
+    new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
+    TOKEN_PROGRAM_ID,
+    amount,
+    0,
+    0
+  ))
+  transaction.add(closeAccount({
+    source: userLpTokenAccount,
+    destination: userOwner,
+    owner: userOwner
+  }))
+  return transaction
 }
 
 export const AMM_INFO_LAYOUT = struct([
