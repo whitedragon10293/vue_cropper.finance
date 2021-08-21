@@ -214,6 +214,7 @@ export const depositInstruction = (
 export const withdrawInstruction = (
   tokenSwap: PublicKey,
   authority: PublicKey,
+  userTransferAuthority: PublicKey,
   poolMint: PublicKey,
   sourcePoolAccount: PublicKey,
   fromA: PublicKey,
@@ -247,6 +248,7 @@ export const withdrawInstruction = (
   const keys = [
     { pubkey: tokenSwap, isSigner: false, isWritable: false },
     { pubkey: authority, isSigner: false, isWritable: false },
+    { pubkey: userTransferAuthority, isSigner: false, isWritable: false },
     { pubkey: poolMint, isSigner: false, isWritable: true },
     { pubkey: sourcePoolAccount, isSigner: false, isWritable: true },
     { pubkey: fromA, isSigner: false, isWritable: true },
