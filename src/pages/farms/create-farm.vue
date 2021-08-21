@@ -307,11 +307,6 @@
           <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>Reward Per Second:&nbsp;{{rewardPerSecond}} &nbsp;{{rewardCoin != null?rewardCoin.symbol : ""}}</div>
           </Col>
-          <Col style="line-height: 20px;margin-top:15px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
-            <div>Harvest Fee Address:</div>
-          </Col>
-          <Col style="line-height: 20px" :span="24"><input v-model="harvestFeeAccount" /></Col>
-          
 
           <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
             <div class="btncontainer">
@@ -372,7 +367,7 @@ import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, LIQ
 import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep } from 'lodash-es'
 import moment from 'moment'
-import {StakePool} from '@/utils/farm'
+import {YieldFarm} from '@/utils/farm'
 import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { LIQUIDITY_POOLS } from '@/utils/pools'
 import { createSplAccount } from '@/utils/new_fcn'
@@ -399,7 +394,6 @@ export default class CreatePool extends Vue {
   fixedFromCoin: boolean = true
   selectFromCoin:boolean = true
   coinSelectShow: boolean = false
-  harvestFeeAccount: string = ""
   startTime: any = null
   endTime:  any = null
   endOpen: any = false
@@ -533,14 +527,11 @@ export default class CreatePool extends Vue {
 
     //check if user paid Farm fee (500 CRP)
 
-    //check harvest fee address
-
     //check start time and end time
 
     //check wallet connection
 
     const connection = this.$web3;
-    const wallet:any = this.$wallet;
     if(connection != undefined)
     {
         console.log("wallet connected!");
@@ -549,72 +540,46 @@ export default class CreatePool extends Vue {
         console.log("wallet is not connected!");
         return;
     }
-    
-    const stakeAccount = new Account();
-    const farmProgramPubkey = new PublicKey(FARM_PROGRAM_ID);
 
-    let [authority, nonce] = await PublicKey.findProgramAddress(
-      [stakeAccount.publicKey.toBuffer()],
-      farmProgramPubkey,
-    );
+    const wallet:any = this.$wallet;
 
     //get liquidity pool info
-    let liquidityPoolInfo = LIQUIDITY_POOLS.find((item) => item.ammId === this.userCreateAmmId);
+    let liquidityPoolInfo:any = LIQUIDITY_POOLS.find((item) => item.ammId === this.userCreateAmmId);
 
     //check liquidity pool
     if(liquidityPoolInfo == undefined){
       console.log("find liquidity pool error");
       return;
     }
-    let rewardTokenPubkey = new PublicKey(this.rewardCoin?.mintAddress as any);
+
+    let rewardMintPubkey = new PublicKey(this.rewardCoin?.mintAddress as string);
+    let lpMintPubkey = new PublicKey(liquidityPoolInfo.lp.mintAddress);
     
-    
-    let poolRewardTokenAccount = await StakePool.createSPLTokenAccount(
-      connection,
-      wallet,
-      authority,
-      rewardTokenPubkey
-    );
-    
-    let poolLpTokenAccount = await StakePool.createSPLTokenAccount(
-      connection,
-      wallet,
-      authority,
-      new PublicKey(liquidityPoolInfo.lp.mintAddress as any)
-    );
     let startTimestamp:any = this.startTime.unix();
     let endTimestamp:any = this.endTime.unix();
 
-    await StakePool.createStakePool(
+    let createdFarm = await YieldFarm.createFarmWithParams(
       connection,
-      stakeAccount,
-      farmProgramPubkey,
-      TOKEN_PROGRAM_ID,
-      new PublicKey(liquidityPoolInfo.lp.mintAddress),
-      new PublicKey(this.rewardCoin?.mintAddress as string),
-      new PublicKey(this.harvestFeeAccount),
-      wallet.pubkey,
-      authority,
-      poolRewardTokenAccount.publicKey,
-      poolLpTokenAccount.publicKey,
-      0,
-      nonce,
-      0,0,
-      0,
+      wallet,
+      rewardMintPubkey,
+      lpMintPubkey,
       startTimestamp,
-      endTimestamp,
-      wallet
+      endTimestamp
     );
-    console.log(stakeAccount.publicKey.toBase58())
+    //console.log(stakeAccount.publicKey.toBase58())
     /*
-    const fetchedStakePool = await StakePool.loadStakePool(
+    const fetchedStakePool = await YieldFarm.loadStakePool(
       connection,
       stakeAccount.publicKey,
-      farmProgramPubkey,
+      farmProgramId,
       wallet,
     );
     console.log(fetchedStakePool);
     */
+
+    //transfer initial reward amount
+
+
     this.current += 1;
   }
   gotoFarms(){
