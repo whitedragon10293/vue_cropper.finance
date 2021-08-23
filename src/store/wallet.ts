@@ -114,7 +114,6 @@ export const actions = actionTree(
           .then(async (parsedTokenAccounts) => {
             const tokenAccounts: any = {}
             const auxiliaryTokenAccounts: Array<{ pubkey: PublicKey; account: AccountInfo<ParsedAccountData> }> = []
-
             parsedTokenAccounts.value.forEach(async (tokenAccountInfo) => {
               const tokenAccountPubkey = tokenAccountInfo.pubkey
               const tokenAccountAddress = tokenAccountPubkey.toBase58()
@@ -141,7 +140,6 @@ export const actions = actionTree(
               tokenAccountAddress: wallet.publicKey.toBase58(),
               balance: new TokenAmount(solBalance, NATIVE_SOL.decimals)
             }
-
             commit('setAuxiliaryTokenAccounts', auxiliaryTokenAccounts)
             commit('setTokenAccounts', tokenAccounts)
             logger('Wallet TokenAccounts updated')
