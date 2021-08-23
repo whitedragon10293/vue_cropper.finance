@@ -528,7 +528,7 @@ export default class CreatePool extends Vue {
   async confirmFarmInfo(){
     
     //dummy data to test
-    this.userCreateAmmId = "7h3HwQzhzNhfKZpdacVEKPwgZx8x1TsB8b2enoF4HHKx";
+    //this.userCreateAmmId = "7h3HwQzhzNhfKZpdacVEKPwgZx8x1TsB8b2enoF4HHKx";
 
     //check Initial reward token amount
 
