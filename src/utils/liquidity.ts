@@ -150,28 +150,12 @@ export async function addLiquidity(
     )
   }
   //@zhaohui
-  // let userLpTokenAccount = await createAssociatedTokenAccountIfNotExist(
-  //   lpAccount,
-  //   owner,
-  //   poolInfo.lp.mintAddress,
-  //   transaction
-  // )
-  let userLpTokenAccount = await getOneFilteredTokenAccountsByOwner(connection, owner, new PublicKey(poolInfo.lp.mintAddress)) as any
-
-
-  userLpTokenAccount = await createTokenAccountIfNotExist(
-    connection,
-    userLpTokenAccount,
+  let userLpTokenAccount = await createAssociatedTokenAccountIfNotExist(
+    lpAccount,
     owner,
     poolInfo.lp.mintAddress,
-    await connection.getMinimumBalanceForRentExemption(
-      ACCOUNT_LAYOUT.span
-    ),
-    transaction,
-    signers
+    transaction
   )
-  console.log("Checked instruction")
-
 
   transaction.add(
     poolInfo.version === 5

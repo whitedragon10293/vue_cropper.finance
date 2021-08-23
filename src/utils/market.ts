@@ -12,7 +12,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
 } from '@solana/web3.js'
-import { Token, MintLayout, AccountLayout } from "@solana/spl-token";
+import { Token, MintLayout, AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 import {
   createSplAccount,
@@ -47,6 +47,7 @@ import {
   getFilteredTokenAccountsByOwner,
   getOneFilteredTokenAccountsByOwner,
   createAssociatedId,
+  findAssociatedTokenAddress,
   createAssociatedTokenAccount,
   createTokenAccountIfNotExist
 } from '@/utils/web3'
@@ -203,14 +204,21 @@ export async function createAmm(
   });
 
   // creating depositor pool account
-  const depositorAccount = createSplAccount(
-    instructions,
-    wallet.publicKey,
-    accountRentExempt,
-    liquidityTokenAccount.publicKey,
-    wallet.publicKey,
-    AccountLayout.span
-  );
+  const depositorAccount:PublicKey = await findAssociatedTokenAddress(wallet.publicKey, liquidityTokenAccount.publicKey)
+  const destLpTokenInfo = await conn.getAccountInfo(depositorAccount)
+  if(!destLpTokenInfo)
+  {
+    instructions.push(
+      Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        liquidityTokenAccount.publicKey,
+        depositorAccount,
+        wallet.publicKey,
+        wallet.publicKey
+      )
+    )
+  }
 
   let transaction = new Transaction()
   instructions.forEach((instruction)=>{
@@ -232,7 +240,7 @@ export async function createAmm(
   // create all accounts in one transaction
   let tx = await sendTransaction(conn, wallet, transaction, [
     liquidityTokenAccount,
-    depositorAccount,
+    // depositorAccount,
     ...holdingAccounts,
     ...signers,
   ]);
@@ -341,7 +349,7 @@ export async function createAmm(
       liquidityTokenAccount.publicKey,
       feeFromTokenAccount,
       feeToTokenAccount,
-      depositorAccount.publicKey,
+      depositorAccount,
       TOKEN_PROGRAM_ID,
       new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
       market.address,
