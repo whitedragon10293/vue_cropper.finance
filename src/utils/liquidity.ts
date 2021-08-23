@@ -678,7 +678,6 @@ export function removeLiquidityV5(
   transaction.add(withdrawInstruction(
     ammId,
     ammAuthority,
-    userOwner,
     lpMintAddress,
     userLpTokenAccount,
     poolCoinTokenAccount,
@@ -691,7 +690,11 @@ export function removeLiquidityV5(
     0,
     0
   ))
-
+  transaction.add(closeAccount({
+    source: userLpTokenAccount,
+    destination: userOwner,
+    owner: userOwner
+  }))
   return transaction
 }
 
