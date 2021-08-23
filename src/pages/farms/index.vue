@@ -439,6 +439,7 @@ export default Vue.extend({
       this.addRewardModalOpening = true
     },
     async addReward(amount:string){
+      return;//on testing
       this.adding = true;
       const conn = this.$web3
       const wallet = (this as any).$wallet
@@ -496,6 +497,7 @@ export default Vue.extend({
 
     },
     stake(amount: string) {
+      return;//on testing
       this.staking = true
 
       const conn = this.$web3
@@ -562,6 +564,7 @@ export default Vue.extend({
     },
 
     unstake(amount: string) {
+      return;//on testing
       this.unstaking = true
 
       const conn = this.$web3
@@ -625,6 +628,7 @@ export default Vue.extend({
     },
 
     harvest(farmInfo: FarmInfo) {
+      return;//on testing
       this.harvesting = true
 
       const conn = this.$web3
