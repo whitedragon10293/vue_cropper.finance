@@ -78,10 +78,7 @@ export function getAddressForWhat(address: string) {
 
   return {}
 }
-export const FARMS: FarmInfo[] = [
-  
-];
-/*
+
 export const FARMS: FarmInfo[] = [
   // v3 farm
   {
@@ -651,8 +648,6 @@ export const FARMS: FarmInfo[] = [
     poolRewardTokenAccount: '5ihtMmeTAx3kdf459Yt3bqos5zDe4WBBcSZSB6ooNxLt' // reward vault A
   }
 ]
-*/
-
 
 // for solana.tokenlist.json
 // for (const [key, value] of Object.entries(LP_TOKENS)) {

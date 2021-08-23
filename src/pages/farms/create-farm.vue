@@ -520,9 +520,8 @@ export default class CreatePool extends Vue {
     this.updateLocalData()
   }
   async confirmFarmInfo(){
-    
     //dummy data to test
-    this.userCreateAmmId = "7h3HwQzhzNhfKZpdacVEKPwgZx8x1TsB8b2enoF4HHKx";
+    //this.userCreateAmmId = "62P29pgXzH2X4zq3n7BRShHMRzezv8wxG1L9iszB1vbM";
 
     //check Initial reward token amount
 
@@ -541,16 +540,6 @@ export default class CreatePool extends Vue {
         console.log("wallet is not connected!");
         return;
     }
-    /*
-    const fetchedStakePool = await YieldFarm.loadFarm(
-      connection,
-      new PublicKey("6sERqwc8UZZNfdbBRGsc2bAF6Qyy2SxPrURPKnYXgnKa"),
-      new PublicKey(FARM_PROGRAM_ID),
-    );
-    console.log(fetchedStakePool);
-    return;
-    */
-
 
     const wallet:any = this.$wallet;
 
@@ -577,10 +566,16 @@ export default class CreatePool extends Vue {
       startTimestamp,
       endTimestamp
     );
-    console.log(createdFarm.farmId.toBase58())
-    
-    
-    
+    //console.log(stakeAccount.publicKey.toBase58())
+    /*
+    const fetchedStakePool = await YieldFarm.loadStakePool(
+      connection,
+      stakeAccount.publicKey,
+      farmProgramId,
+      wallet,
+    );
+    console.log(fetchedStakePool);
+    */
 
     //transfer initial reward amount
 

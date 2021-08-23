@@ -1,6 +1,6 @@
 import { getterTree, mutationTree, actionTree } from 'typed-vuex'
 
-import { FarmInfo, FARMS, getAddressForWhat, getFarmByPoolId } from '@/utils/farms'
+import { FARMS, getAddressForWhat, getFarmByPoolId } from '@/utils/farms'
 import {
   STAKE_INFO_LAYOUT,
   STAKE_INFO_LAYOUT_V4,
@@ -11,13 +11,10 @@ import { commitment, getFilteredProgramAccounts, getMultipleAccounts } from '@/u
 
 import { ACCOUNT_LAYOUT, getBigNumber } from '@/utils/layouts'
 import { PublicKey } from '@solana/web3.js'
-import { FARM_PROGRAM_ID, STAKE_PROGRAM_ID, STAKE_PROGRAM_ID_V4, STAKE_PROGRAM_ID_V5 } from '@/utils/ids'
+import { STAKE_PROGRAM_ID, STAKE_PROGRAM_ID_V4, STAKE_PROGRAM_ID_V5 } from '@/utils/ids'
 import { TokenAmount, lt } from '@/utils/safe-math'
 import { cloneDeep } from 'lodash-es'
 import logger from '@/utils/logger'
-import { FarmAccountLayout, YieldFarm } from '@/utils/farm'
-import { LP_TOKENS, TOKENS } from '@/utils/tokens'
-import { LiquidityPoolInfo, LIQUIDITY_POOLS } from '@/utils/pools'
 
 const AUTO_REFRESH_TIME = 60
 
@@ -77,92 +74,25 @@ export const actions = actionTree(
       dispatch('getStakeAccounts')
 
       const conn = this.$web3
-      //const wallet = (this as any)._vm.$wallet
 
       const farms = {} as any
-      //const publicKeys = [] as any
+      const publicKeys = [] as any
 
-      const farmFilters = [
-        {
-          dataSize: FarmAccountLayout.span
-        }
-      ]
-      const farmAccountInfos = await getFilteredProgramAccounts(conn, new PublicKey(FARM_PROGRAM_ID), farmFilters)
-      
-      farmAccountInfos.forEach((farmAccountInfo) => {
-        const farmAccountAddress = farmAccountInfo.publicKey.toBase58()
-        const { data } = farmAccountInfo.accountInfo
-
-        const _farmData = FarmAccountLayout.decode(data)
-        const lpTokenMintAddress = _farmData.pool_mint_address.toBase58();
-        const rewardTokenMintAddress = _farmData.reward_mint_address.toBase58();
-        const ownerAddress = _farmData.owner.toBase58();
-
-        //get liquidity pool info
-        let liquidityPoolInfo:LiquidityPoolInfo = LIQUIDITY_POOLS.find((item) => item.lp.mintAddress === lpTokenMintAddress) as any;
-
-        //check liquidity pool
-        if(liquidityPoolInfo == undefined){
-          console.log("find liquidity pool error");
-          return;
-        }
-        //get lp token info
-        const lpToken = liquidityPoolInfo.lp;
-
-        //get reward token info
-        let rewardToken:any;
-        if(liquidityPoolInfo.coin.mintAddress === rewardTokenMintAddress){
-          rewardToken = liquidityPoolInfo.coin;
-        }
-        else if(liquidityPoolInfo.pc.mintAddress === rewardTokenMintAddress){
-          rewardToken = liquidityPoolInfo.pc;
-        }
-        else if(liquidityPoolInfo.lp.mintAddress === rewardTokenMintAddress){
-          rewardToken = liquidityPoolInfo.lp;
-        }
-
-        if(rewardToken === undefined){
-          console.log("find reward token info error");
-          return;
-        }
-
-        const _farmInfo:FarmInfo = {
-          name: '',
-          lp: { ...lpToken },
-          reward: { ...rewardToken },
-          isStake: false,
-
-          fusion: false,
-          legacy: false,
-          dual: false,
-          version: 1,
-          programId: FARM_PROGRAM_ID,
-
-          poolId: farmAccountAddress,
-          poolAuthority: ownerAddress,
-          poolLpTokenAccount: _farmData.pool_lp_token_account.toBase58(), // lp vault
-          poolRewardTokenAccount: _farmData.pool_reward_token_account.toBase58() // reward vault
-        } ;    
-        _farmInfo.lp.balance = new TokenAmount(0, lpToken.decimals);
-        farms[farmAccountAddress] = _farmInfo;
-        farms[farmAccountAddress].poolInfo = _farmData;
-      })
-      
-     /*
       FARMS.forEach((farm) => {
         const { lp, poolId, poolLpTokenAccount } = farm
+
+        publicKeys.push(new PublicKey(poolId), new PublicKey(poolLpTokenAccount))
 
         const farmInfo = cloneDeep(farm)
 
         farmInfo.lp.balance = new TokenAmount(0, lp.decimals)
-        console.log(farmInfo)
+
         farms[poolId] = farmInfo
       })
-      
-      
+
       const multipleInfo = await getMultipleAccounts(conn, publicKeys, commitment)
       multipleInfo.forEach((info) => {
-        
+        /*
         if (info) {
           const address = info.publicKey.toBase58()
           const data = Buffer.from(info.account.data)
@@ -176,15 +106,12 @@ export const actions = actionTree(
               // pool info
               case 'poolId': {
                 let parsed
-                
+
                 if ([4, 5].includes(farmInfo.version)) {
                   parsed = STAKE_INFO_LAYOUT_V4.decode(data)
                 } else {
                   parsed = STAKE_INFO_LAYOUT.decode(data)
                 }
-                
-               
-               parsed = FarmAccountLayout.decode(data)
 
                 farmInfo.poolInfo = parsed
 
@@ -200,19 +127,17 @@ export const actions = actionTree(
               }
             }
           }
-          
         }
-        
+        */
       })
-      */
+
       commit('setInfos', farms)
-      logger('Farm infomations updated')
+      logger('Farm&Stake pool infomations updated')
       commit('setInitialized')
       commit('setLoading', false)
     },
 
     getStakeAccounts({ commit }) {
-      console.log("getStakeAccounts")
       const conn = this.$web3
       const wallet = (this as any)._vm.$wallet
 

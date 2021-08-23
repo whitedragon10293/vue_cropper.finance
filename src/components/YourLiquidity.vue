@@ -53,7 +53,7 @@
                 ≈ {{ info.percent.isLessThan(0.0001) ? '&lt;0.01' : info.percent.multipliedBy(100).toFixed(2) }}%
               </div>
             </div>
-            <Row v-if="[4].includes(info.poolInfo.version)" :gutter="32" class="actions">
+            <Row v-if="[5].includes(info.poolInfo.version)" :gutter="32" class="actions">
               <Col :span="12">
                 <Button ghost @click="$emit('onAdd', info.poolInfo.ammId, info.coin.mintAddress, info.pc.mintAddress)">
                   Add
@@ -121,7 +121,6 @@ export default Vue.extend({
     'wallet.tokenAccounts': {
       handler(newTokenAccounts: any) {
         this.updateLiquids(newTokenAccounts)
-
         this.updateCurrentLp(newTokenAccounts)
       },
       deep: true

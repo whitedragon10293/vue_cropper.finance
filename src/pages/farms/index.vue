@@ -300,86 +300,100 @@ export default Vue.extend({
     TokenAmount,
 
     updateFarms() {
+      //by hongbo
+      return;
 
       const farms: any = []
       const endedFarmsPoolId: string[] = []
+
       for (const [poolId, farmInfo] of Object.entries(this.farm.infos)) {
-        let userInfo = get(this.farm.stakeAccounts, poolId)
-
         // @ts-ignore
-        const { reward_per_share_net, reward_per_timestamp } = farmInfo.poolInfo
-
-        // @ts-ignore
-        const { reward, lp } = farmInfo
-
-        const newFarmInfo = cloneDeep(farmInfo)
-
-        if (reward && lp) {
-          const rewardPerTimestampAmount = new TokenAmount(getBigNumber(reward_per_timestamp), reward.decimals)
-          const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
-
-          const rewardPerTimestampAmountTotalValue =
-            getBigNumber(rewardPerTimestampAmount.toEther()) *
-            2 *
-            60 *
-            60 *
-            24 *
-            365 *
-            this.price.prices[reward.symbol as string]
-
-          const liquidityCoinValue =
-            getBigNumber((liquidityItem?.coin.balance as TokenAmount).toEther()) *
-            this.price.prices[liquidityItem?.coin.symbol as string]
-          const liquidityPcValue =
-            getBigNumber((liquidityItem?.pc.balance as TokenAmount).toEther()) *
-            this.price.prices[liquidityItem?.pc.symbol as string]
-
-          const liquidityTotalValue = liquidityPcValue + liquidityCoinValue
-          const liquidityTotalSupply = getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther())
-          const liquidityItemValue = liquidityTotalValue / liquidityTotalSupply
-
-          const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue
-          const apr = ((rewardPerTimestampAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
-
+        if (!farmInfo.isStake && ![4, 5].includes(farmInfo.version)) {
+          let userInfo = get(this.farm.stakeAccounts, poolId)
           // @ts-ignore
-          newFarmInfo.apr = apr
+          const { rewardPerShareNet, rewardPerBlock } = farmInfo.poolInfo
           // @ts-ignore
-          newFarmInfo.liquidityUsdValue = liquidityUsdValue
+          const { reward, lp } = farmInfo
 
-          if (rewardPerTimestampAmount.toEther().toString() === '0') {
-            //endedFarmsPoolId.push(poolId)
-          }
-        }
+          const newFarmInfo = cloneDeep(farmInfo)
 
-        if (userInfo) {
-          userInfo = cloneDeep(userInfo)
+          if (reward && lp) {
+            const rewardPerBlockAmount = new TokenAmount(getBigNumber(rewardPerBlock), reward.decimals)
+            const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
 
-          const { reward_debt, deposit_balance } = userInfo
+            const rewardPerBlockAmountTotalValue =
+              getBigNumber(rewardPerBlockAmount.toEther()) *
+              2 *
+              60 *
+              60 *
+              24 *
+              365 *
+              this.price.prices[reward.symbol as string]
 
-          const pendingReward = deposit_balance.wei
-            .multipliedBy(getBigNumber(reward_per_share_net))
-            .dividedBy(1e9)
-            .minus(reward_debt.wei)
+            const liquidityCoinValue =
+              getBigNumber((liquidityItem?.coin.balance as TokenAmount).toEther()) *
+              this.price.prices[liquidityItem?.coin.symbol as string]
+            const liquidityPcValue =
+              getBigNumber((liquidityItem?.pc.balance as TokenAmount).toEther()) *
+              this.price.prices[liquidityItem?.pc.symbol as string]
 
-          userInfo.pendingReward = new TokenAmount(pendingReward, reward_debt.decimals)
-        } else {
-          userInfo = {
+            const liquidityTotalValue = liquidityPcValue + liquidityCoinValue
+            const liquidityTotalSupply = getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther())
+            const liquidityItemValue = liquidityTotalValue / liquidityTotalSupply
+
+            const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue
+            const apr = ((rewardPerBlockAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
+
             // @ts-ignore
-            depositBalance: new TokenAmount(0, farmInfo.lp.decimals),
+            newFarmInfo.apr = apr
             // @ts-ignore
-            pendingReward: new TokenAmount(0, farmInfo.reward.decimals)
-          }
-        }
+            newFarmInfo.liquidityUsdValue = liquidityUsdValue
 
-        farms.push({
-          userInfo,
-          farmInfo: newFarmInfo
-        })
+            if (rewardPerBlockAmount.toEther().toString() === '0') {
+              if (
+                [
+                  'HUDr9BDaAGqi37xbQHzxCyXvfMCKPTPNF8g9c9bPu1Fu',
+                  'CHYrUBX2RKX8iBg7gYTkccoGNBzP44LdaazMHCLcdEgS',
+                  'B6fbnZZ7sbKHR18ffEDD5Nncgp54iKN1GbCgjTRdqhS1',
+                  '5DFbcYNLLy5SJiBpCCDzNSs7cWCsUbYnCkLXzcPQiKnR'
+                ].includes(poolId)
+              ) {
+                console.log('temp')
+              } else {
+                endedFarmsPoolId.push(poolId)
+              }
+            }
+          }
+
+          if (userInfo) {
+            userInfo = cloneDeep(userInfo)
+
+            const { rewardDebt, depositBalance } = userInfo
+
+            const pendingReward = depositBalance.wei
+              .multipliedBy(getBigNumber(rewardPerShareNet))
+              .dividedBy(1e9)
+              .minus(rewardDebt.wei)
+
+            userInfo.pendingReward = new TokenAmount(pendingReward, rewardDebt.decimals)
+          } else {
+            userInfo = {
+              // @ts-ignore
+              depositBalance: new TokenAmount(0, farmInfo.lp.decimals),
+              // @ts-ignore
+              pendingReward: new TokenAmount(0, farmInfo.reward.decimals)
+            }
+          }
+
+          farms.push({
+            userInfo,
+            farmInfo: newFarmInfo
+          })
+        }
       }
 
       this.farms = farms
       this.endedFarmsPoolId = endedFarmsPoolId
-      console.log("updated farms, size = ",this.farms.length);
     },
 
     updateCurrentLp(newTokenAccounts: any) {
