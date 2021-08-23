@@ -8,6 +8,7 @@ import { publicKey, u128, u64 } from '@project-serum/borsh'
 import { FarmInfo } from '@/utils/farms'
 import { TOKEN_PROGRAM_ID } from '@/utils/ids'
 import { TokenAmount } from '@/utils/safe-math'
+import { UserInfoAccountLayout, YieldFarm } from './farm'
 
 // deposit
 export async function deposit(
@@ -22,62 +23,15 @@ export async function deposit(
   if (!connection || !wallet) throw new Error('Miss connection')
   if (!farmInfo) throw new Error('Miss pool infomations')
   if (!amount) throw new Error('Miss amount infomations')
-
-  const transaction = new Transaction()
-  const signers: any = []
-
-  const owner = wallet.publicKey
-
-  const atas: string[] = []
-
-  const userLpAccount = await createAssociatedTokenAccountIfNotExist(
-    lpAccount,
-    owner,
-    farmInfo.lp.mintAddress,
-    transaction,
-    atas
-  )
-
-  // if no account, create new one
-  const userRewardTokenAccount = await createAssociatedTokenAccountIfNotExist(
-    rewardAccount,
-    owner,
-    farmInfo.reward.mintAddress,
-    transaction,
-    atas
-  )
-
-  // if no userinfo account, create new one
-  const programId = new PublicKey(farmInfo.programId)
-  const userInfoAccount = await createProgramAccountIfNotExist(
+  return await YieldFarm.deposit(
     connection,
+    wallet,
+    farmInfo,
+    lpAccount,
+    rewardAccount,
     infoAccount,
-    owner,
-    programId,
-    null,
-    USER_STAKE_INFO_ACCOUNT_LAYOUT,
-    transaction,
-    signers
-  )
-
-  const value = getBigNumber(new TokenAmount(amount, farmInfo.lp.decimals, false).wei)
-
-  transaction.add(
-    depositInstruction(
-      programId,
-      new PublicKey(farmInfo.poolId),
-      new PublicKey(farmInfo.poolAuthority),
-      userInfoAccount,
-      wallet.publicKey,
-      userLpAccount,
-      new PublicKey(farmInfo.poolLpTokenAccount),
-      userRewardTokenAccount,
-      new PublicKey(farmInfo.poolRewardTokenAccount),
-      value
-    )
-  )
-
-  return await sendTransaction(connection, wallet, transaction, signers)
+    amount
+  );
 }
 
 // depositV4
@@ -180,49 +134,15 @@ export async function withdraw(
   if (!infoAccount) throw new Error('Miss account infomations')
   if (!amount) throw new Error('Miss amount infomations')
 
-  const transaction = new Transaction()
-  const signers: any = []
-
-  const owner = wallet.publicKey
-
-  const atas: string[] = []
-
-  const userLpAccount = await createAssociatedTokenAccountIfNotExist(
+  return await YieldFarm.withdraw(
+    connection,
+    wallet,
+    farmInfo,
     lpAccount,
-    owner,
-    farmInfo.lp.mintAddress,
-    transaction,
-    atas
-  )
-
-  // if no account, create new one
-  const userRewardTokenAccount = await createAssociatedTokenAccountIfNotExist(
     rewardAccount,
-    owner,
-    farmInfo.reward.mintAddress,
-    transaction,
-    atas
-  )
-
-  const programId = new PublicKey(farmInfo.programId)
-  const value = getBigNumber(new TokenAmount(amount, farmInfo.lp.decimals, false).wei)
-
-  transaction.add(
-    withdrawInstruction(
-      programId,
-      new PublicKey(farmInfo.poolId),
-      new PublicKey(farmInfo.poolAuthority),
-      new PublicKey(infoAccount),
-      wallet.publicKey,
-      userLpAccount,
-      new PublicKey(farmInfo.poolLpTokenAccount),
-      userRewardTokenAccount,
-      new PublicKey(farmInfo.poolRewardTokenAccount),
-      value
-    )
-  )
-
-  return await sendTransaction(connection, wallet, transaction, signers)
+    infoAccount,
+    amount
+  );
 }
 
 // withdrawV4

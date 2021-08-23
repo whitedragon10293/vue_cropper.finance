@@ -60,7 +60,9 @@ export const actions = actionTree(
           prices[value['symbol']] = value['price']
         }
       );
-
+      //for hongbo's test
+        prices["tUSDC"]=1
+        prices["tCRP"]=12.5
       commit('setPrices', prices)
 
       commit('setInitialized')

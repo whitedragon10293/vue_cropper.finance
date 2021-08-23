@@ -365,7 +365,7 @@ import { createAssociatedId, createAssociatedTokenAccountIfNotExist, sendTransac
 import { Account, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
 import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, LIQUIDITY_POOL_PROGRAM_ID_V5 } from '@/utils/ids'
 import { getBigNumber } from '@/utils/layouts'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, get } from 'lodash-es'
 import moment from 'moment'
 import {YieldFarm} from '@/utils/farm'
 import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
@@ -390,12 +390,12 @@ const Step = Steps.Step
 })
 export default class CreatePool extends Vue {
   rewardCoin:TokenInfo | null = null
-  fromCoinAmount: string = ''
+  fromCoinAmount: string = '0.00'
   fixedFromCoin: boolean = true
   selectFromCoin:boolean = true
   coinSelectShow: boolean = false
-  startTime: any = null
-  endTime:  any = null
+  startTime: any = moment()
+  endTime:  any = moment()
   endOpen: any = false
   isCRPTokenPair:boolean = false
   
@@ -433,7 +433,13 @@ export default class CreatePool extends Vue {
   expectAmmId: undefined | string
 
   get rewardPerSecond(){
-    return 0;
+    let result = 0;
+    let initialAmount = Number.parseFloat(this.fromCoinAmount);
+    let duration = this.endTime.unix() - this.startTime.unix();
+    if(duration > 0){
+      result = initialAmount / duration;
+    }
+    return result;
   }
   get isMobile() {
     return this.$accessor.isMobile
@@ -541,19 +547,8 @@ export default class CreatePool extends Vue {
         console.log("wallet is not connected!");
         return;
     }
-    /*
-    const fetchedStakePool = await YieldFarm.loadFarm(
-      connection,
-      new PublicKey("6sERqwc8UZZNfdbBRGsc2bAF6Qyy2SxPrURPKnYXgnKa"),
-      new PublicKey(FARM_PROGRAM_ID),
-    );
-    console.log(fetchedStakePool);
-    return;
-    */
-
-
     const wallet:any = this.$wallet;
-
+    
     //get liquidity pool info
     let liquidityPoolInfo:any = LIQUIDITY_POOLS.find((item) => item.ammId === this.userCreateAmmId);
 
@@ -564,11 +559,12 @@ export default class CreatePool extends Vue {
     }
 
     let rewardMintPubkey = new PublicKey(this.rewardCoin?.mintAddress as string);
+    let rewardDecimals:number = this.rewardCoin?.decimals as any;
     let lpMintPubkey = new PublicKey(liquidityPoolInfo.lp.mintAddress);
     
     let startTimestamp:any = this.startTime.unix();
     let endTimestamp:any = this.endTime.unix();
-
+    
     let createdFarm = await YieldFarm.createFarmWithParams(
       connection,
       wallet,
@@ -577,16 +573,44 @@ export default class CreatePool extends Vue {
       startTimestamp,
       endTimestamp
     );
-    console.log(createdFarm.farmId.toBase58())
+    
+    await this.delay(500);
+    
+    // wait for the synchronization
+    let loopCount = 0;
+    while(await connection.getAccountInfo(createdFarm.farmId) === null){
+      if(loopCount > 5){ // allow loop for 5 times
+        break;
+      }
+      loopCount++;
+    }
+    
+    let fetchedFarm = await YieldFarm.loadFarm(
+      connection,
+      createdFarm.farmId,
+      new PublicKey(FARM_PROGRAM_ID)
+    )
+    
+    if(fetchedFarm){
+      //transfer initial reward amount
+      let initialRewardAmount:number = Number.parseFloat(this.fromCoinAmount);
+      let userRwardTokenPubkey = new PublicKey(get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.tokenAccountAddress`));
+
+      await fetchedFarm.addReward(
+        wallet,
+        userRwardTokenPubkey,
+        initialRewardAmount * Math.pow(10,rewardDecimals)
+      );
+
+      this.current += 1;
+    }
     
     
-    
-
-    //transfer initial reward amount
-
-
-    this.current += 1;
   }
+  async delay(ms: number) {
+      return new Promise( resolve => setTimeout(resolve, ms) );
+  }
+
   gotoFarms(){
     this.$router.push({ path: `/farms` })
   }

@@ -16,14 +16,19 @@ import {sendAndConfirmTransaction} from './send-and-confirm-transaction';
 import {loadAccount} from './account';
 import { AccountLayout, MintLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createSplAccount } from './new_fcn';
-import { sendTransaction } from './web3';
+import { createAssociatedTokenAccountIfNotExist, createProgramAccountIfNotExist, findAssociatedTokenAddress, sendTransaction } from './web3';
 import { FARM_PROGRAM_ID } from './ids';
+import { FarmInfo } from './farms';
+import { getBigNumber } from './layouts';
+import { TokenAmount } from './safe-math';
 
 enum FarmInstruction
 {
   Initialize = 0,
   Deposit,
   Withdraw,
+  AddReward,
+  PayFarmFee,
 }
 
 export const FarmAccountLayout = struct([
@@ -142,11 +147,11 @@ export class YieldFarm {
     endTimestamp: number,
   ): TransactionInstruction {
     const keys = [
-      {pubkey: farmAccount.publicKey, isSigner: false, isWritable: true},
+      {pubkey: farmAccount.publicKey, isSigner: true, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
-      {pubkey: creator.publicKey, isSigner: true, isWritable: false},
-      {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
-      {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
+      {pubkey: creator.publicKey, isSigner: false, isWritable: false},
+      {pubkey: poolLpTokenAccount, isSigner: true, isWritable: true},
+      {pubkey: poolRewardTokenAccount, isSigner: true, isWritable: true},
       {pubkey: poolMintAddress, isSigner: false, isWritable: false},
       {pubkey: rewardMintAddress, isSigner: false, isWritable: false},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
@@ -343,16 +348,17 @@ export class YieldFarm {
     return farm;
   }
   static async createSPLTokenAccount(
+    instructions:TransactionInstruction[],
     connection:Connection,
     payer:Account,
     owner:PublicKey,
     mint: PublicKey
   ){
-    let instructions: TransactionInstruction[] = [];
+    
     let accountRentExempt = await connection.getMinimumBalanceForRentExemption(
         MintLayout.span
       );
-    let poolRewardTokenAccount = await createSplAccount(
+    let newTokenAccount = await createSplAccount(
       instructions,
       payer.publicKey,
       accountRentExempt,
@@ -360,15 +366,7 @@ export class YieldFarm {
       owner,
       AccountLayout.span
     );
-    let transaction = new Transaction()
-      instructions.forEach((instruction)=>{
-        transaction.add(instruction)
-      });
-    let tx = await sendTransaction(connection, payer, transaction, [
-      poolRewardTokenAccount,
-    ]);
-
-    return poolRewardTokenAccount;
+    return newTokenAccount;
   }
   static async createFarmWithParams(
     connection:Connection,
@@ -385,23 +383,6 @@ export class YieldFarm {
       [farmAccount.publicKey.toBuffer()],
       farmProgramId,
     );
-
-    
-    let poolRewardTokenAccount = await YieldFarm.createSPLTokenAccount(
-      connection,
-      wallet,
-      authority,
-      rewardMintPubkey
-    );
-    
-    let poolLpTokenAccount = await YieldFarm.createSPLTokenAccount(
-      connection,
-      wallet,
-      authority,
-      lpMintPubkey
-    );
-    
-
     return await YieldFarm.createFarm(
       connection,
       farmAccount,
@@ -410,8 +391,6 @@ export class YieldFarm {
       lpMintPubkey,
       rewardMintPubkey,
       authority,
-      poolRewardTokenAccount.publicKey,
-      poolLpTokenAccount.publicKey,
       nonce,
       startTimestamp,
       endTimestamp,
@@ -426,36 +405,39 @@ export class YieldFarm {
     lpTokenPoolMint: PublicKey,
     rewardTokenPoolMint: PublicKey,
     authority: PublicKey,
-    poolRewardTokenAccount: PublicKey,
-    poolLpTokenAccount: PublicKey,
     nonce: number,
     startTimestamp:number,
     endTimestamp:number,
     creator: Account,
   ): Promise<YieldFarm> {
-    let transaction;
-    const farm = new YieldFarm(
-      connection,
-      farmAccount.publicKey,
-      farmProgramId,
-      tokenProgramId,
-      lpTokenPoolMint, 
-      rewardTokenPoolMint, 
-      authority, 
-      poolRewardTokenAccount, 
-      poolLpTokenAccount, 
-      nonce, 
-      startTimestamp,
-      endTimestamp,
-      creator
+    let instructions: TransactionInstruction[] = [];
+    
+    const accountRentExempt = await connection.getMinimumBalanceForRentExemption(
+      AccountLayout.span
+    );
+    let poolRewardTokenAccount = await createSplAccount(
+      instructions,
+      creator.publicKey,
+      accountRentExempt,
+      rewardTokenPoolMint,
+      authority,
+      AccountLayout.span
+    );
+
+    let poolLpTokenAccount = await createSplAccount(
+      instructions,
+      creator.publicKey,
+      accountRentExempt,
+      lpTokenPoolMint,
+      authority,
+      AccountLayout.span
     );
 
     // Allocate memory for the account
     const balanceNeeded = await YieldFarm.getMinBalanceRentForExemptStakePool(
       connection,
     );
-    transaction = new Transaction();
-    transaction.add(
+    instructions.push(
       SystemProgram.createAccount({ 
         fromPubkey: creator.publicKey,
         newAccountPubkey: farmAccount.publicKey,
@@ -469,8 +451,8 @@ export class YieldFarm {
       farmAccount,
       authority, 
       creator, 
-      poolLpTokenAccount,  
-      poolRewardTokenAccount, 
+      poolLpTokenAccount.publicKey,  
+      poolRewardTokenAccount.publicKey, 
       lpTokenPoolMint, 
       rewardTokenPoolMint, 
       tokenProgramId,
@@ -479,40 +461,134 @@ export class YieldFarm {
       startTimestamp,
       endTimestamp,
     );
-    transaction.add(instruction);
+    instructions.push(instruction);
+
+    let transaction = new Transaction()
+    instructions.forEach((inst)=>{
+      transaction.add(inst)
+    });
 
     let tx = await sendTransaction(connection, creator, transaction, [
+      poolRewardTokenAccount,
+      poolLpTokenAccount,
       farmAccount,
     ]);
 
-    //check transaction
+    //check transation
 
+    const farm = new YieldFarm(
+      connection,
+      farmAccount.publicKey,
+      farmProgramId,
+      tokenProgramId,
+      lpTokenPoolMint, 
+      rewardTokenPoolMint, 
+      authority, 
+      poolRewardTokenAccount.publicKey, 
+      poolLpTokenAccount.publicKey, 
+      nonce, 
+      startTimestamp,
+      endTimestamp,
+      creator
+    );
     return farm;
   }
-  
-  public async deposit( 
+  public async addReward( 
     owner: Account,
-    userTransferAuthority: Account,
     userRewardTokenAccount: PublicKey,
-    userLpTokenAccount: PublicKey, 
     amount: number,
   ) {
-
-    let userInfo = await YieldFarm.findOrCreateUserInfoAccount(this.connection,this.farmProgramId,this.farmId, owner)
-
     let transaction;
     transaction = new Transaction();
-    const instruction = YieldFarm.createDepositInstruction(
+    const instruction = YieldFarm.createAddRewardInstruction(
       this.farmId,
       this.authority,
       owner,
-      userInfo.userInfoId,
-      userTransferAuthority.publicKey,
-      userLpTokenAccount,
+      owner.publicKey,
       userRewardTokenAccount,
-      this.poolLpTokenAccount,
       this.poolRewardTokenAccount,
       this.lpTokenPoolMint,
+      this.tokenProgramId,
+      this.farmProgramId,
+      amount,
+    );
+    transaction.add(instruction);
+    
+      
+    let tx = await sendTransaction(this.connection, owner, transaction, [
+      
+    ]);
+    return tx;
+    //check transation
+
+    /*
+    await sendAndConfirmTransaction(
+      'deposit',
+      this.connection,
+      transaction,
+      owner,
+      owner
+    );
+    */
+  }
+  static createAddRewardInstruction(
+    farmId: PublicKey, // farm account 
+    authority: PublicKey, //farm authority
+    depositor: Account,
+    userTransferAuthority: PublicKey,
+    userRewardTokenAccount: PublicKey,
+    poolRewardTokenAccount: PublicKey,
+    poolMint: PublicKey,
+    tokenProgramId: PublicKey,
+    farmProgramId: PublicKey,
+    amount: number
+  ): TransactionInstruction {
+    const keys = [
+      {pubkey: farmId, isSigner: false, isWritable: true},
+      {pubkey: authority, isSigner: false, isWritable: false},
+      {pubkey: depositor.publicKey, isSigner: false, isWritable: false},
+      {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
+      {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
+      {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
+      {pubkey: poolMint, isSigner: false, isWritable: true},
+      {pubkey: tokenProgramId, isSigner: false, isWritable: false},
+      {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
+    ];
+    const commandDataLayout = struct([
+      u8('instruction'),
+      nu64('amount'),
+    ]); 
+    let data = Buffer.alloc(1024);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: FarmInstruction.AddReward, // Initialize instruction
+          amount:amount,
+        },
+        data,
+      );
+      data = data.slice(0, encodeLength);
+    }
+    return new TransactionInstruction({
+      keys,
+      programId: farmProgramId,
+      data,
+    });
+  }
+  public async payFarmFee(
+    owner: Account,
+    userTransferAuthority: Account,
+    userCRPTokenAccount: PublicKey,
+    amount: number,
+  ) {
+    let transaction;
+    transaction = new Transaction();
+    const instruction = YieldFarm.createPayFarmFeeInstruction(
+      this.farmId,
+      this.authority,
+      owner,
+      userTransferAuthority.publicKey,
+      userCRPTokenAccount,
       this.feeOwner,
       this.tokenProgramId,
       this.farmProgramId,
@@ -521,18 +597,214 @@ export class YieldFarm {
     transaction.add(instruction);
 
     
-    await sendAndConfirmTransaction(
-      'deposit',
-      this.connection,
-      transaction,
+    let tx = await sendTransaction(this.connection, owner, transaction, [
+      
+    ]);
+    //check transation
+  }
+  static createPayFarmFeeInstruction(
+    farmId: PublicKey, // farm account 
+    authority: PublicKey, //farm authority
+    depositor: Account,
+    userTransferAuthority: PublicKey,
+    userCRPTokenAccount: PublicKey,
+    ownerFeeAccount: PublicKey,
+    tokenProgramId: PublicKey,
+    farmProgramId: PublicKey,
+    amount: number
+  ): TransactionInstruction {
+    const keys = [
+      {pubkey: farmId, isSigner: false, isWritable: true},
+      {pubkey: authority, isSigner: false, isWritable: false},
+      {pubkey: depositor.publicKey, isSigner: false, isWritable: false},
+      {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
+      {pubkey: userCRPTokenAccount, isSigner: false, isWritable: true},
+      {pubkey: ownerFeeAccount, isSigner: false, isWritable: true},
+      {pubkey: tokenProgramId, isSigner: false, isWritable: false},
+      {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
+    ];
+    const commandDataLayout = struct([
+      u8('instruction'),
+      nu64('amount'),
+    ]); 
+    let data = Buffer.alloc(1024);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: FarmInstruction.PayFarmFee, // Initialize instruction
+          amount:amount,
+        },
+        data,
+      );
+      data = data.slice(0, encodeLength);
+    }
+    return new TransactionInstruction({
+      keys,
+      programId: farmProgramId,
+      data,
+    });
+  }
+  public static async  deposit( 
+    connection: Connection,
+    wallet: any ,
+    farmInfo: FarmInfo,
+    lpAccount: string | undefined | null,
+    rewardAccount: string | undefined | null,
+    infoAccount: string | undefined | null,
+    amount: string
+  ) {
+    const value = getBigNumber(new TokenAmount(amount, farmInfo.lp.decimals, false).wei)
+    const transaction = new Transaction()
+    const signers: any = []
+    const owner = wallet.publicKey
+    const atas: string[] = []
+    const programId = new PublicKey(farmInfo.programId)
+    const farmId = new PublicKey(farmInfo.poolId)
+    const userLpAccount = await createAssociatedTokenAccountIfNotExist(
+      lpAccount,
       owner,
-      userTransferAuthority,
+      farmInfo.lp.mintAddress,
+      transaction,
+      atas
+    )
+
+    // if no account, create new one
+    const userRewardTokenAccount = await createAssociatedTokenAccountIfNotExist(
+      rewardAccount,
+      owner,
+      farmInfo.reward.mintAddress,
+      transaction,
+      atas
+    )
+
+    // if no userinfo account, create new one
+    
+    const userInfoAccount = await createProgramAccountIfNotExist(
+      connection,
+      infoAccount,
+      owner,
+      programId,
+      null,
+      UserInfoAccountLayout,
+      transaction,
+      signers
+    )
+    let [authority, nonce] = await PublicKey.findProgramAddress(
+      [farmId.toBuffer()],
+      programId,
     );
+
+    const fetchFarm = await YieldFarm.loadFarm(
+      connection,
+      farmId,
+      programId
+    )
+    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
+    console.log("rewareFeeATA",rewardFeeATA.toBase58())
+    const instruction = YieldFarm.createDepositInstruction(
+      farmId,
+      authority,
+      owner,
+      userInfoAccount,
+      owner,
+      userLpAccount,
+      userRewardTokenAccount,
+      new PublicKey(farmInfo.poolLpTokenAccount),
+      new PublicKey(farmInfo.poolRewardTokenAccount),
+      new PublicKey(farmInfo.lp.mintAddress),
+      rewardFeeATA,
+      TOKEN_PROGRAM_ID,
+      programId,
+      value,
+    );
+    transaction.add(instruction);
+
+    
+    return await sendTransaction(connection, wallet, transaction, signers);
+  }
+  
+  
+  public static async withdraw( 
+    connection: Connection,
+    wallet: any ,
+    farmInfo: FarmInfo,
+    lpAccount: string | undefined | null,
+    rewardAccount: string | undefined | null,
+    infoAccount: string | undefined | null,
+    amount: string
+  ) {
+    const value = getBigNumber(new TokenAmount(amount, farmInfo.lp.decimals, false).wei)
+    const transaction = new Transaction()
+    const signers: any = []
+    const owner = wallet.publicKey
+    const atas: string[] = []
+    const programId = new PublicKey(farmInfo.programId)
+    const farmId = new PublicKey(farmInfo.poolId)
+
+    const userLpAccount = await createAssociatedTokenAccountIfNotExist(
+      lpAccount,
+      owner,
+      farmInfo.lp.mintAddress,
+      transaction,
+      atas
+    )
+
+    // if no account, create new one
+    const userRewardTokenAccount = await createAssociatedTokenAccountIfNotExist(
+      rewardAccount,
+      owner,
+      farmInfo.reward.mintAddress,
+      transaction,
+      atas
+    )
+
+    // if no userinfo account, create new one
+    
+    const userInfoAccount = await createProgramAccountIfNotExist(
+      connection,
+      infoAccount,
+      owner,
+      programId,
+      null,
+      UserInfoAccountLayout,
+      transaction,
+      signers
+    )
+    let [authority, nonce] = await PublicKey.findProgramAddress(
+      [farmId.toBuffer()],
+      programId,
+    );
+
+    const fetchFarm = await YieldFarm.loadFarm(
+      connection,
+      farmId,
+      programId
+    )
+    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
+    
+    const instruction = YieldFarm.createWithdrawInstruction(
+      farmId,
+      authority,
+      owner,
+      userInfoAccount,
+      authority,
+      userLpAccount,
+      userRewardTokenAccount,
+      new PublicKey(farmInfo.poolLpTokenAccount),
+      new PublicKey(farmInfo.poolRewardTokenAccount),
+      new PublicKey(farmInfo.lp.mintAddress),
+      rewardFeeATA,
+      TOKEN_PROGRAM_ID,
+      programId,
+      value,
+    );
+    transaction.add(instruction);
+    return await sendTransaction(connection, wallet, transaction, signers);
   }
   static createDepositInstruction(
     farmId: PublicKey, // farm account 
     authority: PublicKey, //farm authority
-    depositor: Account,
+    depositor: PublicKey,
     userInfoAccount:PublicKey,
     userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
@@ -548,7 +820,7 @@ export class YieldFarm {
     const keys = [
       {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
-      {pubkey: depositor.publicKey, isSigner: true, isWritable: false},
+      {pubkey: depositor, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
       {pubkey: userTransferAuthority, isSigner: true, isWritable: false},
       {pubkey: userLpTokenAccount, isSigner: false, isWritable: true},
@@ -581,49 +853,10 @@ export class YieldFarm {
       data,
     });
   }
-  public async withdraw( 
-    owner:Account,
-    userTransferAuthority: Account,
-    userRewardTokenAccount: PublicKey,
-    userLpTokenAccount: PublicKey,
-    amount: number,
-  ) {
-    let userInfo = await YieldFarm.findOrCreateUserInfoAccount(this.connection,this.farmProgramId,this.farmId, owner)
-
-    let transaction;
-    transaction = new Transaction();
-
-    const instruction = YieldFarm.createWithdrawInstruction(
-      this.farmId,
-      this.authority,
-      owner,
-      userInfo.userInfoId,
-      userTransferAuthority.publicKey,
-      userLpTokenAccount,
-      userRewardTokenAccount,
-      this.poolLpTokenAccount,
-      this.poolRewardTokenAccount,
-      this.lpTokenPoolMint,
-      this.feeOwner,
-      this.tokenProgramId,
-      this.farmProgramId,
-      amount,
-    );
-    transaction.add(instruction);
-
-    
-    await sendAndConfirmTransaction(
-      'withdraw',
-      this.connection,
-      transaction,
-      owner,
-      userTransferAuthority,
-    );
-  }
   static createWithdrawInstruction(
     farmId: PublicKey, // farm account 
     authority: PublicKey, //farm authority
-    owner: Account,
+    owner: PublicKey,
     userInfoAccount: PublicKey,
     userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
@@ -639,9 +872,9 @@ export class YieldFarm {
     const keys = [
       {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
-      {pubkey: owner.publicKey, isSigner: true, isWritable: false},
+      {pubkey: owner, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
-      {pubkey: userTransferAuthority, isSigner: true, isWritable: false},
+      {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
       {pubkey: userLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},

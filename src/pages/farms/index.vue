@@ -62,6 +62,14 @@
       @onOk="unstake"
       @onCancel="cancelUnstake"
     />
+    <CoinModal
+      v-if="addRewardModalOpening"
+      title="Add Reward"
+      :coin="rewardCoin"
+      :loading="adding"
+      @onOk="addReward"
+      @onCancel="cancelAddReward"
+    />
 
     <div v-if="farm.initialized">
       <div class="card">
@@ -129,7 +137,7 @@
                 <Col :span="isMobile ? 24 : 4">
                   <p>Add liquidity:</p>
                   <NuxtLink
-                    :to="`/liquidity?from=${farm.farmInfo.lp.coin.mintAddress}&to=${farm.farmInfo.lp.pc.mintAddress}`"
+                    :to="`/liquidity?from=${farm.farmInfo.lp.coin.mintAddress}&to=${farm.farmInfo.lp.pc.mintAddress}&ammId=${getAmmId(farm.farmInfo)}`"
                   >
                     {{ farm.farmInfo.lp.name }}
                   </NuxtLink>
@@ -178,7 +186,10 @@
                       </Button>
                       </div>
                       <div class="btncontainer">
-                        <Button size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
+                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address" size="large" ghost @click="openAddRewardModal(farm)">
+                          Add Reward
+                        </Button>
+                        <Button v-else size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
                           Stake LP
                         </Button>
                       </div>
@@ -211,6 +222,12 @@ import { FarmInfo } from '@/utils/farms'
 import { deposit, withdraw } from '@/utils/stake'
 import { getUnixTs } from '@/utils'
 import { getBigNumber } from '@/utils/layouts'
+import { LiquidityPoolInfo, LIQUIDITY_POOLS } from '@/utils/pools'
+import moment from 'moment'
+import { u64 } from '@solana/spl-token'
+import { YieldFarm } from '@/utils/farm'
+import { PublicKey } from '@solana/web3.js'
+import { FARM_PROGRAM_ID } from '@/utils/ids'
 
 const CollapsePanel = Collapse.Panel
 
@@ -241,10 +258,13 @@ export default Vue.extend({
       farms: [] as any,
 
       lp: null,
+      rewardCoin: null,
       farmInfo: null as any,
       harvesting: false,
       stakeModalOpening: false,
+      addRewardModalOpening: false,
       staking: false,
+      adding: false,
       unstakeModalOpening: false,
       unstaking: false,
       poolType: true,
@@ -307,7 +327,7 @@ export default Vue.extend({
         let userInfo = get(this.farm.stakeAccounts, poolId)
 
         // @ts-ignore
-        const { reward_per_share_net, reward_per_timestamp } = farmInfo.poolInfo
+        const { reward_per_share_net, reward_per_timestamp, last_timestamp } = farmInfo.poolInfo
 
         // @ts-ignore
         const { reward, lp } = farmInfo
@@ -317,7 +337,7 @@ export default Vue.extend({
         if (reward && lp) {
           const rewardPerTimestampAmount = new TokenAmount(getBigNumber(reward_per_timestamp), reward.decimals)
           const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
-
+        
           const rewardPerTimestampAmountTotalValue =
             getBigNumber(rewardPerTimestampAmount.toEther()) *
             2 *
@@ -335,33 +355,39 @@ export default Vue.extend({
             this.price.prices[liquidityItem?.pc.symbol as string]
 
           const liquidityTotalValue = liquidityPcValue + liquidityCoinValue
+          
           const liquidityTotalSupply = getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther())
           const liquidityItemValue = liquidityTotalValue / liquidityTotalSupply
 
-          const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue
-          const apr = ((rewardPerTimestampAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
-
+          const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue;
+          let apr = ((rewardPerTimestampAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
+          if(liquidityUsdValue <= 0){
+            apr = "0";
+          }
           // @ts-ignore
           newFarmInfo.apr = apr
           // @ts-ignore
           newFarmInfo.liquidityUsdValue = liquidityUsdValue
 
           if (rewardPerTimestampAmount.toEther().toString() === '0') {
-            //endedFarmsPoolId.push(poolId)
+            endedFarmsPoolId.push(poolId)
           }
         }
 
-        if (userInfo) {
+        if (userInfo && lp) {
           userInfo = cloneDeep(userInfo)
 
-          const { reward_debt, deposit_balance } = userInfo
-
-          const pendingReward = deposit_balance.wei
-            .multipliedBy(getBigNumber(reward_per_share_net))
+          const { rewardDebt, depositBalance } = userInfo
+          const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
+          const currentTimestamp = moment().unix();
+          const duration = currentTimestamp - last_timestamp.toNumber();
+          const rewardPerShareCalc = reward_per_share_net.toNumber() + 1000000000 * reward_per_timestamp.toNumber() * duration / liquidityItem.lp.totalSupply.wei.toNumber();
+          
+          const pendingReward = depositBalance.wei
+            .multipliedBy(getBigNumber(rewardPerShareCalc))
             .dividedBy(1e9)
-            .minus(reward_debt.wei)
-
-          userInfo.pendingReward = new TokenAmount(pendingReward, reward_debt.decimals)
+            .minus(rewardDebt.wei)
+          userInfo.pendingReward = new TokenAmount(pendingReward, rewardDebt.decimals)
         } else {
           userInfo = {
             // @ts-ignore
@@ -379,7 +405,6 @@ export default Vue.extend({
 
       this.farms = farms
       this.endedFarmsPoolId = endedFarmsPoolId
-      console.log("updated farms, size = ",this.farms.length);
     },
 
     updateCurrentLp(newTokenAccounts: any) {
@@ -403,7 +428,73 @@ export default Vue.extend({
       this.farmInfo = cloneDeep(poolInfo)
       this.stakeModalOpening = true
     },
+    openAddRewardModal(farm:any){
+      const rewardCoin = farm.farmInfo.reward;
+      const coin = cloneDeep(rewardCoin)
+      const rewardBalance = get(this.wallet.tokenAccounts, `${rewardCoin.mintAddress}.balance`)
+      coin.balance = rewardBalance
 
+      this.rewardCoin = coin
+      this.farmInfo = cloneDeep(farm.farmInfo)
+      this.addRewardModalOpening = true
+    },
+    async addReward(amount:string){
+      this.adding = true;
+      const conn = this.$web3
+      const wallet = (this as any).$wallet
+      const rewardAccountAddress = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
+
+      let fetchedFarm = await YieldFarm.loadFarm(
+        conn,
+        new PublicKey(this.farmInfo.poolId),
+        new PublicKey(FARM_PROGRAM_ID)
+      )
+      
+      if(fetchedFarm){
+        //transfer reward amount
+        let addRewardAmount:number = Number.parseFloat(amount);
+        let userRwardTokenPubkey = new PublicKey(rewardAccountAddress);
+
+        const key = getUnixTs().toString()
+        this.$notify.info({
+          key,
+          message: 'Making transaction...',
+          description: '',
+          duration: 0
+        })
+        fetchedFarm.addReward(
+          wallet,
+          userRwardTokenPubkey,
+          addRewardAmount * Math.pow(10,this.farmInfo.reward.decimals)
+        )
+        .then((txid) => {
+          this.$notify.info({
+            key,
+            message: 'Transaction has been sent',
+            description: (h: any) =>
+              h('div', [
+                'Confirmation is in progress.  Check your transaction on ',
+                h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+              ])
+          })
+
+          const description = `Add ${amount} ${this.farmInfo.reward.name}`
+          this.$accessor.transaction.sub({ txid, description })
+        })
+        .catch((error) => {
+          this.$notify.error({
+            key,
+            message: 'Adding Reward failed',
+            description: error.message
+          })
+        })
+        .finally(() => {
+          this.adding = false
+          this.addRewardModalOpening = false
+        })
+      }
+
+    },
     stake(amount: string) {
       this.staking = true
 
@@ -454,6 +545,11 @@ export default Vue.extend({
       this.lp = null
       this.farmInfo = null
       this.stakeModalOpening = false
+    },
+    cancelAddReward() {
+      this.rewardCoin = null
+      this.farmInfo = null
+      this.addRewardModalOpening = false
     },
 
     openUnstakeModal(poolInfo: FarmInfo, lp: any, lpBalance: any) {
@@ -515,6 +611,17 @@ export default Vue.extend({
       this.lp = null
       this.farmInfo = null
       this.unstakeModalOpening = false
+    },
+    getAmmId(farmInfo:FarmInfo){
+      //get liquidity pool info
+        let liquidityPoolInfo:LiquidityPoolInfo = LIQUIDITY_POOLS.find((item) => item.lp.mintAddress === farmInfo.lp.mintAddress) as any;
+
+        //check liquidity pool
+        if(liquidityPoolInfo == undefined){
+          console.log("find liquidity pool error");
+          return "";
+        }
+        return liquidityPoolInfo.ammId;
     },
 
     harvest(farmInfo: FarmInfo) {

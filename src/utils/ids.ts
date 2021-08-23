@@ -17,7 +17,7 @@ export const LIQUIDITY_POOL_PROGRAM_ID_V3 = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv
 export const LIQUIDITY_POOL_PROGRAM_ID_V4 = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
 
 export const LIQUIDITY_POOL_PROGRAM_ID_V5 = '6uGD6BxELGDfvZipZUwbSuFuS8zEDLpaXnjv6zbumWct'//@zhaohui
-export const FARM_PROGRAM_ID = 'CmCvbJqSBZNZv8ncqRo2CwYDF3JzUQG5fZxzuThELJw5'//@Hongbo
+export const FARM_PROGRAM_ID = 'EUuyecjyK5x2QCr1etfo4nfjusTU7Bx54U6wGwdkLtXF'//@Hongbo
 
 
 export const STAKE_PROGRAM_ID = 'EhhTKczWMGQt46ynNeRX1WfeagwwJd7ufHvCDjRxjo5Q'
