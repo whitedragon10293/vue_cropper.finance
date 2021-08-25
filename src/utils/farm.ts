@@ -16,7 +16,7 @@ import {sendAndConfirmTransaction} from './send-and-confirm-transaction';
 import {loadAccount} from './account';
 import { AccountLayout, MintLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createSplAccount } from './new_fcn';
-import { createAssociatedTokenAccountIfNotExist, createProgramAccountIfNotExist, findAssociatedTokenAddress, sendTransaction } from './web3';
+import { createAssociatedTokenAccountIfNotExist, createProgramAccountIfNotExist, sendTransaction } from './web3';
 import { FARM_PROGRAM_ID } from './ids';
 import { FarmInfo } from './farms';
 import { getBigNumber } from './layouts';
@@ -518,7 +518,6 @@ export class YieldFarm {
     let tx = await sendTransaction(this.connection, owner, transaction, [
       
     ]);
-    return tx;
     //check transation
 
     /*
@@ -699,8 +698,7 @@ export class YieldFarm {
       farmId,
       programId
     )
-    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
-    console.log("rewareFeeATA",rewardFeeATA.toBase58())
+
     const instruction = YieldFarm.createDepositInstruction(
       farmId,
       authority,
@@ -712,7 +710,7 @@ export class YieldFarm {
       new PublicKey(farmInfo.poolLpTokenAccount),
       new PublicKey(farmInfo.poolRewardTokenAccount),
       new PublicKey(farmInfo.lp.mintAddress),
-      rewardFeeATA,
+      fetchFarm.feeOwner,
       TOKEN_PROGRAM_ID,
       programId,
       value,
@@ -780,8 +778,7 @@ export class YieldFarm {
       farmId,
       programId
     )
-    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
-    
+      
     const instruction = YieldFarm.createWithdrawInstruction(
       farmId,
       authority,
@@ -793,7 +790,7 @@ export class YieldFarm {
       new PublicKey(farmInfo.poolLpTokenAccount),
       new PublicKey(farmInfo.poolRewardTokenAccount),
       new PublicKey(farmInfo.lp.mintAddress),
-      rewardFeeATA,
+      fetchFarm.feeOwner,
       TOKEN_PROGRAM_ID,
       programId,
       value,

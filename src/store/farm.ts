@@ -110,7 +110,6 @@ export const actions = actionTree(
         }
         //get lp token info
         const lpTokenInfo = liquidityPoolInfo.lp;
-        
 
         //get reward token info
         let rewardToken:any;
@@ -169,6 +168,7 @@ export const actions = actionTree(
           }
         }
       });
+      
       commit('setInfos', farms)
       logger('Farm infomations updated')
       commit('setInitialized')
