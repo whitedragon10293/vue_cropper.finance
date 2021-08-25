@@ -9,7 +9,7 @@ import { LP_TOKENS, NATIVE_SOL, TOKENS, TokenInfo } from './tokens'
 // @ts-ignore
 import SERUM_MARKETS from '@project-serum/serum/lib/markets.json'
 import { cloneDeep } from 'lodash-es'
-
+import { getSwapOutAmount} from '@/utils/swap'
 export interface LiquidityPoolInfo {
   name: string
   coin: TokenInfo
@@ -30,7 +30,6 @@ export interface LiquidityPoolInfo {
   
   feeCoinTokenAccount: string | undefined
   feePcTokenAccount: string | undefined
-
   poolWithdrawQueue: string
   poolTempLpTokenAccount: string
 
@@ -203,6 +202,36 @@ export function getAddressForWhat(address: string) {
   return {}
 }
 
+export function findBestLP(pools:any, baseMint:string, quoteMint:string)
+{
+  const lpList = getPoolListByTokenMintAddresses(
+    baseMint === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : baseMint,
+    quoteMint === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : quoteMint,
+    undefined
+  )
+  
+  let bestLP:any = null
+  let maxAmount = 0
+  lpList.forEach(lpInfo => {
+    let poolInfo = pools[lpInfo.lp.mintAddress]
+    if(poolInfo.fees)
+    {
+      const { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
+        poolInfo,
+        baseMint,
+        quoteMint,
+        "1",
+        1
+      )
+      if(!bestLP || maxAmount < amountOut.wei.toNumber()){
+        maxAmount = amountOut.wei.toNumber()
+        bestLP = poolInfo
+      }
+    }
+  });
+  return bestLP
+}
+
 export function isOfficalMarket(marketAddress: string) {
   for (const market of SERUM_MARKETS) {
     if (market.address === marketAddress && !market.deprecated) {
@@ -218,8 +247,9 @@ export function isOfficalMarket(marketAddress: string) {
 
   return false
 }
-
-export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = [
+export const LIQUIDITY_POOLS: LiquidityPoolInfo[] =[]
+// export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = 
+let a = [
   {
     name: 'RAY-WUSDT',
     coin: { ...TOKENS.RAY },
