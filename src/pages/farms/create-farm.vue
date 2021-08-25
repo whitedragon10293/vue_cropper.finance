@@ -399,8 +399,8 @@ export default class CreatePool extends Vue {
   endOpen: any = false
   isCRPTokenPair:boolean = false
   
+  current: number = 0
   
-  current: number = 4
   marketInputFlag: boolean = true
   marketFlag: boolean = false
   inputMarket: string = ''
@@ -528,7 +528,7 @@ export default class CreatePool extends Vue {
   async confirmFarmInfo(){
     
     //dummy data to test
-    this.userCreateAmmId = "7h3HwQzhzNhfKZpdacVEKPwgZx8x1TsB8b2enoF4HHKx";
+    //this.userCreateAmmId = "7h3HwQzhzNhfKZpdacVEKPwgZx8x1TsB8b2enoF4HHKx";
 
     //check Initial reward token amount
 
@@ -695,7 +695,7 @@ export default class CreatePool extends Vue {
 
     let market_t = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-      baseMintAddress: new PublicKey(TOKENS.MYUSDT.mintAddress),
+      baseMintAddress: new PublicKey(TOKENS.MYTEST.mintAddress),
       quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
       tickSize: 5,
       minOrderSize: 10
