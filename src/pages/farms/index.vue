@@ -151,15 +151,20 @@
                         <div class="token">{{ farm.userInfo.pendingReward.format() }}</div>
                       </div>
                       <div class="btncontainer">
-                      <Button
-                        size="large"
-                        ghost
-                        :disabled="!wallet.connected || harvesting || farm.userInfo.pendingReward.isNullOrZero()"
-                        :loading="harvesting"
-                        @click="harvest(farm.farmInfo)"
-                      >
-                        Harvest
-                      </Button>
+                        <Button
+                          size="large"
+                          ghost
+                          :disabled="!wallet.connected || harvesting || farm.userInfo.pendingReward.isNullOrZero()"
+                          :loading="harvesting"
+                          @click="harvest(farm.farmInfo)"
+                        >
+                          Harvest
+                        </Button>
+                      </div>
+                      <div class="btncontainer">
+                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address" size="large" ghost @click="lockFarm(farm)">
+                          Lock
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -186,11 +191,13 @@
                       </Button>
                       </div>
                       <div class="btncontainer">
+                        <Button size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
+                          Stake LP
+                        </Button>
+                      </div>
+                      <div class="btncontainer">
                         <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address" size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward
-                        </Button>
-                        <Button v-else size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
-                          Stake LP
                         </Button>
                       </div>
                     </div>
@@ -437,6 +444,9 @@ export default Vue.extend({
       this.rewardCoin = coin
       this.farmInfo = cloneDeep(farm.farmInfo)
       this.addRewardModalOpening = true
+    },
+    async lockFarm(farm:any){
+      
     },
     async addReward(amount:string){
       this.adding = true;

@@ -258,7 +258,7 @@
         <!-- Create Farm -->
         <Row v-if="current === 4" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
-            <div>If not YourToken-CRP token pair, you have to pay 500 CRP when your farm is created</div>
+            <div>If not YourToken-CRP token pair, you have to pay 5000 USDC when your farm is created</div>
           </Col>
           <Col style="line-height: 20px" :span="24">
             <CoinInput
@@ -390,7 +390,7 @@ const Step = Steps.Step
 })
 export default class CreatePool extends Vue {
   rewardCoin:TokenInfo | null = null
-  fromCoinAmount: string = '0.00'
+  fromCoinAmount: string = ''
   fixedFromCoin: boolean = true
   selectFromCoin:boolean = true
   coinSelectShow: boolean = false
@@ -399,7 +399,7 @@ export default class CreatePool extends Vue {
   endOpen: any = false
   isCRPTokenPair:boolean = false
   
-  current: number = 0
+  current: number = 4
   
   marketInputFlag: boolean = true
   marketFlag: boolean = false
@@ -528,7 +528,7 @@ export default class CreatePool extends Vue {
   async confirmFarmInfo(){
     
     //dummy data to test
-    //this.userCreateAmmId = "7h3HwQzhzNhfKZpdacVEKPwgZx8x1TsB8b2enoF4HHKx";
+    this.userCreateAmmId = "EgaHTGJeDbytze85LqMStxgTJgq22yjTvYSfqoiZevSK";
 
     //check Initial reward token amount
 
