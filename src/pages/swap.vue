@@ -856,12 +856,17 @@ export default Vue.extend({
       this.setCoinFromMintLoading = true
       const tempFromCoin = this.fromCoin
       const tempToCoin = this.toCoin
+      const tempFromAmmId = this.fromAmmId
+      const tempToAmmId = this.toAmmId
       setTimeout(() => {
         this.setCoinFromMintLoading = false
       }, 1)
 
       this.fromCoin = tempToCoin
       this.toCoin = tempFromCoin
+
+      this.fromAmmId = tempToAmmId
+      this.toAmmId = tempFromAmmId
 
       this.changeCoinAmountPosition()
     },
@@ -1115,6 +1120,40 @@ export default Vue.extend({
             false
           ).fixed()
           impact = priceImpact
+          endpoint = 'CropperFinance Pool'
+        }
+      }
+      if (this.fromCoin && this.toCoin && this.multistep && this.fromCoinAmount) {
+        // amm
+        const fromPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.fromAmmId)
+        const toPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.toAmmId)
+
+        let { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
+          fromPoolInfo,
+          this.fromCoin.mintAddress,
+          TOKENS.CROPTEST.mintAddress,
+          this.fromCoinAmount,
+          this.setting.slippage
+        )
+        
+        let final = getSwapOutAmount(
+          toPoolInfo,
+          TOKENS.CROPTEST.mintAddress,
+          this.toCoin.mintAddress,
+          amountOut.fixed(),
+          this.setting.slippage
+        )
+
+        if (!final.amountOut.isNullOrZero()) {
+          console.log(`input: ${this.fromCoinAmount} raydium out: ${final.amountOutWithSlippage.fixed()}`)
+          toCoinAmount = final.amountOut.fixed()
+          toCoinWithSlippage = final.amountOutWithSlippage
+          price = +new TokenAmount(
+            parseFloat(toCoinAmount) / parseFloat(this.fromCoinAmount),
+            this.toCoin.decimals,
+            false
+          ).fixed()
+          impact = final.priceImpact
           endpoint = 'CropperFinance Pool'
         }
       }
