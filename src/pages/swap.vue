@@ -335,7 +335,7 @@
             !fromCoin ||
             !fromCoinAmount ||
             !toCoin ||
-            (!marketAddress && !lpMintAddress && !isWrap) ||
+            (!marketAddress && !lpMintAddress && !isWrap && !multistep) ||
             !initialized ||
             loading ||
             gt(
@@ -358,7 +358,7 @@
           @click="placeOrder"
         >
           <template v-if="!fromCoin || !toCoin"> Select a token </template>
-          <template v-else-if="(!marketAddress && !lpMintAddress && !isWrap) || !initialized">
+          <template v-else-if="(!marketAddress && !lpMintAddress && !isWrap && !multistep) || !initialized">
             Insufficient liquidity for this trade
           </template>
           <template v-else-if="!fromCoinAmount"> Enter an amount </template>
@@ -464,7 +464,7 @@ import { inputRegex, escapeRegExp } from '@/utils/regex'
 import { getMultipleAccounts, commitment } from '@/utils/web3'
 import { PublicKey } from '@solana/web3.js'
 import { SERUM_PROGRAM_ID_V3 } from '@/utils/ids'
-import { getOutAmount, getSwapOutAmount, place, swap, wrap, checkUnsettledInfo, settleFund } from '@/utils/swap'
+import { getOutAmount, getSwapOutAmount, place, swap, twoStepSwap, wrap, checkUnsettledInfo, settleFund } from '@/utils/swap'
 import { TokenAmount, gt } from '@/utils/safe-math'
 import { getUnixTs } from '@/utils'
 import { canWrap, getLiquidityInfoSimilar } from '@/utils/liquidity'
@@ -525,7 +525,7 @@ export default Vue.extend({
       fromCoinAmount: '',
       toCoinAmount: '',
       toCoinWithSlippage: '',
-
+      crpAmountWithSlippage: '', //multistep-swap
       // wrap
       isWrap: false,
       // serum
@@ -911,6 +911,7 @@ export default Vue.extend({
         }
 
         let marketAddress = ''
+        this.multistep = false
 
         // serum
         for (const address of Object.keys(this.swap.markets)) {
@@ -988,7 +989,6 @@ export default Vue.extend({
           }
 
           if(!lpMintAddress && this.fromCoin && this.toCoin){
-
             const fromLP = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, TOKENS.CROPTEST.mintAddress)
             const toLP = findBestLP(this.$accessor.liquidity.infos, TOKENS.CROPTEST.mintAddress, this.toCoin.mintAddress)
             if(fromLP && toLP)
@@ -996,10 +996,7 @@ export default Vue.extend({
               this.fromAmmId = fromLP.ammId
               this.toAmmId = toLP.ammId
               this.multistep = true
-            }
-            else
-            {
-              this.multistep = false
+              this.ammId = ''
             }
           }
 
@@ -1148,6 +1145,7 @@ export default Vue.extend({
           console.log(`input: ${this.fromCoinAmount} raydium out: ${final.amountOutWithSlippage.fixed()}`)
           toCoinAmount = final.amountOut.fixed()
           toCoinWithSlippage = final.amountOutWithSlippage
+          this.crpAmountWithSlippage = amountOutWithSlippage.fixed()
           price = +new TokenAmount(
             parseFloat(toCoinAmount) / parseFloat(this.fromCoinAmount),
             this.toCoin.decimals,
@@ -1319,6 +1317,56 @@ export default Vue.extend({
           .finally(() => {
             this.swaping = false
           })
+      }else if(this.endpoint === 'CropperFinance Pool' && this.multistep) {
+        const fromPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.fromAmmId)
+        const toPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.toAmmId)
+        twoStepSwap(
+          this.$web3,
+          // @ts-ignore
+          this.$wallet,
+          fromPoolInfo,
+          toPoolInfo,
+          // @ts-ignore
+          this.fromCoin.mintAddress,
+          // @ts-ignore
+          this.toCoin.mintAddress,
+          // @ts-ignore
+          get(this.wallet.tokenAccounts, `${this.fromCoin.mintAddress}.tokenAccountAddress`),
+          // @ts-ignore
+          get(this.wallet.tokenAccounts, `${TOKENS.CROPTEST.mintAddress}.tokenAccountAddress`),
+          // @ts-ignore
+          get(this.wallet.tokenAccounts, `${this.toCoin.mintAddress}.tokenAccountAddress`),
+          this.fromCoinAmount,
+          this.crpAmountWithSlippage,
+          this.toCoinWithSlippage
+        )
+          .then((txids) => {
+            txids.forEach(txid => {
+              this.$notify.info({
+                key,
+                message: 'Transaction has been sent',
+                description: (h: any) =>
+                  h('div', [
+                    'Confirmation is in progress.  Check your transaction on ',
+                    h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+                  ])
+              })
+
+              const description = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
+              this.$accessor.transaction.sub({ txid, description })
+            });
+          })
+          .catch((error) => {
+            this.$notify.error({
+              key,
+              message: 'Swap failed',
+              description: error.message
+            })
+          })
+          .finally(() => {
+            this.swaping = false
+          })
+
       } else {
         place(
           this.$web3,

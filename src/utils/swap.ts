@@ -10,7 +10,9 @@ import {
   createTokenAccountIfNotExist,
   createAssociatedTokenAccountIfNotExist,
   mergeTransactions,
-  sendTransaction
+  sendTransaction,
+  commitment,
+  getMintDecimals
 } from '@/utils/web3'
 import { TokenAmount } from '@/utils/safe-math'
 import { ACCOUNT_LAYOUT } from '@/utils/layouts'
@@ -264,6 +266,82 @@ export async function wrap(
   transaction.add(memoInstruction(newToTokenAccount.toString()))
 
   return await sendTransaction(connection, wallet, transaction, signers)
+}
+
+async function getTokenBalance(connection:any, tokenAccount:string){
+  let info = await connection.getAccountInfo(new PublicKey(tokenAccount), commitment)
+  const data = Buffer.from(info.data)
+  let parsed = ACCOUNT_LAYOUT.decode(data)
+  return parsed.amount
+}
+
+export async function twoStepSwap(
+  connection: Connection,
+  wallet: any,
+  fromPoolInfo: any,
+  toPoolInfo: any,
+  fromCoinMint: string,
+  toCoinMint: string,
+  fromTokenAccount: string,
+  crpTokenAccount:string,
+  toTokenAccount: string,
+  aIn: string,
+  aCrpOut: string,
+  aOut: string)
+{
+  console.log("Two Step swap")
+  if(!crpTokenAccount)
+  {
+    let transaction = new Transaction()
+
+    crpTokenAccount = (await createAssociatedTokenAccountIfNotExist(
+      crpTokenAccount,
+      wallet.publicKey,
+      TOKENS.CROPTEST.mintAddress,
+      transaction
+    )).toString()
+    await sendTransaction(connection, wallet, transaction, [])
+  }
+
+  let ori_crp_balance = await getTokenBalance(connection, crpTokenAccount)
+  let tx_id_1 = await swap(connection, 
+    wallet,
+    fromPoolInfo,
+    fromCoinMint,
+    TOKENS.CROPTEST.mintAddress,
+    fromTokenAccount,
+    crpTokenAccount,
+    aIn,
+    aCrpOut
+    )
+  
+  let cur_crp_balance = 0
+  while(1)
+  {
+    cur_crp_balance = await getTokenBalance(connection, crpTokenAccount)
+    if(ori_crp_balance < cur_crp_balance)
+    {
+      break;
+    }
+  }
+
+  let crp_decimals = await getMintDecimals(connection, new PublicKey(TOKENS.CROPTEST.mintAddress))
+  let delta_crp = cur_crp_balance - ori_crp_balance
+  
+  let aCrpIn = (new TokenAmount(delta_crp, crp_decimals)).fixed()
+
+  let tx_id_2 = await swap(connection, 
+    wallet,
+    toPoolInfo,
+    TOKENS.CROPTEST.mintAddress,
+    toCoinMint,
+    crpTokenAccount,
+    toTokenAccount,
+    aCrpIn,
+    aOut
+    )
+  
+  return [tx_id_1, tx_id_2]
 }
 
 export async function swap(
