@@ -29,11 +29,11 @@ const MenuItem = Menu.Item
 })
 export default class Nav extends Vue {
   navs = {
-    whitelist: true,
-    trading: true,
-    liquidity: false,
+    //whitelist: true,
+    //trading: true,
     swap: false,
-    // pools: false,
+    liquidity: false,
+    pools: false,
     farms: false,
     // fusion: false,
     // staking: false,

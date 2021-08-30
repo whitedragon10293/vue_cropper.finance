@@ -70,6 +70,8 @@ export function getPoolByTokenMintAddresses(
   return pool
 }
 
+
+
 export function getPoolListByTokenMintAddresses(
   coinMintAddress: string,
   pcMintAddress: string,
@@ -175,6 +177,21 @@ export function getLpListByTokenMintAddresses(
 export function canWrap(fromMintAddress: string, toMintAddress: string): boolean {
   return fromMintAddress === TOKENS.WUSDT.mintAddress && toMintAddress === TOKENS.USDT.mintAddress
 }
+
+export function getAllPools() {
+
+  const polo:any = []
+
+  LIQUIDITY_POOLS.forEach(function (value) {
+    let item = {
+      'name' : value.lp.mintAddress,
+      'lp_mint' : value.lp.mintAddress
+    }
+    polo.push(item);
+  });
+  return polo
+}
+
 
 export function getPoolByLpMintAddress(lpMintAddress: string): LiquidityPoolInfo | undefined {
   const pool = LIQUIDITY_POOLS.find((pool) => pool.lp.mintAddress === lpMintAddress)
