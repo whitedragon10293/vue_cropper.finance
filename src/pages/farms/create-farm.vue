@@ -219,6 +219,11 @@
                 <Col style="margin-top: 10px" :span="isMobile ? 24 : 18">
                   <NuxtLink :to="`/liquidity/?ammId=${userCreateAmmId}`">{{ userCreateAmmId }}</NuxtLink>
                 </Col>
+                <Col span="24" style="word-break: break-word; line-height: 20px">
+                  <Button size="large" :disabled="!wallet.connected" ghost style="z-index: 999; width: 100%" @click="goToFarmInfo">
+                    Input Farm Info
+                  </Button>
+                </Col>
               </Row>
               <div v-else style="text-align: center; padding-top: 20px">
                 <Button
@@ -258,7 +263,7 @@
         <!-- Create Farm -->
         <Row v-if="current === 4" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
-            <div>If not YourToken-CRP token pair, you have to pay 5000 USDC when your farm is created</div>
+            <div>If not YourToken-CRP token pairing, you have to pay 5000 USDC after your farm is created</div>
           </Col>
           <Col style="line-height: 20px" :span="24">
             <CoinInput
@@ -613,6 +618,9 @@ export default class CreatePool extends Vue {
 
   gotoFarms(){
     this.$router.push({ path: `/farms` })
+  }
+  goToFarmInfo(){
+    this.current ++;
   }
 
   openFromCoinSelect() {
