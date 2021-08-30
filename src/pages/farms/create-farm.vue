@@ -426,16 +426,14 @@ import { Steps, Row, Col, Button, Tooltip, Icon, DatePicker } from 'ant-design-v
 import { getMarket, createAmm, clearLocal } from '@/utils/market'
 import BigNumber from '@/../node_modules/bignumber.js/bignumber'
 import { TokenInfo, TOKENS } from '@/utils/tokens'
-import { createAssociatedId, createAssociatedTokenAccountIfNotExist, sendTransaction } from '@/utils/web3'
-import { Account, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
-import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, LIQUIDITY_POOL_PROGRAM_ID_V5 } from '@/utils/ids'
+import { createAssociatedId } from '@/utils/web3'
+import { PublicKey } from '@solana/web3.js'
+import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4 } from '@/utils/ids'
 import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep, get } from 'lodash-es'
 import moment from 'moment'
 import {YieldFarm} from '@/utils/farm'
-import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { LIQUIDITY_POOLS } from '@/utils/pools'
-import { createSplAccount } from '@/utils/new_fcn'
 const Step = Steps.Step
 
 @Component({
@@ -500,7 +498,12 @@ export default class CreatePool extends Vue {
   get rewardPerSecond(){
     let result = 0;
     let initialAmount = Number.parseFloat(this.fromCoinAmount);
-    let duration = this.endTime.unix() - this.startTime.unix();
+
+    let duration = 0;
+    if(this.startTime != null && this.endTime != null){
+      this.endTime.unix() - this.startTime.unix();
+    }
+    
     if(duration > 0){
       result = initialAmount / duration;
     }
@@ -518,7 +521,6 @@ export default class CreatePool extends Vue {
   onStartTimeChanged(val: any) {
     console.log("start time changed !")
   }
-
 
   @Watch('inputQuoteValue')
   oniIputQuoteValueChanged(val: string) {
@@ -591,27 +593,8 @@ export default class CreatePool extends Vue {
     this.updateLocalData()
   }
   async confirmFarmInfo(){
-    
-    //dummy data to test
-    //this.userCreateAmmId = "EgaHTGJeDbytze85LqMStxgTJgq22yjTvYSfqoiZevSK";
-
-    //check Initial reward token amount
-
-    //check if user paid Farm fee (500 CRP)
-
-    //check start time and end time
-
-    //check wallet connection
-
+    //EgaHTGJeDbytze85LqMStxgTJgq22yjTvYSfqoiZevSK
     const connection = this.$web3;
-    if(connection != undefined)
-    {
-        console.log("wallet connected!");
-    }
-    else{
-        console.log("wallet is not connected!");
-        return;
-    }
     const wallet:any = this.$wallet;
     
     //get liquidity pool info
@@ -619,7 +602,21 @@ export default class CreatePool extends Vue {
 
     //check liquidity pool
     if(liquidityPoolInfo == undefined){
-      console.log("find liquidity pool error");
+      this.$notify.error({
+            key:"Liquidity",
+            message: 'Finding liquidity pool',
+            description: "Can't find liquidity pool"
+          });
+      return;
+    }
+
+    //check reward coin
+    if(this.rewardCoin === null){
+      this.$notify.error({
+            key:"reward",
+            message: 'Checking reward coin',
+            description: "Select reward coin, please"
+          });
       return;
     }
 
@@ -629,48 +626,73 @@ export default class CreatePool extends Vue {
     
     let startTimestamp:any = this.startTime.unix();
     let endTimestamp:any = this.endTime.unix();
-    
-    let createdFarm = await YieldFarm.createFarmWithParams(
-      connection,
-      wallet,
-      rewardMintPubkey,
-      lpMintPubkey,
-      startTimestamp,
-      endTimestamp
-    );
-    
-    await this.delay(500);
-    
-    // wait for the synchronization
-    let loopCount = 0;
-    while(await connection.getAccountInfo(createdFarm.farmId) === null){
-      if(loopCount > 5){ // allow loop for 5 times
-        break;
-      }
-      loopCount++;
-    }
-    
-    let fetchedFarm = await YieldFarm.loadFarm(
-      connection,
-      createdFarm.farmId,
-      new PublicKey(FARM_PROGRAM_ID)
-    )
-    
-    if(fetchedFarm){
-      //transfer initial reward amount
-      let initialRewardAmount:number = Number.parseFloat(this.fromCoinAmount);
-      let userRwardTokenPubkey = new PublicKey(get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.tokenAccountAddress`));
 
-      await fetchedFarm.addReward(
+    
+    let initialRewardAmount:number = Number.parseFloat(this.fromCoinAmount);
+    let userRewardTokenPubkey = new PublicKey(get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.tokenAccountAddress`));
+    let userRewardTokenBalance = get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.balance`);
+    
+    //check if creator has some reward
+    if(userRewardTokenBalance <= 0 || userRewardTokenBalance < initialRewardAmount){
+      this.$notify.error({
+            key:"Initial Balance",
+            message: 'Checking Inital Reward',
+            description: "Not enough Initial Reward token balance"
+          });
+      return;
+    }
+
+    //check start and end
+    if(startTimestamp >= endTimestamp){
+      this.$notify.error({
+            key:"Period",
+            message: 'Checking period',
+            description: "end time must be late than start time"
+          });
+      return;
+    }
+    try{
+      let createdFarm = await YieldFarm.createFarmWithParams(
+        connection,
         wallet,
-        userRwardTokenPubkey,
-        initialRewardAmount * Math.pow(10,rewardDecimals)
+        rewardMintPubkey,
+        lpMintPubkey,
+        startTimestamp,
+        endTimestamp
       );
+      await this.delay(500);
+    
+      // wait for the synchronization
+      let loopCount = 0;
+      while(await connection.getAccountInfo(createdFarm.farmId) === null){
+        if(loopCount > 5){ // allow loop for 5 times
+          break;
+        }
+        loopCount++;
+      }
+      
+      let fetchedFarm = await YieldFarm.loadFarm(
+        connection,
+        createdFarm.farmId,
+        new PublicKey(FARM_PROGRAM_ID)
+      )
+      
+      if(fetchedFarm){
+        
 
-      this.current += 1;
+        await fetchedFarm.addReward(
+          wallet,
+          userRewardTokenPubkey,
+          initialRewardAmount * Math.pow(10,rewardDecimals)
+        );
+
+        this.current += 1;
+      }
+
     }
-    
-    
+    catch{
+
+    }
   }
   async delay(ms: number) {
       return new Promise( resolve => setTimeout(resolve, ms) );
@@ -752,7 +774,6 @@ export default class CreatePool extends Vue {
   handleEndOpenChange(open:any) {
     this.endOpen = open;
   }
-
   updateLocalData() {
     if (localStorage.getItem('userCreateAMMID') !== null) {
       // @ts-ignore
