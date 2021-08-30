@@ -161,11 +161,6 @@
                           Harvest
                         </Button>
                       </div>
-                      <div class="btncontainer">
-                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address" size="large" ghost @click="lockFarm(farm)">
-                          Lock
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 </Col>
