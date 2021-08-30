@@ -274,7 +274,8 @@ export const swapInstruction = (
   poolDestination: PublicKey,
   userDestination: PublicKey,
   poolMint: PublicKey,
-  feeAccount: PublicKey,
+  feeTokenAccount: PublicKey,
+  feeWalletAccount: PublicKey,
   swapProgramId: PublicKey,
   tokenProgramId: PublicKey,
   amountIn: number | nu64,
@@ -295,7 +296,8 @@ export const swapInstruction = (
     { pubkey: poolDestination, isSigner: false, isWritable: true },
     { pubkey: userDestination, isSigner: false, isWritable: true },
     { pubkey: poolMint, isSigner: false, isWritable: true },
-    { pubkey: feeAccount, isSigner: false, isWritable: true },
+    { pubkey: feeTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: feeWalletAccount, isSigner: false, isWritable: true },
     { pubkey: tokenProgramId, isSigner: false, isWritable: false },
   ];
 

@@ -18,7 +18,7 @@ import { TokenAmount } from '@/utils/safe-math'
 import { ACCOUNT_LAYOUT } from '@/utils/layouts'
 import { swapInstruction } from '@/utils/new_fcn'
 // eslint-disable-next-line
-import { TOKEN_PROGRAM_ID, MEMO_PROGRAM_ID, SERUM_PROGRAM_ID_V3 } from './ids'
+import { TOKEN_PROGRAM_ID, MEMO_PROGRAM_ID, SERUM_PROGRAM_ID_V3, FIXED_FEE_ACCOUNT } from './ids'
 import { closeAccount } from '@project-serum/serum/lib/token-instructions'
 
 export function getOutAmount(
@@ -431,7 +431,7 @@ export async function swap(
 
   let normal_dir = (fromCoinMint == poolInfo.coin.mintAddress)
 
-  let feeAccount = normal_dir ? poolInfo.feeCoinTokenAccount : poolInfo.feePcTokenAccount
+  let feeTokenAccount = normal_dir ? poolInfo.feeCoinTokenAccount : poolInfo.feePcTokenAccount
   let poolFromAccount = normal_dir? poolInfo.poolCoinTokenAccount: poolInfo.poolPcTokenAccount
   let poolToAccount = normal_dir? poolInfo.poolPcTokenAccount: poolInfo.poolCoinTokenAccount
 
@@ -445,7 +445,8 @@ export async function swap(
       new PublicKey(poolToAccount),
       wrappedSolAccount2 ?? newToTokenAccount,
       new PublicKey(poolInfo.lp.mintAddress),
-      new PublicKey(feeAccount),
+      new PublicKey(feeTokenAccount),
+      FIXED_FEE_ACCOUNT,
       new PublicKey(poolInfo.programId),
       TOKEN_PROGRAM_ID,
       Math.floor(getBigNumber(amountIn.toWei())),
