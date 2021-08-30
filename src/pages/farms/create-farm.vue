@@ -399,7 +399,7 @@ export default class CreatePool extends Vue {
   endOpen: any = false
   isCRPTokenPair:boolean = false
   
-  current: number = 4
+  current: number = 0 
   
   marketInputFlag: boolean = true
   marketFlag: boolean = false
