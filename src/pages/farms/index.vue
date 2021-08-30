@@ -200,7 +200,7 @@
                         </Button>
                       </div>
                       <div class="btncontainer">
-                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed" size="large" ghost @click="openPayFarmFeeModal(farm)">
+                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed" size="large" ghost @click="payFarmFee(farm)">
                           Pay Farm Fee
                         </Button>
                       </div>
@@ -236,9 +236,10 @@ import { getBigNumber } from '@/utils/layouts'
 import { LiquidityPoolInfo, LIQUIDITY_POOLS } from '@/utils/pools'
 import moment from 'moment'
 import { u64 } from '@solana/spl-token'
-import { YieldFarm } from '@/utils/farm'
+import { FARM_TEST_MODE, PAY_FARM_FEE, YieldFarm } from '@/utils/farm'
 import { PublicKey } from '@solana/web3.js'
 import { FARM_PROGRAM_ID } from '@/utils/ids'
+import { TOKENS } from '@/utils/tokens'
 
 const CollapsePanel = Collapse.Panel
 
@@ -276,6 +277,7 @@ export default Vue.extend({
       addRewardModalOpening: false,
       staking: false,
       adding: false,
+      paying: false,
       unstakeModalOpening: false,
       unstaking: false,
       poolType: true,
@@ -449,9 +451,6 @@ export default Vue.extend({
       this.farmInfo = cloneDeep(farm.farmInfo)
       this.addRewardModalOpening = true
     },
-    async lockFarm(farm:any){
-      
-    },
     async addReward(amount:string){
       this.adding = true;
       const conn = this.$web3
@@ -508,6 +507,84 @@ export default Vue.extend({
         })
       }
 
+    },
+    async payFarmFee(farm:any){
+      this.paying = true;
+      const conn = this.$web3
+      const wallet = (this as any).$wallet
+      let key = "USDC";
+      if(FARM_TEST_MODE){
+        key = "MYUSDC";
+      }
+      const usdcCoin = TOKENS[key];// to test. real - USDC
+      const usdcAccountAddress = get(this.wallet.tokenAccounts, `${usdcCoin.mintAddress}.tokenAccountAddress`)
+      const usdcBalance = get(this.wallet.tokenAccounts, `${usdcCoin.mintAddress}.balance`)
+      if(usdcAccountAddress === undefined || usdcAccountAddress === ""){
+        this.$notify.error({
+            key,
+            message: 'Paying farm fee failed',
+            description: "Add USDC token in your wallet, please"
+          });
+        return;
+      }
+
+      // check balance if wallet has enough fee
+      if(usdcBalance < PAY_FARM_FEE){
+        this.$notify.error({
+            key,
+            message: 'Paying farm fee failed',
+            description: "Your USDC balance is low than farm fee"
+          });
+        return;
+      }
+
+      let fetchedFarm = await YieldFarm.loadFarm(
+        conn,
+        new PublicKey(farm.farmInfo.poolId),
+        new PublicKey(FARM_PROGRAM_ID)
+      )
+      
+      if(fetchedFarm){
+        //pay farm fee
+        let userUSDCTokenPubkey = new PublicKey(usdcAccountAddress);
+
+        const key = getUnixTs().toString()
+        this.$notify.info({
+          key,
+          message: 'Making transaction...',
+          description: '',
+          duration: 0
+        })
+        fetchedFarm.payFarmFee(
+          wallet,
+          userUSDCTokenPubkey,
+          PAY_FARM_FEE * Math.pow(10,usdcCoin.decimals)
+        )
+        .then((txid) => {
+          this.$notify.info({
+            key,
+            message: 'Transaction has been sent',
+            description: (h: any) =>
+              h('div', [
+                'Confirmation is in progress.  Check your transaction on ',
+                h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+              ])
+          })
+
+          const description = `Pay ${PAY_FARM_FEE} ${usdcCoin.name}`
+          this.$accessor.transaction.sub({ txid, description })
+        })
+        .catch((error) => {
+          this.$notify.error({
+            key,
+            message: 'Paying farm fee failed',
+            description: error.message
+          })
+        })
+        .finally(() => {
+          this.paying = false
+        })
+      }
     },
     stake(amount: string) {
       this.staking = true
