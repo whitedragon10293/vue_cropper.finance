@@ -8,9 +8,13 @@
     <div class="card">
       <div class="card-body" style="grid-row-gap: 0; row-gap: 0; padding-bottom: 15px">
         <Steps :current="current" size="small" direction="vertical" style="width: auto" :status="stepsStatus">
-          
+          <Step
+            ><template slot="title">
+              <div>Select an Option</div>
+            </template></Step
+          >
           <Step>
-            <p slot="title">
+            <p slot="title"  :style="current > 1 ? '':'color: rgb(87, 117, 147)'">
               {{ stepTitleInputMarket }}
               <Tooltip placement="right">
                 <div slot="title">
@@ -25,8 +29,8 @@
           </Step>
           <Step
             ><template slot="title">
-              <div v-if="current > 1 || (current === 1 && stepsStatus !== 'error')">{{ stepTitleMarketInfo }}</div>
-              <div v-else-if="current === 1 && stepsStatus === 'error'" style="color: red">
+              <div v-if="current > 2 || (current === 2 && stepsStatus !== 'error')">{{ stepTitleMarketInfo }}</div>
+              <div v-else-if="current === 2 && stepsStatus === 'error'" style="color: red">
                 {{ stepTitleMarketInfo }}
               </div>
               <div v-else style="color: rgb(87, 117, 147)">{{ stepTitleMarketInfo }}</div>
@@ -34,30 +38,30 @@
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 2 || (current === 2 && stepsStatus !== 'error')">{{ stepTitleInit }}</div>
-              <div v-else-if="current === 2 && stepsStatus === 'error'" style="color: red">{{ stepTitleInit }}</div>
+              <div v-if="current > 3 || (current === 3 && stepsStatus !== 'error')">{{ stepTitleInit }}</div>
+              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">{{ stepTitleInit }}</div>
               <div v-else style="color: rgb(87, 117, 147)">{{ stepTitleInit }}</div>
             </template></Step
           >
           
           <Step
             ><template slot="title">
-              <div v-if="current > 3 && stepsStatus !== 'error'">Pool & Farm Created</div>
-              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">Pool & Farm Created</div>
+              <div v-if="current > 4 && stepsStatus !== 'error'">Pool & Farm Created</div>
+              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Pool & Farm Created</div>
               <div v-else slot="title" style="color: rgb(87, 117, 147)">Pool Created</div>
             </template></Step
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 4 || (current === 4 && stepsStatus !== 'error')">Farm Informations</div>
-              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Farm Informations</div>
+              <div v-if="current > 5 || (current === 5 && stepsStatus !== 'error')">Farm Informations</div>
+              <div v-else-if="current === 5 && stepsStatus === 'error'" style="color: red">Farm Informations</div>
               <div v-else style="color: rgb(87, 117, 147)">Farm Informations</div>
             </template></Step
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 5 || (current === 5 && stepsStatus !== 'error')">Farm Created</div>
-              <div v-else-if="current === 5 && stepsStatus === 'error'" style="color: red">Farm Created</div>
+              <div v-if="current > 6 || (current === 6 && stepsStatus !== 'error')">Farm Created</div>
+              <div v-else-if="current === 6 && stepsStatus === 'error'" style="color: red">Farm Created</div>
               <div v-else style="color: rgb(87, 117, 147)">Farm Created</div>
             </template></Step
           >
@@ -65,6 +69,59 @@
 
         
         <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+          <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            ><div style="padding-bottom: 10px; word-break: break-word">
+              Here are two options. You can use existing AMM Id to create your own farm or create new AMM Id
+            </div>
+            <div>Option 1 - Input Existing AMM ID:</div>
+          </Col>
+          <Col style="line-height: 20px" :span="24"><input v-model="userCreateAmmId" /></Col>
+
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div v-if="!wallet.connected" class="btncontainer">
+              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
+              </Button>
+            </div>
+            <div v-else class="btncontainer">
+              <Button
+                size="large"
+                ghost
+                class="button_div"
+                :disabled="!wallet.connected"
+                style=" z-index: 999; width: 100%"
+                @click="useExistingAMMID()"
+              >
+                Use Existing
+              </Button>
+            </div>
+          </Col>
+          <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <div>Option 2 - Create new AMM ID:</div>
+          </Col>
+
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div v-if="!wallet.connected" class="btncontainer">
+              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
+              </Button>
+            </div>
+            <div v-else class="btncontainer">
+              <Button
+                size="large"
+                ghost
+                class="button_div"
+                :disabled="!wallet.connected"
+                style=" z-index: 999; width: 100%"
+                @click="createNewAMMID()"
+              >
+                Create New
+              </Button>
+            </div>
+          </Col>
+        </Row>
+        <Row v-if="current === 1" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
               $$This tool is for advanced users. Before attempting to create a new liquidity pool, we suggest going
@@ -97,7 +154,7 @@
             </div>
           </Col>
         </Row>
-        <div v-if="current >= 1 && current < 4" style="margin-top: 10px" class="msgClass">
+        <div v-if="current >= 2 && current < 5" style="margin-top: 10px" class="msgClass">
           <Row>
             <Col :span="isMobile ? 24 : 24" :class="isMobile ? 'item-title-mobile' : 'item-title'">Market Info:</Col>
             <Col :span="isMobile ? 24 : 24">
@@ -203,7 +260,7 @@
               >
                 Connect
               </Button>
-              <Row v-else-if="current == 3">
+              <Row v-else-if="current == 4">
                 <Col span="24" style="text-align: center; margin-top: 10px"
                   ><strong>Pool has been successfully created!</strong></Col
                 >
@@ -261,7 +318,7 @@
         </div>
 
         <!-- Create Farm -->
-        <Row v-if="current === 4" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+        <Row v-if="current === 5" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>If not YourToken-CRP token pairing, you have to pay 5000 USDC after your farm is created</div>
           </Col>
@@ -312,6 +369,9 @@
           <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>Reward Per Second:&nbsp;{{rewardPerSecond}} &nbsp;{{rewardCoin != null?rewardCoin.symbol : ""}}</div>
           </Col>
+          <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <div>AMM ID:&nbsp;{{userCreateAmmId}}</div>
+          </Col>
 
           <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
             <div class="btncontainer">
@@ -324,7 +384,7 @@
             </div>
           </Col>
         </Row>
-        <Row v-if="current === 5" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+        <Row v-if="current === 6" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>Farm has been successfully created!</div>
           </Col>
@@ -404,7 +464,7 @@ export default class CreatePool extends Vue {
   endOpen: any = false
   isCRPTokenPair:boolean = false
   
-  current: number = 0 
+  current: number = 0
   
   marketInputFlag: boolean = true
   marketFlag: boolean = false
@@ -622,6 +682,20 @@ export default class CreatePool extends Vue {
   goToFarmInfo(){
     this.current ++;
   }
+  useExistingAMMID(){
+    if(this.userCreateAmmId === ''){
+      this.$notify.error({
+            key:"AMMID",
+            message: 'Using Existing Amm Id',
+            description: "Input valid AMM ID"
+          });
+      return;
+    }
+    this.current = 5;
+  }
+  createNewAMMID(){
+    this.current++;
+  }
 
   openFromCoinSelect() {
     this.selectFromCoin = true
@@ -720,7 +794,7 @@ export default class CreatePool extends Vue {
     let price_t = 3.5, baseMintDecimals_t = 9, quoteMintDecimals_t = 9
     this.stepsStatus = 'process'
     this.stepTitleInputMarket = 'Import Serum Market ID'
-    this.current = 1
+    this.current = 2
     this.marketMsg = market_t
     this.marketPrice = price_t
     this.marketTickSize = getBigNumber(new BigNumber(market_t.tickSize))
@@ -759,7 +833,7 @@ export default class CreatePool extends Vue {
     } else {
       this.stepsStatus = 'process'
       this.stepTitleInputMarket = 'Import Serum Market ID'
-      this.current = 1
+      this.current = 2
       this.marketMsg = market
       this.marketPrice = price
       this.marketTickSize = getBigNumber(new BigNumber(market.tickSize))
@@ -810,7 +884,7 @@ export default class CreatePool extends Vue {
 
     createAmm(this.$web3, this.$wallet, this.marketMsg, this.inputBaseValue, this.inputQuoteValue)
       .then(async (data) => {
-        this.current = 3
+        this.current = 4
         this.stepsStatus = 'process'
         this.userCreateAmmId = data
         if (localStorage.getItem('userCreateAMMID') !== null) {
@@ -831,7 +905,7 @@ export default class CreatePool extends Vue {
       })
       .catch((error) => {
         this.stepsStatus = 'error'
-        this.current = 2
+        this.current = 3
         this.createAmmFlag = false
         this.stepTitleInit = error.message
         throw error
