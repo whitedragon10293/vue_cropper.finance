@@ -186,13 +186,22 @@
                       </Button>
                       </div>
                       <div class="btncontainer">
-                        <Button size="large" ghost @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
+                        <Button
+                          size="large" 
+                          ghost 
+                          :disabled="!farm.farmInfo.poolInfo.is_allowed"
+                          @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
                           Stake LP
                         </Button>
                       </div>
                       <div class="btncontainer">
-                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address" size="large" ghost @click="openAddRewardModal(farm)">
+                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed" size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward
+                        </Button>
+                      </div>
+                      <div class="btncontainer">
+                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed" size="large" ghost @click="openPayFarmFeeModal(farm)">
+                          Pay Farm Fee
                         </Button>
                       </div>
                     </div>
