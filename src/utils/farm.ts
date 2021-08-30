@@ -22,6 +22,9 @@ import { FarmInfo } from './farms';
 import { getBigNumber } from './layouts';
 import { TokenAmount } from './safe-math';
 
+export const FARM_TEST_MODE = true;
+export const PAY_FARM_FEE = 5000;
+
 enum FarmInstruction
 {
   Initialize = 0,
@@ -577,7 +580,6 @@ export class YieldFarm {
   }
   public async payFarmFee(
     owner: Account,
-    userTransferAuthority: Account,
     userUSDCTokenAccount: PublicKey,
     amount: number,
   ) {
@@ -587,7 +589,7 @@ export class YieldFarm {
       this.farmId,
       this.authority,
       owner,
-      userTransferAuthority.publicKey,
+      owner.publicKey,
       userUSDCTokenAccount,
       this.feeOwner,
       this.tokenProgramId,
@@ -600,6 +602,7 @@ export class YieldFarm {
     let tx = await sendTransaction(this.connection, owner, transaction, [
       
     ]);
+    return tx;
     //check transation
   }
   static createPayFarmFeeInstruction(
