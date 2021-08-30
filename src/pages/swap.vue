@@ -1027,7 +1027,7 @@ export default Vue.extend({
             // this.unsubPoolChange()
             // this.subPoolChange()
           }
-        } else {
+        } else if(this.multistep === false){
           this.endpoint = ''
           this.marketAddress = ''
           this.market = null
@@ -1037,6 +1037,7 @@ export default Vue.extend({
         }
         this.updateUrl()
       } else {
+        this.multistep = false
         this.ammId = undefined
         this.endpoint = ''
         this.marketAddress = ''
@@ -1341,20 +1342,23 @@ export default Vue.extend({
           this.toCoinWithSlippage
         )
           .then((txids) => {
-            txids.forEach(txid => {
-              this.$notify.info({
-                key,
-                message: 'Transaction has been sent',
-                description: (h: any) =>
-                  h('div', [
-                    'Confirmation is in progress.  Check your transaction on ',
-                    h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
-                  ])
-              })
+            this.$notify.info({
+              key,
+              message: 'Transaction has been sent',
+              description: (h: any) =>
+                h('div', [
+                  'Confirmation is in progress.  Check your transaction on ',
+                  h('a', { attrs: { href: `${this.url.explorer}/tx/${txids[0]}`, target: '_blank' } }, 'here'),
+                  h('a', { attrs: { href: `${this.url.explorer}/tx/${txids[1]}`, target: '_blank' } }, 'here')
+                ])
+            })
 
-              const description = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
-              this.$accessor.transaction.sub({ txid, description })
-            });
+            const description_1 = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.crpAmountWithSlippage} ${TOKENS.CROPTEST.symbol}`
+            this.$accessor.transaction.sub({ txid:txids[0], description:description_1 })
+            
+            const description = `Swap ${this.crpAmountWithSlippage} ${TOKENS.CROPTEST.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
+            this.$accessor.transaction.sub({ txid:txids[0], description })
+
           })
           .catch((error) => {
             this.$notify.error({
