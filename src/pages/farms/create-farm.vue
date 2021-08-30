@@ -695,7 +695,7 @@ export default class CreatePool extends Vue {
 
     let market_t = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-      baseMintAddress: new PublicKey(TOKENS.MYTEST.mintAddress),
+      baseMintAddress: new PublicKey(TOKENS.MYUSDC.mintAddress),
       quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
       tickSize: 5,
       minOrderSize: 10
