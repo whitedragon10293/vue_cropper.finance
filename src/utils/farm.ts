@@ -578,7 +578,7 @@ export class YieldFarm {
   public async payFarmFee(
     owner: Account,
     userTransferAuthority: Account,
-    userCRPTokenAccount: PublicKey,
+    userUSDCTokenAccount: PublicKey,
     amount: number,
   ) {
     let transaction;
@@ -588,7 +588,7 @@ export class YieldFarm {
       this.authority,
       owner,
       userTransferAuthority.publicKey,
-      userCRPTokenAccount,
+      userUSDCTokenAccount,
       this.feeOwner,
       this.tokenProgramId,
       this.farmProgramId,
@@ -607,7 +607,7 @@ export class YieldFarm {
     authority: PublicKey, //farm authority
     depositor: Account,
     userTransferAuthority: PublicKey,
-    userCRPTokenAccount: PublicKey,
+    userUSDCTokenAccount: PublicKey,
     ownerFeeAccount: PublicKey,
     tokenProgramId: PublicKey,
     farmProgramId: PublicKey,
@@ -618,7 +618,7 @@ export class YieldFarm {
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: depositor.publicKey, isSigner: false, isWritable: false},
       {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
-      {pubkey: userCRPTokenAccount, isSigner: false, isWritable: true},
+      {pubkey: userUSDCTokenAccount, isSigner: false, isWritable: true},
       {pubkey: ownerFeeAccount, isSigner: false, isWritable: true},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       {pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false},
