@@ -45,7 +45,7 @@ export const TOKENSBASE: Tokens = {
     tags:['cropper']
   },
   
-  MYUSDT: {
+  MYTEST: {
     symbol: 'tUSDT',
     name: 'tUSDT',
     mintAddress: '5kvDJzoFkrcXecwZt3JigrmXmqnV97zkGdu6CJn5E2FR',
