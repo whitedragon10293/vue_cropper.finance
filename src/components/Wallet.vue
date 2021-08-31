@@ -462,10 +462,33 @@ export default class Wallet extends Vue {
 @import '../styles/variables';
 
 .ant-modal-content {
-  background-color: @modal-header-bg;
+  background-color: #1B2028;
 
+  .ant-modal-header{
+    background-color: #1B2028;
+  }
+  .ant-modal-title{
+    background-color: #1B2028;
+    text-align:center
+  }
   .ant-modal-close {
     color: @text-color;
+  }
+
+  button.ant-btn-background-ghost{
+    background-color: #2D3139 !important;
+    border: none !important;
+  }
+
+  .wallet-info .address{
+    border-radius: 7px;
+    background-color: #2D3139 !important;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .btncontainer{
+    display: inline-block !important;
   }
 }
 
@@ -522,7 +545,10 @@ export default class Wallet extends Vue {
 
   }
 
+
+
 .tx-history-panel {
+display:none;
   h2 {
     margin-top: 32px;
     text-align: left;
@@ -553,3 +579,4 @@ export default class Wallet extends Vue {
   }
 }
 </style>
+

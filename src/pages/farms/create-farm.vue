@@ -2,15 +2,26 @@
 
   <div class="container" :class="isMobile ? 'create-pool-mobile' : 'create-pool'">
     <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
+    <AmmIdSelect
+      :show="ammIdSelectShow"
+      :liquidity-list="ammIdSelectList"
+      :user-close="true"
+      @onClose="() => ((ammIdSelectShow = false))"
+      @onSelect="onAmmIdSelect"
+    />
     <div class="page-head fs-container">
       <span class="title">Create a farm</span>
     </div>
     <div class="card">
       <div class="card-body" style="grid-row-gap: 0; row-gap: 0; padding-bottom: 15px">
         <Steps :current="current" size="small" direction="vertical" style="width: auto" :status="stepsStatus">
-          
+          <Step
+            ><template slot="title">
+              <div>Select an Option</div>
+            </template></Step
+          >
           <Step>
-            <p slot="title">
+            <p slot="title"  :style="current > 1 ? '':'color: rgb(87, 117, 147)'">
               {{ stepTitleInputMarket }}
               <Tooltip placement="right">
                 <div slot="title">
@@ -25,8 +36,8 @@
           </Step>
           <Step
             ><template slot="title">
-              <div v-if="current > 1 || (current === 1 && stepsStatus !== 'error')">{{ stepTitleMarketInfo }}</div>
-              <div v-else-if="current === 1 && stepsStatus === 'error'" style="color: red">
+              <div v-if="current > 2 || (current === 2 && stepsStatus !== 'error')">{{ stepTitleMarketInfo }}</div>
+              <div v-else-if="current === 2 && stepsStatus === 'error'" style="color: red">
                 {{ stepTitleMarketInfo }}
               </div>
               <div v-else style="color: rgb(87, 117, 147)">{{ stepTitleMarketInfo }}</div>
@@ -34,37 +45,110 @@
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 2 || (current === 2 && stepsStatus !== 'error')">{{ stepTitleInit }}</div>
-              <div v-else-if="current === 2 && stepsStatus === 'error'" style="color: red">{{ stepTitleInit }}</div>
+              <div v-if="current > 3 || (current === 3 && stepsStatus !== 'error')">{{ stepTitleInit }}</div>
+              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">{{ stepTitleInit }}</div>
               <div v-else style="color: rgb(87, 117, 147)">{{ stepTitleInit }}</div>
             </template></Step
           >
           
           <Step
             ><template slot="title">
-              <div v-if="current > 3 && stepsStatus !== 'error'">Pool & Farm Created</div>
-              <div v-else-if="current === 3 && stepsStatus === 'error'" style="color: red">Pool & Farm Created</div>
+              <div v-if="current > 4 && stepsStatus !== 'error'">Pool & Farm Created</div>
+              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Pool & Farm Created</div>
               <div v-else slot="title" style="color: rgb(87, 117, 147)">Pool Created</div>
             </template></Step
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 4 || (current === 4 && stepsStatus !== 'error')">Farm Informations</div>
-              <div v-else-if="current === 4 && stepsStatus === 'error'" style="color: red">Farm Informations</div>
+              <div v-if="current > 5 || (current === 5 && stepsStatus !== 'error')">Farm Informations</div>
+              <div v-else-if="current === 5 && stepsStatus === 'error'" style="color: red">Farm Informations</div>
               <div v-else style="color: rgb(87, 117, 147)">Farm Informations</div>
             </template></Step
           >
           <Step
             ><template slot="title">
-              <div v-if="current > 5 || (current === 5 && stepsStatus !== 'error')">Farm Created</div>
-              <div v-else-if="current === 5 && stepsStatus === 'error'" style="color: red">Farm Created</div>
+              <div v-if="current > 6 || (current === 6 && stepsStatus !== 'error')">Farm Created</div>
+              <div v-else-if="current === 6 && stepsStatus === 'error'" style="color: red">Farm Created</div>
               <div v-else style="color: rgb(87, 117, 147)">Farm Created</div>
             </template></Step
           >
         </Steps>
-
-        
         <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+          <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            ><div style="padding-bottom: 10px; word-break: break-word">
+              Here are two options. You can use existing AMM Id to create your own farm or create new AMM Id
+            </div>
+            <div>Option 1 - Select token pairing or input Amm Id:</div>
+          </Col>
+          <Col style="line-height: 20px" :span="isMobile?24:12" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <CoinNameInput
+              :label="'Token A'"
+              :mint-address="tokenA ? tokenA.mintAddress : ''"
+              :coin-name="tokenA ? tokenA.symbol : ''"
+              @onSelect="openTokenASelect"
+            />
+          </Col>
+         <Col style="line-height: 20px" :span="isMobile?24:12" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <CoinNameInput
+              :label="'Token B'"
+              :mint-address="tokenB ? tokenB.mintAddress : ''"
+              :coin-name="tokenB ? tokenB.symbol : ''"
+              @onSelect="openTokenBSelect"
+            />
+          </Col>
+            <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <div>AMM ID:</div>
+          </Col>
+          <Col style="line-height: 20px" :span="24"><input v-model="userCreateAmmId" /></Col>
+
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div v-if="!wallet.connected" class="btncontainer">
+              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
+              </Button>
+            </div>
+            <div v-else class="btncontainer">
+              <Button
+                size="large"
+                ghost
+                class="button_div"
+                :disabled="!wallet.connected"
+                style=" z-index: 999; width: 100%"
+                @click="useExistingAMMID()"
+              >
+                Use Existing
+              </Button>
+            </div>
+          </Col>
+          <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <div>Option 2 - Create new AMM ID:</div>
+          </Col>
+
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div v-if="!wallet.connected" class="btncontainer">
+              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
+              </Button>
+            </div>
+            <div v-else class="btncontainer">
+              <Button
+                size="large"
+                ghost
+                class="button_div"
+                :disabled="!wallet.connected"
+                style=" z-index: 999; width: 100%"
+                @click="createNewAMMID()"
+              >
+                Create New
+              </Button>
+            </div>
+          </Col>
+        </Row>
+        <Row v-if="current === 1" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
               $$This tool is for advanced users. Before attempting to create a new liquidity pool, we suggest going
@@ -97,7 +181,7 @@
             </div>
           </Col>
         </Row>
-        <div v-if="current >= 1 && current < 4" style="margin-top: 10px" class="msgClass">
+        <div v-if="current >= 2 && current < 5" style="margin-top: 10px" class="msgClass">
           <Row>
             <Col :span="isMobile ? 24 : 24" :class="isMobile ? 'item-title-mobile' : 'item-title'">Market Info:</Col>
             <Col :span="isMobile ? 24 : 24">
@@ -203,7 +287,7 @@
               >
                 Connect
               </Button>
-              <Row v-else-if="current == 3">
+              <Row v-else-if="current == 4">
                 <Col span="24" style="text-align: center; margin-top: 10px"
                   ><strong>Pool has been successfully created!</strong></Col
                 >
@@ -218,6 +302,11 @@
                 >
                 <Col style="margin-top: 10px" :span="isMobile ? 24 : 18">
                   <NuxtLink :to="`/liquidity/?ammId=${userCreateAmmId}`">{{ userCreateAmmId }}</NuxtLink>
+                </Col>
+                <Col span="24" style="word-break: break-word; line-height: 20px">
+                  <Button size="large" :disabled="!wallet.connected" ghost style="z-index: 999; width: 100%" @click="goToFarmInfo">
+                    Input Farm Info
+                  </Button>
                 </Col>
               </Row>
               <div v-else style="text-align: center; padding-top: 20px">
@@ -256,9 +345,9 @@
         </div>
 
         <!-- Create Farm -->
-        <Row v-if="current === 4" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+        <Row v-if="current === 5" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
-            <div>If not YourToken-CRP token pair, you have to pay 5000 USDC when your farm is created</div>
+            <div>If not YourToken-CRP token pairing, you have to pay 5000 USDC after your farm is created</div>
           </Col>
           <Col style="line-height: 20px" :span="24">
             <CoinInput
@@ -307,6 +396,9 @@
           <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>Reward Per Second:&nbsp;{{rewardPerSecond}} &nbsp;{{rewardCoin != null?rewardCoin.symbol : ""}}</div>
           </Col>
+          <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
+            <div>AMM ID:&nbsp;{{userCreateAmmId}}</div>
+          </Col>
 
           <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
             <div class="btncontainer">
@@ -319,7 +411,7 @@
             </div>
           </Col>
         </Row>
-        <Row v-if="current === 5" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+        <Row v-if="current === 6" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col v-if="!isCRPTokenPair" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>Farm has been successfully created!</div>
           </Col>
@@ -360,17 +452,15 @@ import { Vue, Component, Watch } from 'nuxt-property-decorator'
 import { Steps, Row, Col, Button, Tooltip, Icon, DatePicker } from 'ant-design-vue'
 import { getMarket, createAmm, clearLocal } from '@/utils/market'
 import BigNumber from '@/../node_modules/bignumber.js/bignumber'
-import { TokenInfo, TOKENS } from '@/utils/tokens'
-import { createAssociatedId, createAssociatedTokenAccountIfNotExist, sendTransaction } from '@/utils/web3'
-import { Account, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
-import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, LIQUIDITY_POOL_PROGRAM_ID_V5 } from '@/utils/ids'
+import { NATIVE_SOL, TokenInfo, TOKENS } from '@/utils/tokens'
+import { createAssociatedId } from '@/utils/web3'
+import { PublicKey } from '@solana/web3.js'
+import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4 } from '@/utils/ids'
 import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep, get } from 'lodash-es'
 import moment from 'moment'
 import {YieldFarm} from '@/utils/farm'
-import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { LIQUIDITY_POOLS } from '@/utils/pools'
-import { createSplAccount } from '@/utils/new_fcn'
+import { getPoolListByTokenMintAddresses, LIQUIDITY_POOLS,LiquidityPoolInfo } from '@/utils/pools'
 const Step = Steps.Step
 
 @Component({
@@ -390,16 +480,22 @@ const Step = Steps.Step
 })
 export default class CreatePool extends Vue {
   rewardCoin:TokenInfo | null = null
+  tokenA:TokenInfo | null = null
+  tokenB:TokenInfo | null = null
   fromCoinAmount: string = ''
   fixedFromCoin: boolean = true
-  selectFromCoin:boolean = true
+  selectFromCoin:boolean = false
+  selectTokenA:boolean = false
+  selectTokenB:boolean = false
   coinSelectShow: boolean = false
   startTime: any = moment()
   endTime:  any = moment()
   endOpen: any = false
   isCRPTokenPair:boolean = false
+  ammIdSelectShow:boolean = false
+  ammIdSelectList: any = []
   
-  current: number = 0 
+  current: number = 0
   
   marketInputFlag: boolean = true
   marketFlag: boolean = false
@@ -435,7 +531,12 @@ export default class CreatePool extends Vue {
   get rewardPerSecond(){
     let result = 0;
     let initialAmount = Number.parseFloat(this.fromCoinAmount);
-    let duration = this.endTime.unix() - this.startTime.unix();
+
+    let duration = 0;
+    if(this.startTime != null && this.endTime != null){
+      this.endTime.unix() - this.startTime.unix();
+    }
+    
     if(duration > 0){
       result = initialAmount / duration;
     }
@@ -453,7 +554,6 @@ export default class CreatePool extends Vue {
   onStartTimeChanged(val: any) {
     console.log("start time changed !")
   }
-
 
   @Watch('inputQuoteValue')
   oniIputQuoteValueChanged(val: string) {
@@ -526,27 +626,8 @@ export default class CreatePool extends Vue {
     this.updateLocalData()
   }
   async confirmFarmInfo(){
-    
-    //dummy data to test
-    this.userCreateAmmId = "EgaHTGJeDbytze85LqMStxgTJgq22yjTvYSfqoiZevSK";
-
-    //check Initial reward token amount
-
-    //check if user paid Farm fee (500 CRP)
-
-    //check start time and end time
-
-    //check wallet connection
-
+    //EgaHTGJeDbytze85LqMStxgTJgq22yjTvYSfqoiZevSK
     const connection = this.$web3;
-    if(connection != undefined)
-    {
-        console.log("wallet connected!");
-    }
-    else{
-        console.log("wallet is not connected!");
-        return;
-    }
     const wallet:any = this.$wallet;
     
     //get liquidity pool info
@@ -554,58 +635,94 @@ export default class CreatePool extends Vue {
 
     //check liquidity pool
     if(liquidityPoolInfo == undefined){
-      console.log("find liquidity pool error");
+      this.$notify.error({
+            key:"Liquidity",
+            message: 'Finding liquidity pool',
+            description: "Can't find liquidity pool"
+          });
+      return;
+    }
+
+    //check reward coin
+    if(this.rewardCoin === null){
+      this.$notify.error({
+            key:"reward",
+            message: 'Checking reward coin',
+            description: "Select reward coin, please"
+          });
       return;
     }
 
     let rewardMintPubkey = new PublicKey(this.rewardCoin?.mintAddress as string);
     let rewardDecimals:number = this.rewardCoin?.decimals as any;
     let lpMintPubkey = new PublicKey(liquidityPoolInfo.lp.mintAddress);
+    let ammPubkey = new PublicKey(this.userCreateAmmId);
     
     let startTimestamp:any = this.startTime.unix();
     let endTimestamp:any = this.endTime.unix();
-    
-    let createdFarm = await YieldFarm.createFarmWithParams(
-      connection,
-      wallet,
-      rewardMintPubkey,
-      lpMintPubkey,
-      startTimestamp,
-      endTimestamp
-    );
-    
-    await this.delay(500);
-    
-    // wait for the synchronization
-    let loopCount = 0;
-    while(await connection.getAccountInfo(createdFarm.farmId) === null){
-      if(loopCount > 5){ // allow loop for 5 times
-        break;
-      }
-      loopCount++;
-    }
-    
-    let fetchedFarm = await YieldFarm.loadFarm(
-      connection,
-      createdFarm.farmId,
-      new PublicKey(FARM_PROGRAM_ID)
-    )
-    
-    if(fetchedFarm){
-      //transfer initial reward amount
-      let initialRewardAmount:number = Number.parseFloat(this.fromCoinAmount);
-      let userRwardTokenPubkey = new PublicKey(get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.tokenAccountAddress`));
 
-      await fetchedFarm.addReward(
+    
+    let initialRewardAmount:number = Number.parseFloat(this.fromCoinAmount);
+    let userRewardTokenPubkey = new PublicKey(get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.tokenAccountAddress`));
+    let userRewardTokenBalance = get(this.wallet.tokenAccounts, `${rewardMintPubkey.toBase58()}.balance`);
+    
+    //check if creator has some reward
+    if(userRewardTokenBalance <= 0 || userRewardTokenBalance < initialRewardAmount){
+      this.$notify.error({
+            key:"Initial Balance",
+            message: 'Checking Inital Reward',
+            description: "Not enough Initial Reward token balance"
+          });
+      return;
+    }
+
+    //check start and end
+    if(startTimestamp >= endTimestamp){
+      this.$notify.error({
+            key:"Period",
+            message: 'Checking period',
+            description: "end time must be late than start time"
+          });
+      return;
+    }
+    try{
+      let createdFarm = await YieldFarm.createFarmWithParams(
+        connection,
         wallet,
-        userRwardTokenPubkey,
-        initialRewardAmount * Math.pow(10,rewardDecimals)
+        rewardMintPubkey,
+        lpMintPubkey,
+        ammPubkey,
+        startTimestamp,
+        endTimestamp
       );
-
-      this.current += 1;
+      await this.delay(500);
+    
+      // wait for the synchronization
+      let loopCount = 0;
+      while(await connection.getAccountInfo(createdFarm.farmId) === null){
+        if(loopCount > 5){ // allow loop for 5 times
+          break;
+        }
+        loopCount++;
+      }
+      
+      let fetchedFarm = await YieldFarm.loadFarm(
+        connection,
+        createdFarm.farmId,
+        new PublicKey(FARM_PROGRAM_ID)
+      )
+      if(fetchedFarm){
+        await fetchedFarm.addReward(
+          wallet,
+          userRewardTokenPubkey,
+          initialRewardAmount * Math.pow(10,rewardDecimals)
+        );
+        this.current += 1;
+      }
     }
-    
-    
+    catch{
+      console.log("creating farm failed")
+    }
   }
   async delay(ms: number) {
       return new Promise( resolve => setTimeout(resolve, ms) );
@@ -614,9 +731,45 @@ export default class CreatePool extends Vue {
   gotoFarms(){
     this.$router.push({ path: `/farms` })
   }
-
+  goToFarmInfo(){
+    this.current ++;
+  }
+  useExistingAMMID(){
+    if(this.userCreateAmmId === ''){
+      this.$notify.error({
+            key:"AMMID",
+            message: 'Using Existing Amm Id',
+            description: "Input valid AMM ID"
+          });
+      return;
+    }
+    this.current = 5;
+  }
+  createNewAMMID(){
+    this.current++;
+  }
+  onAmmIdSelect(liquidityInfo: LiquidityPoolInfo | undefined) {
+    this.ammIdSelectShow = false
+    if (liquidityInfo) {
+      this.userCreateAmmId = liquidityInfo.ammId
+    }
+  }
   openFromCoinSelect() {
     this.selectFromCoin = true
+    this.closeAllModal('coinSelectShow')
+    setTimeout(() => {
+      this.coinSelectShow = true
+    }, 1)
+  }
+  openTokenASelect() {
+    this.selectTokenA = true
+    this.closeAllModal('coinSelectShow')
+    setTimeout(() => {
+      this.coinSelectShow = true
+    }, 1)
+  }
+  openTokenBSelect() {
+    this.selectTokenB = true
     this.closeAllModal('coinSelectShow')
     setTimeout(() => {
       this.coinSelectShow = true
@@ -632,6 +785,31 @@ export default class CreatePool extends Vue {
       if (this.selectFromCoin) {
         this.rewardCoin = cloneDeep(tokenInfo)
       }
+      else if(this.selectTokenA || this.selectTokenB){
+        if (this.selectTokenA) {
+          this.tokenA = cloneDeep(tokenInfo)
+        }
+        else if (this.selectTokenB) {
+          this.tokenB = cloneDeep(tokenInfo)
+        }
+        if(this.tokenA && this.tokenB){
+          const liquidityListV5 = getPoolListByTokenMintAddresses(
+            this.tokenA.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.tokenA.mintAddress,
+            this.tokenB.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.tokenB.mintAddress,
+            undefined
+          );
+          if (liquidityListV5.length > 0) {
+            // user select amm id
+            this.coinSelectShow = false
+            setTimeout(() => {
+              this.ammIdSelectShow = true
+              // @ts-ignore
+              this.ammIdSelectList = liquidityListV5
+            }, 1)
+            return
+          }
+        }
+      }
     } else {
       // check coin
       if (this.rewardCoin !== null) {
@@ -642,6 +820,9 @@ export default class CreatePool extends Vue {
       }
     }
     this.coinSelectShow = false
+    this.selectFromCoin = false
+    this.selectTokenA = false
+    this.selectTokenB = false
   }
 
   disabledStartDate(startTime:any) {
@@ -670,7 +851,6 @@ export default class CreatePool extends Vue {
   handleEndOpenChange(open:any) {
     this.endOpen = open;
   }
-
   updateLocalData() {
     if (localStorage.getItem('userCreateAMMID') !== null) {
       // @ts-ignore
@@ -712,7 +892,7 @@ export default class CreatePool extends Vue {
     let price_t = 3.5, baseMintDecimals_t = 9, quoteMintDecimals_t = 9
     this.stepsStatus = 'process'
     this.stepTitleInputMarket = 'Import Serum Market ID'
-    this.current = 1
+    this.current = 2
     this.marketMsg = market_t
     this.marketPrice = price_t
     this.marketTickSize = getBigNumber(new BigNumber(market_t.tickSize))
@@ -751,7 +931,7 @@ export default class CreatePool extends Vue {
     } else {
       this.stepsStatus = 'process'
       this.stepTitleInputMarket = 'Import Serum Market ID'
-      this.current = 1
+      this.current = 2
       this.marketMsg = market
       this.marketPrice = price
       this.marketTickSize = getBigNumber(new BigNumber(market.tickSize))
@@ -802,7 +982,7 @@ export default class CreatePool extends Vue {
 
     createAmm(this.$web3, this.$wallet, this.marketMsg, this.inputBaseValue, this.inputQuoteValue)
       .then(async (data) => {
-        this.current = 3
+        this.current = 4
         this.stepsStatus = 'process'
         this.userCreateAmmId = data
         if (localStorage.getItem('userCreateAMMID') !== null) {
@@ -823,7 +1003,7 @@ export default class CreatePool extends Vue {
       })
       .catch((error) => {
         this.stepsStatus = 'error'
-        this.current = 2
+        this.current = 3
         this.createAmmFlag = false
         this.stepTitleInit = error.message
         throw error
