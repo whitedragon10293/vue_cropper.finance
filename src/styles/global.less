@@ -4,6 +4,9 @@
   width: 8px;
 }
 
+
+.ant-progress-circle-path { stroke: #13ECAB !important }
+
 ::-webkit-scrollbar-thumb {
   background: #f1f1f2;
   border-radius: 8px;
@@ -19,9 +22,40 @@
   max-width: 530px;
 }
 
+
+.ant-progress{
+  background:#1B2028 !important;
+}
+
 .flex {
   display: flex;
 }
+
+.farm .btncontainer{
+  position:relative
+}
+
+@media (max-width: 1100px){
+ 
+
+.farm .btncontainer{
+  display:none !important
+} 
+}
+
+a{
+    color: #13ECAB;
+}
+
+.ant-menu-horizontal > .ant-menu-item:hover, .ant-menu-horizontal > .ant-menu-submenu:hover, .ant-menu-horizontal > .ant-menu-item-active, .ant-menu-horizontal > .ant-menu-submenu-active, .ant-menu-horizontal > .ant-menu-item-open, .ant-menu-horizontal > .ant-menu-submenu-open, .ant-menu-horizontal > .ant-menu-item-selected, .ant-menu-horizontal > .ant-menu-submenu-selected{
+    color: #13ECAB !important;
+    border-bottom: 2px solid #13ECAB !important;
+}
+
+.ant-menu.ant-menu-dark .ant-menu-item-selected, .ant-menu-submenu-popup.ant-menu-dark .ant-menu-item-selected{
+  background-color: #13ECAB !important;
+}
+
 
 .fc-container {
   display: flex;
@@ -38,18 +72,41 @@
 .page-head {
   margin-top: 20px;
   margin-bottom: 40px;
+  position:relative;
 
   .title {
     font-weight: 600;
     font-size: 24px;
     line-height: 32px;
     text-align: center;
-    display: block;
+    display: inline-block;
+    vertical-align: middle;
+    padding-right: 10px;
+    z-index: 2;
+    background: #1B2028;
+    padding-left: 15px;
+    position: relative;
+  }
+
+  &::after{
+    content: '';
     width: 100%;
+    position: absolute;
+    height: 1px;
+    background: #444A58;
+    left: 0;
+    top: 50%;
+    z-index: 1;
   }
 
   .buttons {
     display: flex;
+    vertical-align: middle;
+    padding-right: 15px;
+    background: #1B2028;
+    z-index: 2;
+    position: relative;
+
 
     .anticon {
       font-size: 20px;
@@ -57,6 +114,8 @@
 
     .ant-progress {
       line-height: 1;
+      position: relative;
+      top: 1px;
     }
 
     .ant-progress.disabled {
@@ -65,12 +124,11 @@
 
     .anticon,
     .ant-progress {
-      padding: 10px;
       border-radius: 4px;
       cursor: pointer;
 
       &:hover {
-        background: #000829;
+        background: #1B2028;
       }
     }
     a {
@@ -80,28 +138,33 @@
 }
 
 .card {
-  padding: 2px;
-  background: linear-gradient(245.22deg, #da2eef 7.97%, #2b6aff 49.17%, #39d0d8 92.1%);
-  border-radius: 130px;
 
   .card-body {
     display: grid;
     grid-auto-rows: auto;
     row-gap: 12px;
-    padding: 42px 34px;
-    background-color: #131a35;
-    opacity: 0.9;
-    border-radius: 130px;
+    padding: 37px;
+    background-color: #1B2028;
+    opacity: 1;
+    border-radius: 0;
+
+    > .fs-container{
+      display: unset;
+      align-items: unset;
+      justify-content: unset;
+      text-align: center;
+    }
 
     .buttons{
-      text-align: center;
-      padding-bottom: 25px;
+      display: inline-block;
+      line-height: 32px;
 
       i{
         font-size:20px;
-        margin-right:20px;
+        margin-right:14px;
         position:relative;
-        top:4px
+        top:4px;
+        color:#13ECAB
       }
     }
 
@@ -136,8 +199,13 @@
   display:none !important
 }
 
+.ant-menu-horizontal > .ant-menu-item > a:hover{
+  color:#13ECAB !important
+}
+
 .ant-tooltip-inner {
   display: inline-block;
+  background: #1B2028 !important;
 
   p {
     margin-bottom: 8px;
@@ -178,7 +246,7 @@
           cursor: pointer;
 
           &:hover {
-            color: @primary-color;
+            color: #13ECAB !important;
           }
         }
 
@@ -196,13 +264,8 @@
 }
 
 
-.ant-calendar-date, 
-.ant-calendar-column-header-inner,
-.ant-calendar-year-select,
-.ant-calendar-month-select,
-.ant-calendar-day-select,
-.ant-calendar-input,
-.ant-calendar-time-picker-select
-{
-  color: #383844 !important;
+.ant-btn:hover, .ant-btn:focus,
+.coin-select .coin-input .input-button{
+    color: #13ECAB !important;
 }
+
