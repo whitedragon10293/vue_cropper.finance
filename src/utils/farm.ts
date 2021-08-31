@@ -143,6 +143,7 @@ export class YieldFarm {
     poolRewardTokenAccount: PublicKey,
     poolMintAddress: PublicKey,
     rewardMintAddress: PublicKey,
+    ammPubkey: PublicKey,
     tokenProgramId: PublicKey,
     nonce: number,
     farmProgramId: PublicKey,
@@ -157,6 +158,7 @@ export class YieldFarm {
       {pubkey: poolRewardTokenAccount, isSigner: true, isWritable: true},
       {pubkey: poolMintAddress, isSigner: false, isWritable: false},
       {pubkey: rewardMintAddress, isSigner: false, isWritable: false},
+      {pubkey: ammPubkey, isSigner: false, isWritable: false},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
       
     ];
@@ -376,6 +378,7 @@ export class YieldFarm {
     wallet:any,
     rewardMintPubkey:PublicKey,
     lpMintPubkey:PublicKey,
+    ammPubkey:PublicKey,
     startTimestamp:number,
     endTimestamp:number,
   ){
@@ -393,6 +396,7 @@ export class YieldFarm {
       TOKEN_PROGRAM_ID,
       lpMintPubkey,
       rewardMintPubkey,
+      ammPubkey,
       authority,
       nonce,
       startTimestamp,
@@ -407,6 +411,7 @@ export class YieldFarm {
     tokenProgramId: PublicKey,
     lpTokenPoolMint: PublicKey,
     rewardTokenPoolMint: PublicKey,
+    ammPubkey: PublicKey,
     authority: PublicKey,
     nonce: number,
     startTimestamp:number,
@@ -458,6 +463,7 @@ export class YieldFarm {
       poolRewardTokenAccount.publicKey, 
       lpTokenPoolMint, 
       rewardTokenPoolMint, 
+      ammPubkey, 
       tokenProgramId,
       nonce, 
       farmProgramId,

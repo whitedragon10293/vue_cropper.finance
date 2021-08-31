@@ -2,6 +2,13 @@
 
   <div class="container" :class="isMobile ? 'create-pool-mobile' : 'create-pool'">
     <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
+    <AmmIdSelect
+      :show="ammIdSelectShow"
+      :liquidity-list="ammIdSelectList"
+      :user-close="true"
+      @onClose="() => ((ammIdSelectShow = false))"
+      @onSelect="onAmmIdSelect"
+    />
     <div class="page-head fs-container">
       <span class="title">Create a farm</span>
     </div>
@@ -66,14 +73,34 @@
             </template></Step
           >
         </Steps>
-
-        
         <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
               Here are two options. You can use existing AMM Id to create your own farm or create new AMM Id
             </div>
-            <div>Option 1 - Input Existing AMM ID:</div>
+            <div>Option 1 - Select token pairing or input Amm Id:</div>
+          </Col>
+          <Col style="line-height: 20px" :span="isMobile?24:12" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <CoinNameInput
+              :label="'Token A'"
+              :mint-address="tokenA ? tokenA.mintAddress : ''"
+              :coin-name="tokenA ? tokenA.symbol : ''"
+              @onSelect="openTokenASelect"
+            />
+          </Col>
+         <Col style="line-height: 20px" :span="isMobile?24:12" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <CoinNameInput
+              :label="'Token B'"
+              :mint-address="tokenB ? tokenB.mintAddress : ''"
+              :coin-name="tokenB ? tokenB.symbol : ''"
+              @onSelect="openTokenBSelect"
+            />
+          </Col>
+            <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+            >
+            <div>AMM ID:</div>
           </Col>
           <Col style="line-height: 20px" :span="24"><input v-model="userCreateAmmId" /></Col>
 
@@ -425,7 +452,7 @@ import { Vue, Component, Watch } from 'nuxt-property-decorator'
 import { Steps, Row, Col, Button, Tooltip, Icon, DatePicker } from 'ant-design-vue'
 import { getMarket, createAmm, clearLocal } from '@/utils/market'
 import BigNumber from '@/../node_modules/bignumber.js/bignumber'
-import { TokenInfo, TOKENS } from '@/utils/tokens'
+import { NATIVE_SOL, TokenInfo, TOKENS } from '@/utils/tokens'
 import { createAssociatedId } from '@/utils/web3'
 import { PublicKey } from '@solana/web3.js'
 import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4 } from '@/utils/ids'
@@ -433,7 +460,7 @@ import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep, get } from 'lodash-es'
 import moment from 'moment'
 import {YieldFarm} from '@/utils/farm'
-import { LIQUIDITY_POOLS } from '@/utils/pools'
+import { getPoolListByTokenMintAddresses, LIQUIDITY_POOLS,LiquidityPoolInfo } from '@/utils/pools'
 const Step = Steps.Step
 
 @Component({
@@ -453,14 +480,20 @@ const Step = Steps.Step
 })
 export default class CreatePool extends Vue {
   rewardCoin:TokenInfo | null = null
+  tokenA:TokenInfo | null = null
+  tokenB:TokenInfo | null = null
   fromCoinAmount: string = ''
   fixedFromCoin: boolean = true
-  selectFromCoin:boolean = true
+  selectFromCoin:boolean = false
+  selectTokenA:boolean = false
+  selectTokenB:boolean = false
   coinSelectShow: boolean = false
   startTime: any = moment()
   endTime:  any = moment()
   endOpen: any = false
   isCRPTokenPair:boolean = false
+  ammIdSelectShow:boolean = false
+  ammIdSelectList: any = []
   
   current: number = 0
   
@@ -623,6 +656,7 @@ export default class CreatePool extends Vue {
     let rewardMintPubkey = new PublicKey(this.rewardCoin?.mintAddress as string);
     let rewardDecimals:number = this.rewardCoin?.decimals as any;
     let lpMintPubkey = new PublicKey(liquidityPoolInfo.lp.mintAddress);
+    let ammPubkey = new PublicKey(this.userCreateAmmId);
     
     let startTimestamp:any = this.startTime.unix();
     let endTimestamp:any = this.endTime.unix();
@@ -657,6 +691,7 @@ export default class CreatePool extends Vue {
         wallet,
         rewardMintPubkey,
         lpMintPubkey,
+        ammPubkey,
         startTimestamp,
         endTimestamp
       );
@@ -676,22 +711,17 @@ export default class CreatePool extends Vue {
         createdFarm.farmId,
         new PublicKey(FARM_PROGRAM_ID)
       )
-      
       if(fetchedFarm){
-        
-
         await fetchedFarm.addReward(
           wallet,
           userRewardTokenPubkey,
           initialRewardAmount * Math.pow(10,rewardDecimals)
         );
-
         this.current += 1;
       }
-
     }
     catch{
-
+      console.log("creating farm failed")
     }
   }
   async delay(ms: number) {
@@ -718,9 +748,28 @@ export default class CreatePool extends Vue {
   createNewAMMID(){
     this.current++;
   }
-
+  onAmmIdSelect(liquidityInfo: LiquidityPoolInfo | undefined) {
+    this.ammIdSelectShow = false
+    if (liquidityInfo) {
+      this.userCreateAmmId = liquidityInfo.ammId
+    }
+  }
   openFromCoinSelect() {
     this.selectFromCoin = true
+    this.closeAllModal('coinSelectShow')
+    setTimeout(() => {
+      this.coinSelectShow = true
+    }, 1)
+  }
+  openTokenASelect() {
+    this.selectTokenA = true
+    this.closeAllModal('coinSelectShow')
+    setTimeout(() => {
+      this.coinSelectShow = true
+    }, 1)
+  }
+  openTokenBSelect() {
+    this.selectTokenB = true
     this.closeAllModal('coinSelectShow')
     setTimeout(() => {
       this.coinSelectShow = true
@@ -736,6 +785,31 @@ export default class CreatePool extends Vue {
       if (this.selectFromCoin) {
         this.rewardCoin = cloneDeep(tokenInfo)
       }
+      else if(this.selectTokenA || this.selectTokenB){
+        if (this.selectTokenA) {
+          this.tokenA = cloneDeep(tokenInfo)
+        }
+        else if (this.selectTokenB) {
+          this.tokenB = cloneDeep(tokenInfo)
+        }
+        if(this.tokenA && this.tokenB){
+          const liquidityListV5 = getPoolListByTokenMintAddresses(
+            this.tokenA.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.tokenA.mintAddress,
+            this.tokenB.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.tokenB.mintAddress,
+            undefined
+          );
+          if (liquidityListV5.length > 0) {
+            // user select amm id
+            this.coinSelectShow = false
+            setTimeout(() => {
+              this.ammIdSelectShow = true
+              // @ts-ignore
+              this.ammIdSelectList = liquidityListV5
+            }, 1)
+            return
+          }
+        }
+      }
     } else {
       // check coin
       if (this.rewardCoin !== null) {
@@ -746,6 +820,9 @@ export default class CreatePool extends Vue {
       }
     }
     this.coinSelectShow = false
+    this.selectFromCoin = false
+    this.selectTokenA = false
+    this.selectTokenB = false
   }
 
   disabledStartDate(startTime:any) {
