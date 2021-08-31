@@ -230,16 +230,16 @@ export default class Pools extends Vue {
   }
 
   openPoolAddModal(poolInfo: any) {
-  console.log(poolInfo)
+    console.log(poolInfo)
     const fromCoin = cloneDeep(poolInfo.coin1)
     const toCoin = cloneDeep(poolInfo.coin2)
     const lpMintAddress = poolInfo.lp_mint
 
 
 
-    const coin1Balance = get(this.wallet.tokenAccounts, `${fromCoin.mintAddress}.balance`)
+    const coin1Balance = get(this.$accessor.wallet.tokenAccounts, `${fromCoin.mintAddress}.balance`)
     fromCoin.balance = coin1Balance
-    const toCoinBalance = get(this.wallet.tokenAccounts, `${toCoin.mintAddress}.balance`)
+    const toCoinBalance = get(this.$accessor.wallet.tokenAccounts, `${toCoin.mintAddress}.balance`)
     toCoin.balance = toCoinBalance
 
     this.fromCoin = fromCoin
