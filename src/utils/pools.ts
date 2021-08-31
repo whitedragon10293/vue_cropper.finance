@@ -45,6 +45,7 @@ export interface LiquidityPoolInfo {
   official: boolean
 }
 
+
 /**
  * Get pool use two mint addresses
 
@@ -180,11 +181,14 @@ export function canWrap(fromMintAddress: string, toMintAddress: string): boolean
 
 export function getAllPools() {
 
+  console.log(LIQUIDITY_POOLS)
   const polo:any = []
 
   LIQUIDITY_POOLS.forEach(function (value) {
     let item = {
-      'name' : value.lp.mintAddress,
+      'name' : value.coin.name + ' - ' + value.pc.name,
+      'coin1' : value.coin,
+      'coin2' : value.pc,
       'lp_mint' : value.lp.mintAddress
     }
     polo.push(item);

@@ -1,6 +1,18 @@
 <template>
   <div class="pool container">
 
+
+    <CoinModalMulti
+      v-if="poolAdd"
+      title="Add Liquidity"
+      :lpMintAddress="lpMintAddress"
+      :fromCoin="fromCoin"
+      :toCoin="toCoin"
+      @onOk="PoolAddProcess"
+      @onCancel="cancelPoolAdd"
+    />
+
+
     <div class="card">
       <div class="card-body">
 
@@ -46,10 +58,11 @@
           <span slot="volume_7d" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }} (?)</span>
           <span slot="fee_24h" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }} (?)</span>
           <span slot="apy" slot-scope="text"> {{ new TokenAmount(text, 2, false).format() }}% (?)</span>
-          <span slot="apu" slot-scope="text"  >{{ text }} 
+          <span slot="apu" slot-scope="text, pool"  >{{ text }} 
 
             <div class="btncontainer">
-              <Button size="large" ghost @click="$accessor.wallet.openModal">
+              <Button size="small" ghost :disabled="!wallet.connected"
+                  @click="openPoolAddModal(pool)">
                 Add
               </Button>
             </div>
@@ -58,7 +71,7 @@
 
 
             <div class="btncontainer">
-              <Button size="large" ghost @click="$accessor.wallet.openModal">
+              <Button size="small" ghost @click="$accessor.wallet.openModal">
                 -
               </Button>
             </div>
@@ -71,15 +84,34 @@
 </template>
 
 <script lang="ts">
+
+import { get, cloneDeep } from 'lodash-es'
 import { Vue, Component, Watch } from 'nuxt-property-decorator'
+import { mapState } from 'vuex'
 import { Table, Radio, Progress, Tooltip, Button, Input, Icon } from 'ant-design-vue'
 import { getPoolByLpMintAddress, getAllPools } from '@/utils/pools'
 import { TokenAmount } from '@/utils/safe-math'
 const RadioGroup = Radio.Group
+const poolAdd = false
 const RadioButton = Radio.Button
 @Component({
   head: {
     title: 'Cropper Finance Pools'
+  },
+
+  computed: {
+    ...mapState(['wallet', 'swap', 'liquidity', 'url', 'setting'])
+  },
+
+  data() {
+    return {
+      isMobile: false,
+      farms: [] as any,
+      fromCoin : false,
+      lpMintAddress : false,
+      toCoin : false,
+      poolAdd : false
+    }
   },
   components: {
     Table,
@@ -96,6 +128,8 @@ const RadioButton = Radio.Button
     return { pools }
   }
 })
+
+
 export default class Pools extends Vue {
   columns = [
     {
@@ -150,6 +184,11 @@ export default class Pools extends Vue {
   pools: any = []
   poolsShow: any = []
   poolType: string = 'RaydiumPools'
+  fromCoin: any = false
+  lpMintAddress: any = false
+  toCoin: any = false
+  poolAdd: any = false
+  lptoken: any = false
   autoRefreshTime: number = 60
   countdown: number = 0
   timer: any = null
@@ -177,11 +216,48 @@ export default class Pools extends Vue {
     this.showPool()
   }
   showPool() {
-  
-    this.poolsShow = this.pools
+    const pool = []
+    for (const item of this.pools) {
+          pool.push(item)
+    }
+    this.poolsShow = pool
 
 
   }
+
+  PoolAddProcess(){
+
+  }
+
+  openPoolAddModal(poolInfo: any) {
+  console.log(poolInfo)
+    const fromCoin = cloneDeep(poolInfo.coin1)
+    const toCoin = cloneDeep(poolInfo.coin2)
+    const lpMintAddress = poolInfo.lp_mint
+
+
+
+    const coin1Balance = get(this.wallet.tokenAccounts, `${fromCoin.mintAddress}.balance`)
+    fromCoin.balance = coin1Balance
+    const toCoinBalance = get(this.wallet.tokenAccounts, `${toCoin.mintAddress}.balance`)
+    toCoin.balance = toCoinBalance
+
+    this.fromCoin = fromCoin
+    this.toCoin = toCoin
+    this.lptoken = cloneDeep(poolInfo)
+    this.lpMintAddress = poolInfo.lp_mint
+
+    this.poolAdd = true
+  }
+
+  cancelPoolAdd() {
+    this.fromCoin = null
+    this.toCoin = null
+    this.lptoken = null
+    this.lpMintAddress = null
+    this.poolAdd = false
+  }
+
   mounted() {
     this.setTimer()
   }
@@ -211,7 +287,7 @@ export default class Pools extends Vue {
 
 <style lang="less" scoped>
 section{
-  background-color:#000 !important; 
+  background:#000 !important; 
 }
 .container {
   max-width: 1200px;
