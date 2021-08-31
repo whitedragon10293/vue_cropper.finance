@@ -48,9 +48,9 @@ export const TOKENSBASE: Tokens = {
   MYTEST: {
     symbol: 'tUSDT',
     name: 'tUSDT',
-    mintAddress: '5kvDJzoFkrcXecwZt3JigrmXmqnV97zkGdu6CJn5E2FR',
-    decimals: 2,
-    referrer: '5kvDJzoFkrcXecwZt3JigrmXmqnV97zkGdu6CJn5E2FR',
+    mintAddress: '6La9ryWrDPByZViuQCizmo6aW98cK8DSL7angqmTFf9i',
+    decimals: 9,
+    referrer: '6La9ryWrDPByZViuQCizmo6aW98cK8DSL7angqmTFf9i',
     tags:['cropper']
   },
 

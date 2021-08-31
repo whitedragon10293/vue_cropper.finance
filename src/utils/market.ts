@@ -241,6 +241,13 @@ export async function createAmm(
   let feeFromTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.baseMintAddress) as any
   let feeToTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.quoteMintAddress)  as any
 
+  if(market.baseMintAddress == TOKENS.WSOL.mintAddress){
+    feeFromTokenAccount = FIXED_FEE_ACCOUNT.toString()
+  }
+  if(market.quoteMintAddress == TOKENS.WSOL.mintAddress){
+    feeToTokenAccount = FIXED_FEE_ACCOUNT.toString()
+  }
+
   if(!feeFromTokenAccount || !feeToTokenAccount)
   {
     throw("Cannot find fee token account")

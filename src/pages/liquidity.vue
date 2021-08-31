@@ -271,7 +271,7 @@ import { getUnixTs } from '@/utils'
 import { getLpListByTokenMintAddresses, LiquidityPoolInfo } from '@/utils/pools'
 import AmmIdSelect from '@/components/AmmIdSelect.vue'
 
-const USDC = getTokenBySymbol('USDC')
+const CROPTEST = getTokenBySymbol('CROPTEST')
 
 export default Vue.extend({
   components: {
@@ -292,7 +292,7 @@ export default Vue.extend({
       selectFromCoin: true,
       fixedCoin: '',
 
-      fromCoin: USDC as TokenInfo | null,
+      fromCoin: CROPTEST as TokenInfo | null,
       toCoin: null as TokenInfo | null,
       fromCoinAmount: '',
       toCoinAmount: '',

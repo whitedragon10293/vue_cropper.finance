@@ -476,7 +476,7 @@ import {
   LiquidityPoolInfo
 } from '@/utils/pools'
 
-const CROPTEST = getTokenBySymbol('USDC')
+const CROPTEST = getTokenBySymbol('CROPTEST')
 
 export default Vue.extend({
   components: {
