@@ -9,8 +9,6 @@
             <RadioButton class="radioButtonStyle" :value="false"> Ended </RadioButton>
           </RadioGroup>
         </span> -->
-
-
         <NuxtLink to="/farms/create-farm/">
           <div class="btncontainer">
             <Button size="large" ghost>
@@ -18,9 +16,6 @@
             </Button>
           </div>
         </NuxtLink>
-
-
-
         <Tooltip v-if="farm.initialized" placement="bottomRight">
           <template slot="title">
             <span>
@@ -45,15 +40,23 @@
         </Tooltip>
       </div>
     </div>
-
-    <CoinModal
+    <StakeModel 
+      v-if="stakeModalOpening"
+      title="Supply & Stake LP"
+      :loading="staking"
+      :farmInfo="farmInfo"
+      @onOk="stake"
+      @onCancel="cancelStake"
+    />
+    
+    <!--CoinModal
       v-if="stakeModalOpening"
       title="Stake LP"
       :coin="lp"
       :loading="staking"
       @onOk="stake"
       @onCancel="cancelStake"
-    />
+    /-->
     <CoinModal
       v-if="unstakeModalOpening"
       title="Unstake LP"
@@ -235,11 +238,12 @@ import { getUnixTs } from '@/utils'
 import { getBigNumber } from '@/utils/layouts'
 import { LiquidityPoolInfo, LIQUIDITY_POOLS } from '@/utils/pools'
 import moment from 'moment'
-import { u64 } from '@solana/spl-token'
+import { TOKEN_PROGRAM_ID, u64 } from '@solana/spl-token'
 import { FARM_TEST_MODE, PAY_FARM_FEE, YieldFarm } from '@/utils/farm'
 import { PublicKey } from '@solana/web3.js'
 import { FARM_PROGRAM_ID } from '@/utils/ids'
 import { TOKENS } from '@/utils/tokens'
+import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
 
 const CollapsePanel = Collapse.Panel
 
@@ -287,7 +291,7 @@ export default Vue.extend({
   },
 
   head: {
-    title: 'Raydium Farm'
+    title: 'CropperFinance Farm'
   },
 
   computed: {
@@ -433,12 +437,18 @@ export default Vue.extend({
     },
 
     openStakeModal(poolInfo: FarmInfo, lp: any) {
+      /*
       const coin = cloneDeep(lp)
       const lpBalance = get(this.wallet.tokenAccounts, `${lp.mintAddress}.balance`)
       coin.balance = lpBalance
 
       this.lp = coin
+      */
       this.farmInfo = cloneDeep(poolInfo)
+      const coinBalance = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.coin.mintAddress}.balance`)
+      const pcBalance = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.pc.mintAddress}.balance`)
+      this.farmInfo.lp.coin.balance = coinBalance;
+      this.farmInfo.lp.pc.balance = pcBalance;
       this.stakeModalOpening = true
     },
     openAddRewardModal(farm:any){
@@ -586,15 +596,23 @@ export default Vue.extend({
         })
       }
     },
-    stake(amount: string) {
+    stake(fromCoinAmount: string,toCoinAmount: string,fixedCoin: string) {
+
+      
       this.staking = true
 
       const conn = this.$web3
       const wallet = (this as any).$wallet
+      
+      const poolInfo = get(this.liquidity.infos, this.farmInfo.lp.mintAddress)
 
       const lpAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.tokenAccountAddress`)
       const rewardAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
       const infoAccount = get(this.farm.stakeAccounts, `${this.farmInfo.poolId}.stakeAccountAddress`)
+      // @ts-ignore
+      const fromCoinAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.coin.mintAddress}.tokenAccountAddress`)
+      // @ts-ignore
+      const toCoinAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.pc.mintAddress}.tokenAccountAddress`)
 
       const key = getUnixTs().toString()
       this.$notify.info({
@@ -603,8 +621,52 @@ export default Vue.extend({
         description: '',
         duration: 0
       })
+      addLiquidity(
+        conn,
+        wallet,
+        poolInfo,
+        fromCoinAccount,
+        toCoinAccount,
+        lpAccount,
+        this.farmInfo.lp.coin,
+        this.farmInfo.lp.pc,
+        fromCoinAmount,
+        toCoinAmount,
+        fixedCoin
+      )
+      .then(async (txid) => {
+        this.$notify.info({
+          key,
+          message: 'Transaction has been sent',
+          description: (h: any) =>
+            h('div', [
+              'Confirmation is in progress.  Check your transaction on ',
+              h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+            ])
+        })
 
-      deposit(conn, wallet, this.farmInfo, lpAccount, rewardAccount, infoAccount, amount)
+        const description = `Add liquidity for ${fromCoinAmount} ${this.farmInfo.lp.coin?.symbol} and ${toCoinAmount} ${this.farmInfo.lp.pc?.symbol}`
+        this.$accessor.transaction.sub({ txid, description })
+
+        let txStatus = this.$accessor.transaction.history[txid].status;
+        while(txStatus === "Pending"){
+          await this.delay(500);
+          txStatus = this.$accessor.transaction.history[txid].status;
+          await this.delay(500);
+        }
+        if(txStatus === "Fail"){
+          console.log("add lp failed")
+          return;
+        }
+        let amount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.balance`)
+        //stake whole lp amount
+        amount = amount.wei.toNumber() / Math.pow(10,amount.decimals);
+        if(amount <= 0){
+          console.log("added lp amount is 0")
+          return;
+        }
+
+        deposit(conn, wallet, this.farmInfo, lpAccount, rewardAccount, infoAccount, amount)
         .then((txid) => {
           this.$notify.info({
             key,
@@ -629,9 +691,22 @@ export default Vue.extend({
         .finally(() => {
           this.staking = false
           this.stakeModalOpening = false
+          this.farmInfo = null
         })
+      })
+      .catch((error) => {
+        this.$notify.error({
+          key,
+          message: 'Add liquidity failed',
+          description: error.message
+        })
+      })
+      .finally(async () => {
+      })
     },
-
+    async delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
+    },
     cancelStake() {
       this.lp = null
       this.farmInfo = null
@@ -657,10 +732,15 @@ export default Vue.extend({
 
       const conn = this.$web3
       const wallet = (this as any).$wallet
+      const coin = this.farmInfo.lp.coin;
+      const pc = this.farmInfo.lp.pc;
+      const lp = this.farmInfo.lp;
 
       const lpAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.tokenAccountAddress`)
       const rewardAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
       const infoAccount = get(this.farm.stakeAccounts, `${this.farmInfo.poolId}.stakeAccountAddress`)
+      const fromCoinAccount = get(this.wallet.tokenAccounts, `${coin.mintAddress}.tokenAccountAddress`)
+      const toCoinAccount = get(this.wallet.tokenAccounts, `${pc.mintAddress}.tokenAccountAddress`)
 
       const key = getUnixTs().toString()
       this.$notify.info({
@@ -671,7 +751,7 @@ export default Vue.extend({
       })
 
       withdraw(conn, wallet, this.farmInfo, lpAccount, rewardAccount, infoAccount, amount)
-        .then((txid) => {
+        .then(async (txid) => {
           this.$notify.info({
             key,
             message: 'Transaction has been sent',
@@ -682,8 +762,57 @@ export default Vue.extend({
               ])
           })
 
-          const description = `Unstake ${amount} ${this.farmInfo.lp.name}`
+          const description = `Unstake ${amount} ${lp.name}`
           this.$accessor.transaction.sub({ txid, description })
+
+          let txStatus = this.$accessor.transaction.history[txid].status;
+          while(txStatus === "Pending"){
+            await this.delay(500);
+            txStatus = this.$accessor.transaction.history[txid].status;
+            await this.delay(500);
+          }
+          if(txStatus === "Fail"){
+            console.log("unstake transaction failed")
+            return;
+          }
+          let value = get(this.wallet.tokenAccounts, `${lp.mintAddress}.balance`)
+          value = value.wei.toNumber() / Math.pow(10,value.decimals);
+          if(value <= 0){
+            console.log("remove lp amount is 0")
+            return;
+          }
+          value = value.toString();
+
+          const poolInfo = get(this.liquidity.infos, lp.mintAddress);
+          //remove whole lp amount
+          removeLiquidity(conn, wallet, poolInfo, lpAccount, fromCoinAccount, toCoinAccount, value)
+          .then((txid) => {
+            this.$notify.info({
+              key,
+              message: 'Transaction has been sent',
+              description: (h: any) =>
+                h('div', [
+                  'Confirmation is in progress.  Check your transaction on ',
+                  h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+                ])
+            })
+
+            const description = `Remove liquidity for ${value} ${lp.name}`
+
+            this.$accessor.transaction.sub({ txid, description })
+          })
+          .catch((error) => {
+            this.$notify.error({
+              key,
+              message: 'Remove liquidity failed',
+              description: error.message
+            })
+          })
+          .finally(() => {
+            this.unstaking = false
+            this.unstakeModalOpening = false
+          })
+
         })
         .catch((error) => {
           this.$notify.error({
@@ -693,8 +822,6 @@ export default Vue.extend({
           })
         })
         .finally(() => {
-          this.unstaking = false
-          this.unstakeModalOpening = false
         })
     },
 

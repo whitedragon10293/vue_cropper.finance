@@ -18,7 +18,7 @@ export async function deposit(
   lpAccount: string | undefined | null,
   rewardAccount: string | undefined | null,
   infoAccount: string | undefined | null,
-  amount: string | undefined | null
+  amount: string | number | undefined | null
 ): Promise<string> {
   if (!connection || !wallet) throw new Error('Miss connection')
   if (!farmInfo) throw new Error('Miss pool infomations')
