@@ -206,7 +206,7 @@ export function getAddressForWhat(address: string) {
   return {}
 }
 
-export function findBestLP(pools:any, baseMint:string, quoteMint:string)
+export function findBestLP(pools:any, baseMint:string, quoteMint:string, amountIn:string)
 {
   const lpList = getPoolListByTokenMintAddresses(
     baseMint === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : baseMint,
@@ -224,7 +224,7 @@ export function findBestLP(pools:any, baseMint:string, quoteMint:string)
         poolInfo,
         baseMint,
         quoteMint,
-        "1",
+        amountIn,
         1
       )
       if(!bestLP || maxAmount < amountOut.wei.toNumber()){

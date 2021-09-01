@@ -78,48 +78,48 @@
                     </a>
                   </div>
                 </div>
-                <div v-if="ammId && !multistep" class="info">
+                <div v-if="mainAmmId && swaptype == 'single'" class="info">
                   <div class="symbol">AMM ID</div>
                   <div class="address">
-                    {{ ammId ? ammId.substr(0, 14) : '' }}
+                    {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
                     ...
-                    {{ ammId ? ammId.substr(ammId.length - 14, 14) : '' }}
+                    {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
                   </div>
                   <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(ammId)" />
-                    <a :href="`${url.explorer}/account/${ammId}`" target="_blank">
+                    <Icon type="copy" @click="$accessor.copy(mainAmmId)" />
+                    <a :href="`${url.explorer}/account/${mainAmmId}`" target="_blank">
                       <Icon type="link" />
                     </a>
                   </div>
                 </div>
-                <div v-if="multistep" class="info">
+                <div v-if="swaptype == 'multi'" class="info">
                   <p>Using multistep-swap scenario(Best Matched AMM ID)</p>
                 </div>
-                <div v-if="multistep" class="info">
+                <div v-if="swaptype == 'multi'" class="info">
                   <div class="symbol">{{fromCoin.symbol + " - CRP"}}</div>
                   <div class="address">
-                    {{ fromAmmId ? fromAmmId.substr(0, 14) : '' }}
+                    {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
                     ...
-                    {{ fromAmmId ? fromAmmId.substr(fromAmmId.length - 14, 14) : '' }}
+                    {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
                   </div>
                   <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(fromAmmId)" />
-                    <a :href="`${url.explorer}/account/${fromAmmId}`" target="_blank">
+                    <Icon type="copy" @click="$accessor.copy(mainAmmId)" />
+                    <a :href="`${url.explorer}/account/${mainAmmId}`" target="_blank">
                       <Icon type="link" />
                     </a>
                   </div>
                 </div>
-                <div v-if="multistep" class="info">
+                <div v-if="swaptype == 'multi'" class="info">
                 
                   <div class="symbol">{{"CRP - " + toCoin.symbol}}</div>
                   <div class="address">
-                    {{ toAmmId ? toAmmId.substr(0, 14) : '' }}
+                    {{ extAmmId ? extAmmId.substr(0, 14) : '' }}
                     ...
-                    {{ toAmmId ? toAmmId.substr(toAmmId.length - 14, 14) : '' }}
+                    {{ extAmmId ? extAmmId.substr(extAmmId.length - 14, 14) : '' }}
                   </div>
                   <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(toAmmId)" />
-                    <a :href="`${url.explorer}/account/${toAmmId}`" target="_blank">
+                    <Icon type="copy" @click="$accessor.copy(extAmmId)" />
+                    <a :href="`${url.explorer}/account/${extAmmId}`" target="_blank">
                       <Icon type="link" />
                     </a>
                   </div>
@@ -297,9 +297,9 @@
           <div style="margin: 10px">
             <div>AMM ID:</div>
             <div>
-              {{ ammId ? ammId.substr(0, 14) : '' }}
+              {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
               ...
-              {{ ammId ? ammId.substr(ammId.length - 14, 14) : '' }}
+              {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
             </div>
           </div>
         </div>
@@ -335,7 +335,7 @@
             !fromCoin ||
             !fromCoinAmount ||
             !toCoin ||
-            (!marketAddress && !lpMintAddress && !isWrap && !multistep) ||
+            (!marketAddress && !lpMintAddress && !isWrap && !swaptype) ||
             !initialized ||
             loading ||
             gt(
@@ -358,7 +358,7 @@
           @click="placeOrder"
         >
           <template v-if="!fromCoin || !toCoin"> Select a token </template>
-          <template v-else-if="(!marketAddress && !lpMintAddress && !isWrap && !multistep) || !initialized">
+          <template v-else-if="(!marketAddress && !lpMintAddress && !isWrap && !swaptype) || !initialized">
             Insufficient liquidity for this trade
           </template>
           <template v-else-if="!fromCoinAmount"> Enter an amount </template>
@@ -534,11 +534,6 @@ export default Vue.extend({
       // amm
       lpMintAddress: '',
 
-      //can use multistep swap
-      multistep: false,
-      fromAmmId: undefined as string | undefined,
-      toAmmId: undefined as string | undefined,
-
       // trading endpoint
       endpoint: '',
       priceImpact: 0,
@@ -555,7 +550,11 @@ export default Vue.extend({
       userCheckUnofficialShow: false,
       findUrlAmmId: false,
 
-      ammId: undefined as string | undefined,
+      mainAmmId: undefined as string | undefined,
+      
+      //can use multistep swap
+      swaptype: '',
+      extAmmId: undefined as string | undefined,
 
       ammIdSelectShow: false,
       ammIdSelectList: [] as LiquidityPoolInfo[] | [],
@@ -595,8 +594,8 @@ export default Vue.extend({
       handler(newTokenAccounts: any) {
         this.updateCoinInfo(newTokenAccounts)
         this.findMarket()
-        if (this.ammId) {
-          this.needUserCheckUnofficialShow(this.ammId)
+        if (this.mainAmmId) {
+          this.needUserCheckUnofficialShow(this.mainAmmId)
         }
         if (this.market) {
           this.fetchUnsettledByMarket()
@@ -815,8 +814,8 @@ export default Vue.extend({
       this.ammIdSelectShow = false
       if (liquidityInfo) {
         this.lpMintAddress = liquidityInfo.lp.mintAddress
-        this.ammId = liquidityInfo.ammId
-        this.userNeedAmmIdOrMarket = this.ammId
+        this.mainAmmId = liquidityInfo.ammId
+        this.userNeedAmmIdOrMarket = this.mainAmmId
         this.officialPool = true
         this.findMarket()
       } else {
@@ -835,19 +834,20 @@ export default Vue.extend({
       this.userCheckUnofficialShow = false
       if (userSelect) {
         this.userCheckUnofficial = true
-        this.userCheckUnofficialMint = this.ammId
+        this.userCheckUnofficialMint = this.mainAmmId
         if (userSelectAll) {
           const localCheckStr = localStorage.getItem(`${this.wallet.address}--checkAmmId`)
           if (localCheckStr) {
-            localStorage.setItem(`${this.wallet.address}--checkAmmId`, localCheckStr + `---${this.ammId}`)
+            localStorage.setItem(`${this.wallet.address}--checkAmmId`, localCheckStr + `---${this.mainAmmId}`)
           } else {
-            localStorage.setItem(`${this.wallet.address}--checkAmmId`, `${this.ammId}`)
+            localStorage.setItem(`${this.wallet.address}--checkAmmId`, `${this.mainAmmId}`)
           }
         }
       } else {
         this.fromCoin = null
         this.toCoin = null
-        this.ammId = undefined
+        this.mainAmmId = undefined
+        this.swaptype = ''
         this.officialPool = true
       }
     },
@@ -856,8 +856,8 @@ export default Vue.extend({
       this.setCoinFromMintLoading = true
       const tempFromCoin = this.fromCoin
       const tempToCoin = this.toCoin
-      const tempFromAmmId = this.fromAmmId
-      const tempToAmmId = this.toAmmId
+      const tempFromAmmId = this.mainAmmId
+      const tempToAmmId = this.extAmmId
       setTimeout(() => {
         this.setCoinFromMintLoading = false
       }, 1)
@@ -865,8 +865,8 @@ export default Vue.extend({
       this.fromCoin = tempToCoin
       this.toCoin = tempFromCoin
 
-      this.fromAmmId = tempToAmmId
-      this.toAmmId = tempFromAmmId
+      this.mainAmmId = tempToAmmId
+      this.extAmmId = tempFromAmmId
 
       this.changeCoinAmountPosition()
     },
@@ -898,6 +898,11 @@ export default Vue.extend({
     },
 
     findMarket() {
+      this.swaptype = ''
+      this.lpMintAddress = ''
+      this.initialized = true
+      this.mainAmmId = undefined
+      this.officialPool = true
       if (this.fromCoin && this.toCoin && this.liquidity.initialized) {
         const InputAmmIdOrMarket = this.userNeedAmmIdOrMarket
         // let userSelectFlag = false
@@ -906,12 +911,11 @@ export default Vue.extend({
           this.isWrap = true
           this.initialized = true
           this.officialPool = true
-          this.ammId = undefined
+          this.mainAmmId = undefined
           return
         }
 
         let marketAddress = ''
-        this.multistep = false
 
         // serum
         for (const address of Object.keys(this.swap.markets)) {
@@ -937,79 +941,34 @@ export default Vue.extend({
         }
 
         if (this.fromCoin.mintAddress && this.toCoin.mintAddress) {
-          const liquidityListV5 = getPoolListByTokenMintAddresses(
+          const lpList = getPoolListByTokenMintAddresses(
             this.fromCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.fromCoin.mintAddress,
             this.toCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.toCoin.mintAddress,
             typeof InputAmmIdOrMarket === 'string' ? InputAmmIdOrMarket : undefined
           )
-          const liquidityListV3 = getLpListByTokenMintAddresses(
-            this.fromCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.fromCoin.mintAddress,
-            this.toCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.toCoin.mintAddress,
-            typeof InputAmmIdOrMarket === 'string' ? InputAmmIdOrMarket : undefined,
-            [3]
-          )
 
-          let lpMintAddress
-          let ammId
-          let officialPool = true
-          if (liquidityListV5.length === 1 && !liquidityListV5[0].official && liquidityListV3.length > 0) {
-            console.log('v3')
-          } else if (liquidityListV5.length === 1) {
-            // official
-            lpMintAddress = liquidityListV5[0].lp.mintAddress
-            ammId = liquidityListV5[0].ammId
-            // mark
-            officialPool = true
-            this.userCheckUnofficialMint = undefined
-            marketAddress = liquidityListV5[0].serumMarket
-          } else if (
-            marketAddress !== '' &&
-            (InputAmmIdOrMarket === undefined || InputAmmIdOrMarket === marketAddress)
-          ) {
-            console.log('official market')
-          } else if (liquidityListV5.length === 1 && InputAmmIdOrMarket) {
-            // user select
-            ammId = liquidityListV5[0].ammId
-            lpMintAddress = liquidityListV5[0].lp.mintAddress
-            officialPool = true
-            marketAddress = liquidityListV5[0].serumMarket
-          } else if (liquidityListV5.length > 0 && this.ammIdSelectOld) {
-            console.log('last user select none')
-          } else if (liquidityListV5.length > 0) {
-            // user select amm id
-            this.coinSelectShow = false
-            setTimeout(() => {
-              this.ammIdSelectShow = true
-              // @ts-ignore
-              this.ammIdSelectList = Object.values(this.liquidity.infos).filter((item: LiquidityPoolInfo) =>
-                liquidityListV5.find((liquidityItem) => liquidityItem.ammId === item.ammId)
-              )
-            }, 1)
-            return
+          if(lpList.length > 0)
+          {
+            this.swaptype = 'single'
+
           }
-
-          if(!lpMintAddress && this.fromCoin && this.toCoin){
-            const fromLP = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, TOKENS.CROPTEST.mintAddress)
-            const toLP = findBestLP(this.$accessor.liquidity.infos, TOKENS.CROPTEST.mintAddress, this.toCoin.mintAddress)
-            if(fromLP && toLP)
+          else {
+            const lpList_1 = getPoolListByTokenMintAddresses(
+              this.fromCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.fromCoin.mintAddress,
+              TOKENS.CROPTEST.mintAddress,
+              undefined
+            )
+            const lpList_2 = getPoolListByTokenMintAddresses(
+              TOKENS.CROPTEST.mintAddress,
+              this.toCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.toCoin.mintAddress,
+              undefined
+            )
+            if(lpList_1.length > 0 && lpList_2.length > 0)
             {
-              this.fromAmmId = fromLP.ammId
-              this.toAmmId = toLP.ammId
-              this.multistep = true
-              this.ammId = ''
+              this.swaptype = 'multi'
             }
           }
-
-          this.lpMintAddress = lpMintAddress ?? ''
-          this.initialized = true
-          this.ammId = ammId
-          this.officialPool = true
-          if (ammId !== this.userCheckUnofficialMint) {
-            this.userCheckUnofficialMint = undefined
-          }
-          if (ammId) {
-            this.needUserCheckUnofficialShow(ammId)
-          }
+          
         }
         
         if (marketAddress) {
@@ -1027,24 +986,11 @@ export default Vue.extend({
             // this.unsubPoolChange()
             // this.subPoolChange()
           }
-        } else if(this.multistep === false){
-          this.endpoint = ''
-          this.marketAddress = ''
-          this.market = null
-          this.lpMintAddress = ''
-          this.isWrap = false
-          // this.unsubPoolChange()
-        }
+        } 
         this.updateUrl()
-      } else {
-        this.multistep = false
-        this.ammId = undefined
+      }
+      else{
         this.endpoint = ''
-        this.marketAddress = ''
-        this.market = null
-        this.lpMintAddress = ''
-        this.isWrap = false
-        // this.unsubPoolChange()
       }
     },
 
@@ -1097,65 +1043,70 @@ export default Vue.extend({
         this.toCoinAmount = this.fromCoinAmount
         return
       }
-      if (this.fromCoin && this.toCoin && this.ammId && this.fromCoinAmount) {
-        // amm
-        const poolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.ammId)
-        
-        const { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
-          poolInfo,
-          this.fromCoin.mintAddress,
-          this.toCoin.mintAddress,
-          this.fromCoinAmount,
-          this.setting.slippage
-        )
-        if (!amountOut.isNullOrZero()) {
-          console.log(`input: ${this.fromCoinAmount} raydium out: ${amountOutWithSlippage.fixed()}`)
-          toCoinAmount = amountOut.fixed()
-          toCoinWithSlippage = amountOutWithSlippage
-          price = +new TokenAmount(
-            parseFloat(toCoinAmount) / parseFloat(this.fromCoinAmount),
-            this.toCoin.decimals,
-            false
-          ).fixed()
-          impact = priceImpact
-          endpoint = 'CropperFinance Pool'
+      if (this.fromCoin && this.toCoin && this.fromCoinAmount) {
+        if(this.swaptype == 'single'){
+          const poolInfo = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, this.toCoin.mintAddress,this.fromCoinAmount)
+          this.mainAmmId = poolInfo.ammId
+          
+          const { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
+            poolInfo,
+            this.fromCoin.mintAddress,
+            this.toCoin.mintAddress,
+            this.fromCoinAmount,
+            this.setting.slippage
+          )
+          if (!amountOut.isNullOrZero()) {
+            console.log(`input: ${this.fromCoinAmount} raydium out: ${amountOutWithSlippage.fixed()}`)
+            toCoinAmount = amountOut.fixed()
+            toCoinWithSlippage = amountOutWithSlippage
+            price = +new TokenAmount(
+              parseFloat(toCoinAmount) / parseFloat(this.fromCoinAmount),
+              this.toCoin.decimals,
+              false
+            ).fixed()
+            impact = priceImpact
+            endpoint = 'CropperFinance Pool'
+          }
+        }
+        else if(this.swaptype == 'multi'){
+          const fromPoolInfo = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, TOKENS.CROPTEST.mintAddress,this.fromCoinAmount)
+          this.mainAmmId = fromPoolInfo.ammId
+
+          let { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
+            fromPoolInfo,
+            this.fromCoin.mintAddress,
+            TOKENS.CROPTEST.mintAddress,
+            this.fromCoinAmount,
+            this.setting.slippage
+          )
+
+          const toPoolInfo = findBestLP(this.$accessor.liquidity.infos, TOKENS.CROPTEST.mintAddress, this.toCoin.mintAddress, amountOut.fixed())
+          this.extAmmId = toPoolInfo.ammId
+         
+          let final = getSwapOutAmount(
+            toPoolInfo,
+            TOKENS.CROPTEST.mintAddress,
+            this.toCoin.mintAddress,
+            amountOut.fixed(),
+            this.setting.slippage
+          )
+
+          if (!final.amountOut.isNullOrZero()) {
+            console.log(`input: ${this.fromCoinAmount} raydium out: ${final.amountOutWithSlippage.fixed()}`)
+            toCoinAmount = final.amountOut.fixed()
+            toCoinWithSlippage = final.amountOutWithSlippage
+            this.crpAmountWithSlippage = amountOutWithSlippage.fixed()
+            price = +new TokenAmount(
+              parseFloat(toCoinAmount) / parseFloat(this.fromCoinAmount),
+              this.toCoin.decimals,
+              false
+            ).fixed()
+            impact = final.priceImpact
+            endpoint = 'CropperFinance Pool'
+          }
         }
       }
-      if (this.fromCoin && this.toCoin && this.multistep && this.fromCoinAmount) {
-        // amm
-        const fromPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.fromAmmId)
-        const toPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.toAmmId)
 
-        let { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
-          fromPoolInfo,
-          this.fromCoin.mintAddress,
-          TOKENS.CROPTEST.mintAddress,
-          this.fromCoinAmount,
-          this.setting.slippage
-        )
-        
-        let final = getSwapOutAmount(
-          toPoolInfo,
-          TOKENS.CROPTEST.mintAddress,
-          this.toCoin.mintAddress,
-          amountOut.fixed(),
-          this.setting.slippage
-        )
-
-        if (!final.amountOut.isNullOrZero()) {
-          console.log(`input: ${this.fromCoinAmount} raydium out: ${final.amountOutWithSlippage.fixed()}`)
-          toCoinAmount = final.amountOut.fixed()
-          toCoinWithSlippage = final.amountOutWithSlippage
-          this.crpAmountWithSlippage = amountOutWithSlippage.fixed()
-          price = +new TokenAmount(
-            parseFloat(toCoinAmount) / parseFloat(this.fromCoinAmount),
-            this.toCoin.decimals,
-            false
-          ).fixed()
-          impact = final.priceImpact
-          endpoint = 'CropperFinance Pool'
-        }
-      }
       if (
         this.fromCoin &&
         this.toCoin &&
@@ -1276,8 +1227,8 @@ export default Vue.extend({
           .finally(() => {
             this.swaping = false
           })
-      } else if (this.endpoint === 'CropperFinance Pool' && this.ammId) {
-        const poolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.ammId)
+      } else if (this.endpoint === 'CropperFinance Pool' && this.swaptype == 'single') {
+        const poolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.mainAmmId)
         swap(
           this.$web3,
           // @ts-ignore
@@ -1318,9 +1269,9 @@ export default Vue.extend({
           .finally(() => {
             this.swaping = false
           })
-      }else if(this.endpoint === 'CropperFinance Pool' && this.multistep) {
-        const fromPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.fromAmmId)
-        const toPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.toAmmId)
+      }else if(this.endpoint === 'CropperFinance Pool' && this.swaptype == 'multi') {
+        const fromPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.mainAmmId)
+        const toPoolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.extAmmId)
         twoStepSwap(
           this.$web3,
           // @ts-ignore
@@ -1422,14 +1373,15 @@ export default Vue.extend({
         return
       }
       const { from, to } = this.$route.query
-      if (this.ammId) {
-        await this.$router.push({
-          path: '/swap/',
-          query: {
-            ammId: this.ammId
-          }
-        })
-      } else if (this.fromCoin && this.toCoin) {
+      // if (this.ammId) {
+      //   await this.$router.push({
+      //     path: '/swap/',
+      //     query: {
+      //       ammId: this.ammId
+      //     }
+      //   })
+      // } else 
+      if (this.fromCoin && this.toCoin) {
         if (this.fromCoin.mintAddress !== from || this.toCoin.mintAddress !== to) {
           await this.$router.push({
             path: '/swap/',
