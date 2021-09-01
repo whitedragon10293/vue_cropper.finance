@@ -12,7 +12,7 @@ TransactionInstruction
 import { Token, AccountLayout, MintLayout } from "@solana/spl-token";
 import { bool, publicKey, struct, u32, u64, u8,  } from '@project-serum/borsh'
 import { TOKENS } from '@/utils/tokens'
-import {TOKEN_PROGRAM_ID} from '@/utils/ids'
+import {SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID} from '@/utils/ids'
 // @ts-ignore
 import { nu64, blob } from 'buffer-layout'
 
@@ -278,6 +278,7 @@ export const swapInstruction = (
   feeWalletAccount: PublicKey,
   swapProgramId: PublicKey,
   tokenProgramId: PublicKey,
+  systemProgramId:PublicKey,
   amountIn: number | nu64,
   minimumAmountOut: number | nu64,
   programOwner?: PublicKey
@@ -299,6 +300,7 @@ export const swapInstruction = (
     { pubkey: feeTokenAccount, isSigner: false, isWritable: true },
     { pubkey: feeWalletAccount, isSigner: false, isWritable: true },
     { pubkey: tokenProgramId, isSigner: false, isWritable: false },
+    { pubkey: systemProgramId, isSigner: false, isWritable: false },
   ];
 
   // optional depending on the build of token-swap program
