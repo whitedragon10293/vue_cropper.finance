@@ -93,7 +93,7 @@
                   </div>
                 </div>
                 <div v-if="swaptype == 'multi'" class="info">
-                  <p>Using multistep-swap scenario(Best Matched AMM ID)</p>
+                  <p>Swaping via multistep scenario</p>
                 </div>
                 <div v-if="swaptype == 'multi'" class="info">
                   <div class="symbol">{{fromCoin.symbol + " - CRP"}}</div>
@@ -760,21 +760,23 @@ export default Vue.extend({
         this.findUrlAmmId = !this.liquidity.initialized
         this.userNeedAmmIdOrMarket = ammIdOrMarket
         // @ts-ignore
-        const liquidityUser = getLiquidityInfoSimilar(ammIdOrMarket, from, to)
-        if (liquidityUser) {
-          if (from) {
-            fromCoin = liquidityUser.coin.mintAddress === from ? liquidityUser.coin : liquidityUser.pc
-            toCoin = liquidityUser.coin.mintAddress === fromCoin.mintAddress ? liquidityUser.pc : liquidityUser.coin
-          }
-          if (to) {
-            toCoin = liquidityUser.coin.mintAddress === to ? liquidityUser.coin : liquidityUser.pc
-            fromCoin = liquidityUser.coin.mintAddress === toCoin.mintAddress ? liquidityUser.pc : liquidityUser.coin
-          }
-          if (!(from && to)) {
-            fromCoin = liquidityUser.coin
-            toCoin = liquidityUser.pc
-          }
-        }
+        // const liquidityUser = getLiquidityInfoSimilar(ammIdOrMarket, from, to)
+        // if (liquidityUser) {
+        //   if (from) {
+        //     fromCoin = liquidityUser.coin.mintAddress === from ? liquidityUser.coin : liquidityUser.pc
+        //     toCoin = liquidityUser.coin.mintAddress === fromCoin.mintAddress ? liquidityUser.pc : liquidityUser.coin
+        //   }
+        //   if (to) {
+        //     toCoin = liquidityUser.coin.mintAddress === to ? liquidityUser.coin : liquidityUser.pc
+        //     fromCoin = liquidityUser.coin.mintAddress === toCoin.mintAddress ? liquidityUser.pc : liquidityUser.coin
+        //   }
+        //   if (!(from && to)) {
+        //     fromCoin = liquidityUser.coin
+        //     toCoin = liquidityUser.pc
+        //   }
+        // }
+        fromCoin = Object.values(TOKENS).find((item) => item.mintAddress === from)
+        toCoin = Object.values(TOKENS).find((item) => item.mintAddress === to)
         if (fromCoin || toCoin) {
           if (fromCoin) {
             fromCoin.balance = get(this.wallet.tokenAccounts, `${fromCoin.mintAddress}.balance`)
