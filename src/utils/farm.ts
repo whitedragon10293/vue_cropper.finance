@@ -660,7 +660,7 @@ export class YieldFarm {
     lpAccount: string | undefined | null,
     rewardAccount: string | undefined | null,
     infoAccount: string | undefined | null,
-    amount: string
+    amount: string | number
   ) {
     const value = getBigNumber(new TokenAmount(amount, farmInfo.lp.decimals, false).wei)
     const transaction = new Transaction()

@@ -8,7 +8,7 @@ import logger from '@/utils/logger'
 type TxHistoryInfo = { status: 'Succeed' | 'Fail' | 'Pending'; description: string; time: number }
 export const state = () => {
   try {
-    return { history: JSON.parse(LocalStorage.get('RAY_TX_HISTORY') ?? '{}') }
+    return { history: JSON.parse(LocalStorage.get('CRP_TX_HISTORY') ?? '{}') }
   } catch (err) {
     return { history: {} }
   }
@@ -32,7 +32,7 @@ export const mutations = mutationTree(state, {
     }
 
     state.history = { ...history }
-    LocalStorage.set('RAY_TX_HISTORY', JSON.stringify(history))
+    LocalStorage.set('CRP_TX_HISTORY', JSON.stringify(history))
   },
 
   setListenerId(state: any, [txid, listenerId]: [txid: string, listenerId: number]) {
@@ -42,7 +42,7 @@ export const mutations = mutationTree(state, {
     history[txid] = { ...history[txid], ...{ listenerId } }
 
     state.history = { ...history }
-    LocalStorage.set('RAY_TX_HISTORY', JSON.stringify(history))
+    LocalStorage.set('CRP_TX_HISTORY', JSON.stringify(history))
   },
 
   setTxStatus(state: any, [txid, status, block]: [txid: string, status: string, block: number]) {
@@ -51,7 +51,7 @@ export const mutations = mutationTree(state, {
     history[txid] = { ...history[txid], ...{ status, block } }
 
     state.history = { ...history }
-    LocalStorage.set('RAY_TX_HISTORY', JSON.stringify(history))
+    LocalStorage.set('CRP_TX_HISTORY', JSON.stringify(history))
   }
 })
 
