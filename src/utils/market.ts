@@ -232,10 +232,6 @@ export async function createAmm(
     )
   }
 
-  let transaction = new Transaction()
-  instructions.forEach((instruction)=>{
-    transaction.add(instruction)
-  })
 
   // creating fee account for base & 
   let feeFromTokenAccount = await getOneFilteredTokenAccountsByOwner(conn, FIXED_FEE_ACCOUNT, market.baseMintAddress) as any
@@ -256,6 +252,10 @@ export async function createAmm(
   feeFromTokenAccount = new PublicKey(feeFromTokenAccount)
   feeToTokenAccount = new PublicKey(feeToTokenAccount)
 
+  let transaction = new Transaction()
+  instructions.forEach((instruction)=>{
+    transaction.add(instruction)
+  })
   // create all accounts in one transaction
   let tx = await sendTransaction(conn, wallet, transaction, [
     liquidityTokenAccount,
@@ -346,17 +346,6 @@ export async function createAmm(
       )
     }
   });
-  transaction = new Transaction()
-  instructions.forEach((instruction)=>{
-    transaction.add(instruction)
-  })
-  tx = await sendTransaction(
-    conn,
-    wallet,
-    transaction,
-    [tokenSwapAccount, ...signers]
-  );
-  instructions = []
 
   instructions.push(
     createLiquidityPool(
@@ -393,8 +382,7 @@ export async function createAmm(
     conn,
     wallet,
     transaction,
-    // [tokenSwapAccount, ...signers]
-    [tokenSwapAccount]
+    [tokenSwapAccount, ...signers]
   );
 
   return ammId.toBase58()
