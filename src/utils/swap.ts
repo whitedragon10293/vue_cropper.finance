@@ -405,28 +405,20 @@ export async function swap(
     )
   }
 
-  const newFromTokenAccount = await createTokenAccountIfNotExist(
-    connection,
+  //@zhaohui
+
+  let newFromTokenAccount = await createAssociatedTokenAccountIfNotExist(
     fromTokenAccount,
     owner,
     fromMint,
-    await connection.getMinimumBalanceForRentExemption(
-      ACCOUNT_LAYOUT.span
-    ),
-    transaction,
-    signers
+    transaction
   )
 
-  const newToTokenAccount = await createTokenAccountIfNotExist(
-    connection,
+  let newToTokenAccount = await createAssociatedTokenAccountIfNotExist(
     toTokenAccount,
     owner,
     toMint,
-    await connection.getMinimumBalanceForRentExemption(
-      ACCOUNT_LAYOUT.span
-    ),
-    transaction,
-    signers
+    transaction
   )
 
   let normal_dir = (fromCoinMint == poolInfo.coin.mintAddress)
