@@ -1,7 +1,13 @@
 <template>
 
   <div class="container" :class="isMobile ? 'create-pool-mobile' : 'create-pool'">
-    <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
+    <CoinSelect 
+    v-if="coinSelectShow && wallet.connected" 
+    :farmTokenASelect="selectTokenA"
+    :farmTokenBSelect="selectTokenB"
+    :allowedAllFarm="$wallet.publicKey.toBase58()===allowedFarmCreator"
+    @onClose="() => (coinSelectShow = false,selectTokenB=false,selectTokenA=false)" 
+    @onSelect="onCoinSelect" />
     <AmmIdSelect
       :show="ammIdSelectShow"
       :liquidity-list="ammIdSelectList"
@@ -73,7 +79,7 @@
             </template></Step
           >
         </Steps>
-        <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+        <Row v-if="current === 0 && wallet.connected" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
               Here are two options. You can use existing AMM Id to create your own farm or create new AMM Id
@@ -104,13 +110,8 @@
           </Col>
           <Col style="line-height: 20px" :span="24"><input v-model="userCreateAmmId" /></Col>
 
-          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
-            <div v-if="!wallet.connected" class="btncontainer">
-              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
-                Connect
-              </Button>
-            </div>
-            <div v-else class="btncontainer">
+          <Col v-if="userCreateAmmId!=''" :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div class="btncontainer">
               <Button
                 size="large"
                 ghost
@@ -128,13 +129,8 @@
             <div>Option 2 - Create new AMM ID:</div>
           </Col>
 
-          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
-            <div v-if="!wallet.connected" class="btncontainer">
-              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
-                Connect
-              </Button>
-            </div>
-            <div v-else class="btncontainer">
+          <Col v-if="userCreateAmmId===''" :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div class="btncontainer">
               <Button
                 size="large"
                 ghost
@@ -144,6 +140,15 @@
                 @click="createNewAMMID()"
               >
                 Create New
+              </Button>
+            </div>
+          </Col>
+        </Row>
+        <Row v-if="current === 0 && !wallet.connected" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+          <Col :span="isMobile ? 24 : 24" style="padding-bottom: 20px; padding-top: 10px; text-align:center">
+            <div v-if="!wallet.connected" class="btncontainer">
+              <Button  size="large" ghost style="width: 100%" @click="$accessor.wallet.openModal">
+                Connect
               </Button>
             </div>
           </Col>
@@ -394,7 +399,7 @@
             />
           </Col>
           <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
-            <div>Reward Per Second:&nbsp;{{rewardPerSecond}} &nbsp;{{rewardCoin != null?rewardCoin.symbol : ""}}</div>
+            <div>Reward Per Week:&nbsp;{{rewardPerWeek}} &nbsp;{{rewardCoin != null?rewardCoin.symbol : ""}}</div>
           </Col>
           <Col style="line-height: 20px;" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'">
             <div>AMM ID:&nbsp;{{userCreateAmmId}}</div>
@@ -455,7 +460,7 @@ import BigNumber from '@/../node_modules/bignumber.js/bignumber'
 import { NATIVE_SOL, TokenInfo, TOKENS } from '@/utils/tokens'
 import { createAssociatedId } from '@/utils/web3'
 import { PublicKey } from '@solana/web3.js'
-import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4 } from '@/utils/ids'
+import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, SITE_ALLOWED_CREATOR } from '@/utils/ids'
 import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep, get } from 'lodash-es'
 import moment from 'moment'
@@ -487,6 +492,7 @@ export default class CreatePool extends Vue {
   selectFromCoin:boolean = false
   selectTokenA:boolean = false
   selectTokenB:boolean = false
+  allowedFarmCreator:string = SITE_ALLOWED_CREATOR
   coinSelectShow: boolean = false
   startTime: any = moment()
   endTime:  any = moment()
@@ -528,17 +534,17 @@ export default class CreatePool extends Vue {
 
   expectAmmId: undefined | string
 
-  get rewardPerSecond(){
+  get rewardPerWeek(){
     let result = 0;
     let initialAmount = Number.parseFloat(this.fromCoinAmount);
+    
 
     let duration = 0;
     if(this.startTime != null && this.endTime != null){
-      this.endTime.unix() - this.startTime.unix();
+      duration = this.endTime.unix() - this.startTime.unix();
     }
-    
     if(duration > 0){
-      result = initialAmount / duration;
+      result = initialAmount * 7 * 24 * 3600 / duration ;
     }
     return result;
   }
@@ -549,6 +555,7 @@ export default class CreatePool extends Vue {
   get wallet() {
     return this.$accessor.wallet
   }
+  
 
   @Watch('startTime')
   onStartTimeChanged(val: any) {
@@ -727,7 +734,7 @@ export default class CreatePool extends Vue {
   async delay(ms: number) {
       return new Promise( resolve => setTimeout(resolve, ms) );
   }
-
+ 
   gotoFarms(){
     this.$router.push({ path: `/farms` })
   }
@@ -788,9 +795,16 @@ export default class CreatePool extends Vue {
       else if(this.selectTokenA || this.selectTokenB){
         if (this.selectTokenA) {
           this.tokenA = cloneDeep(tokenInfo)
+          this.rewardCoin = cloneDeep(tokenInfo)
+          if(this.tokenB && this.tokenA.mintAddress === this.tokenB.mintAddress){
+            this.tokenB = null;
+          }
         }
         else if (this.selectTokenB) {
           this.tokenB = cloneDeep(tokenInfo)
+          if(this.tokenA && this.tokenB.mintAddress === this.tokenA.mintAddress){
+            this.tokenA = null;
+          }
         }
         if(this.tokenA && this.tokenB){
           const liquidityListV5 = getPoolListByTokenMintAddresses(
@@ -798,16 +812,25 @@ export default class CreatePool extends Vue {
             this.tokenB.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.tokenB.mintAddress,
             undefined
           );
-          if (liquidityListV5.length > 0) {
+          if (liquidityListV5.length === 1) {
+            this.userCreateAmmId = liquidityListV5[0].ammId;
+          }
+          else if (liquidityListV5.length > 1) {
             // user select amm id
             this.coinSelectShow = false
             setTimeout(() => {
               this.ammIdSelectShow = true
+              
               // @ts-ignore
-              this.ammIdSelectList = liquidityListV5
+              this.ammIdSelectList = Object.values(this.$accessor.liquidity.infos).filter((item: LiquidityPoolInfo) =>
+              liquidityListV5.find((liquidityItem) => liquidityItem.ammId === item.ammId)
+              )
             }, 1)
             return
           }
+        }
+        else{
+          this.userCreateAmmId = ''
         }
       }
     } else {
@@ -875,7 +898,7 @@ export default class CreatePool extends Vue {
 
     let market_t = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-      baseMintAddress: new PublicKey(TOKENS.MYUSDC.mintAddress),
+      baseMintAddress: new PublicKey(TOKENS.USDC.mintAddress),
       quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
       tickSize: 5,
       minOrderSize: 10

@@ -4,6 +4,7 @@ import { PricesData } from '@/types/api'
 
 import { cloneDeep } from 'lodash-es'
 import logger from '@/utils/logger'
+import { DEVNET_MODE } from '@/utils/ids'
 
 const AUTO_REFRESH_TIME = 60
 
@@ -61,8 +62,10 @@ export const actions = actionTree(
         }
       );
       //for hongbo's test
-        prices["tUSDC"]=1
-        prices["tCRP"]=12.5
+      if(DEVNET_MODE){
+        prices["CRP"]=0.32
+      }
+      
       commit('setPrices', prices)
 
       commit('setInitialized')

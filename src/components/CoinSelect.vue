@@ -7,7 +7,7 @@
         <Icon :type="desc ? 'arrow-up' : 'arrow-down'" @click="setDesc" />
       </div>
       <div v-if="!addUserCoin" class="token-list">
-        <template v-for="token of tokenList">
+        <template v-for="token of filteredTokenList()">
           <div
             v-if="token.cache !== true && token.mintAddress !== 'So11111111111111111111111111111111111111112'"
             :key="token.symbol + token.mintAddress"
@@ -71,6 +71,7 @@ import { cloneDeep } from 'lodash-es'
 import { PublicKey } from '@solana/web3.js'
 // import { getFilteredProgramAccounts } from '@/utils/web3'
 import { MINT_LAYOUT } from '@/utils/layouts'
+import { ALLOWED_TOKENB_LIST, LOCKED_TOKENA_LIST} from '@/utils/farm'
 
 // fix: Failed to resolve directive: ant-portal
 Vue.use(Modal)
@@ -80,7 +81,20 @@ export default Vue.extend({
     Modal,
     Icon
   },
-
+  props: {
+    farmTokenASelect: {
+      type: Boolean,
+      default: false
+    },
+    allowedAllFarm: {
+      type: Boolean,
+      default: false
+    },
+    farmTokenBSelect: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       tokensTags: TOKENS_TAGS,
@@ -92,7 +106,9 @@ export default Vue.extend({
 
       userInputCoinName: undefined,
       showSelectSourceFlag: false,
-      showUserButton: {} as { [key: string]: boolean }
+      showUserButton: {} as { [key: string]: boolean },
+      
+      
     }
   },
 
@@ -138,6 +154,30 @@ export default Vue.extend({
   },
 
   methods: {
+    filteredTokenList(){
+      let filteredList:TokenInfo[] = [];
+      if(this.farmTokenASelect && this.allowedAllFarm){
+        filteredList = this.tokenList;
+      }
+      else if(this.farmTokenASelect && !this.allowedAllFarm){
+        filteredList = this.tokenList.filter((token)=>{
+          if(LOCKED_TOKENA_LIST.includes(token.symbol)){
+            return false;
+          }
+          else{
+            return true;
+          }
+        })
+      }
+      if(this.farmTokenBSelect){
+        filteredList = this.tokenList.filter((token)=>{
+          if(ALLOWED_TOKENB_LIST.includes(token.symbol)){
+            return true;
+          }
+        })
+      }
+      return filteredList;
+    },
     tokenHover(token: any) {
       this.$set(this.showUserButton, token.symbol + token.mintAddress, true)
     },
@@ -306,7 +346,6 @@ export default Vue.extend({
 
       for (const symbol of Object.keys(TOKENS)) {
         let tokenInfo = cloneDeep(TOKENS[symbol])
-
         const tokenAccount = this.wallet.tokenAccounts[tokenInfo.mintAddress]
 
         if (tokenAccount) {

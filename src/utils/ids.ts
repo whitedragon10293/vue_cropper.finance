@@ -1,5 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 
+export const DEVNET_MODE = true;
+
 export const FIXED_FEE_ACCOUNT = new PublicKey('2Pv5mjmKYAtXNpr3mcsXf7HjtS3fieJeFoWPATVT5rWa')
 
 export const SYSTEM_PROGRAM_ID = new PublicKey('11111111111111111111111111111111')
@@ -20,7 +22,9 @@ export const LIQUIDITY_POOL_PROGRAM_ID_V4 = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24
 // export const LIQUIDITY_POOL_PROGRAM_ID_V5 = '8mAJdsH6sf6fn77M2GjELkdE8qGiiLFkzrfLRJtBhV9b'//@zhaohui
 
 export const LIQUIDITY_POOL_PROGRAM_ID_V5 = '7ZZJNL4xD8db6yrT46SeMFZXcVr9MLepGpEtnKW2k6sW'//@zhaohui
+
 export const FARM_PROGRAM_ID = '7zrY3kkCvnQfgXRj87UVgpG3ymyZWiqDBi9d5dsPAaeR'//@Hongbo
+export const SITE_ALLOWED_CREATOR = "4GJ3z4skEHJADz3MVeNYBg4YV8H27rBQey2YYdiPC8PA";
 
 
 export const STAKE_PROGRAM_ID = 'EhhTKczWMGQt46ynNeRX1WfeagwwJd7ufHvCDjRxjo5Q'

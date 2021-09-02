@@ -22,9 +22,20 @@ import { FarmInfo } from './farms';
 import { getBigNumber } from './layouts';
 import { TokenAmount } from './safe-math';
 
-export const FARM_TEST_MODE = true;
+
 export const PAY_FARM_FEE = 5000;
 
+export const LOCKED_TOKENA_LIST = [
+  "CRP",
+  "USDC",
+  "USDT",
+  "SOL",
+  "ETH"
+]
+export const ALLOWED_TOKENB_LIST = [
+  "CRP",
+  "USDC",
+]
 enum FarmInstruction
 {
   Initialize = 0,

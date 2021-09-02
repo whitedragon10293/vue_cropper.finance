@@ -1,9 +1,5 @@
 <template>
   <div class="container">
-    <div class="page-head fs-container">
-      <span class="title">Swap</span>
-      
-    </div>
 
     <CoinSelect v-if="coinSelectShow" @onClose="() => (coinSelectShow = false)" @onSelect="onCoinSelect" />
     <AmmIdSelect
@@ -28,129 +24,132 @@
 
     <div class="card">
       <div class="card-body">
-        <div class="buttons">
-          <Tooltip placement="bottomRight">
-            <template slot="title">
-              <p>Addresses</p>
-              <div class="swap-info">
-                <div v-if="fromCoin" class="info">
-                  <div class="symbol">{{ fromCoin.symbol }}</div>
-                  <div class="address">
-                    {{ fromCoin.mintAddress.substr(0, 14) }}
-                    ...
-                    {{ fromCoin.mintAddress.substr(fromCoin.mintAddress.length - 14, 14) }}
+        <div class="page-head fs-container">
+          <span class="title">Swap</span>
+          <div class="buttons">
+            <Tooltip placement="bottomRight">
+              <template slot="title">
+                <p>Addresses</p>
+                <div class="swap-info">
+                  <div v-if="fromCoin" class="info">
+                    <div class="symbol">{{ fromCoin.symbol }}</div>
+                    <div class="address">
+                      {{ fromCoin.mintAddress.substr(0, 14) }}
+                      ...
+                      {{ fromCoin.mintAddress.substr(fromCoin.mintAddress.length - 14, 14) }}
+                    </div>
+                    <div class="action">
+                      <Icon type="copy" @click="$accessor.copy(fromCoin.mintAddress)" />
+                      <a :href="`${url.explorer}/token/${fromCoin.mintAddress}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                    </div>
                   </div>
-                  <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(fromCoin.mintAddress)" />
-                    <a :href="`${url.explorer}/token/${fromCoin.mintAddress}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
+                  <div v-if="toCoin" class="info">
+                    <div class="symbol">{{ toCoin.symbol }}</div>
+                    <div class="address">
+                      {{ toCoin.mintAddress.substr(0, 14) }}
+                      ...
+                      {{ toCoin.mintAddress.substr(toCoin.mintAddress.length - 14, 14) }}
+                    </div>
+                    <div class="action">
+                      <Icon type="copy" @click="$accessor.copy(toCoin.mintAddress)" />
+                      <a :href="`${url.explorer}/token/${toCoin.mintAddress}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                    </div>
+                  </div>
+                  <div v-if="marketAddress" class="info">
+                    <div class="symbol">Market</div>
+                    <div class="address">
+                      {{ marketAddress.substr(0, 14) }}
+                      ...
+                      {{ marketAddress.substr(marketAddress.length - 14, 14) }}
+                    </div>
+                    <div class="action">
+                      <Icon type="copy" @click="$accessor.copy(marketAddress)" />
+                      <a v-if="!officialPool" :href="`${url.explorer}/account/${marketAddress}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                      <a v-else :href="`${url.trade}/${marketAddress}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                    </div>
+                  </div>
+                  <div v-if="mainAmmId && swaptype == 'single'" class="info">
+                    <div class="symbol">AMM ID</div>
+                    <div class="address">
+                      {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
+                      ...
+                      {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
+                    </div>
+                    <div class="action">
+                      <Icon type="copy" @click="$accessor.copy(mainAmmId)" />
+                      <a :href="`${url.explorer}/account/${mainAmmId}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                    </div>
+                  </div>
+                  <div v-if="swaptype == 'multi'" class="info">
+                    <p>Swaping via multistep scenario</p>
+                  </div>
+                  <div v-if="swaptype == 'multi'" class="info">
+                    <div class="symbol">{{fromCoin.symbol + " - CRP"}}</div>
+                    <div class="address">
+                      {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
+                      ...
+                      {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
+                    </div>
+                    <div class="action">
+                      <Icon type="copy" @click="$accessor.copy(mainAmmId)" />
+                      <a :href="`${url.explorer}/account/${mainAmmId}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                    </div>
+                  </div>
+                  <div v-if="swaptype == 'multi'" class="info">
+                  
+                    <div class="symbol">{{"CRP - " + toCoin.symbol}}</div>
+                    <div class="address">
+                      {{ extAmmId ? extAmmId.substr(0, 14) : '' }}
+                      ...
+                      {{ extAmmId ? extAmmId.substr(extAmmId.length - 14, 14) : '' }}
+                    </div>
+                    <div class="action">
+                      <Icon type="copy" @click="$accessor.copy(extAmmId)" />
+                      <a :href="`${url.explorer}/account/${extAmmId}`" target="_blank">
+                        <Icon type="link" />
+                      </a>
+                    </div>
                   </div>
                 </div>
-                <div v-if="toCoin" class="info">
-                  <div class="symbol">{{ toCoin.symbol }}</div>
-                  <div class="address">
-                    {{ toCoin.mintAddress.substr(0, 14) }}
-                    ...
-                    {{ toCoin.mintAddress.substr(toCoin.mintAddress.length - 14, 14) }}
-                  </div>
-                  <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(toCoin.mintAddress)" />
-                    <a :href="`${url.explorer}/token/${toCoin.mintAddress}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
-                  </div>
-                </div>
-                <div v-if="marketAddress" class="info">
-                  <div class="symbol">Market</div>
-                  <div class="address">
-                    {{ marketAddress.substr(0, 14) }}
-                    ...
-                    {{ marketAddress.substr(marketAddress.length - 14, 14) }}
-                  </div>
-                  <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(marketAddress)" />
-                    <a v-if="!officialPool" :href="`${url.explorer}/account/${marketAddress}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
-                    <a v-else :href="`${url.trade}/${marketAddress}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
-                  </div>
-                </div>
-                <div v-if="mainAmmId && swaptype == 'single'" class="info">
-                  <div class="symbol">AMM ID</div>
-                  <div class="address">
-                    {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
-                    ...
-                    {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
-                  </div>
-                  <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(mainAmmId)" />
-                    <a :href="`${url.explorer}/account/${mainAmmId}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
-                  </div>
-                </div>
-                <div v-if="swaptype == 'multi'" class="info">
-                  <p>Swaping via multistep scenario</p>
-                </div>
-                <div v-if="swaptype == 'multi'" class="info">
-                  <div class="symbol">{{fromCoin.symbol + " - CRP"}}</div>
-                  <div class="address">
-                    {{ mainAmmId ? mainAmmId.substr(0, 14) : '' }}
-                    ...
-                    {{ mainAmmId ? mainAmmId.substr(mainAmmId.length - 14, 14) : '' }}
-                  </div>
-                  <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(mainAmmId)" />
-                    <a :href="`${url.explorer}/account/${mainAmmId}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
-                  </div>
-                </div>
-                <div v-if="swaptype == 'multi'" class="info">
-                
-                  <div class="symbol">{{"CRP - " + toCoin.symbol}}</div>
-                  <div class="address">
-                    {{ extAmmId ? extAmmId.substr(0, 14) : '' }}
-                    ...
-                    {{ extAmmId ? extAmmId.substr(extAmmId.length - 14, 14) : '' }}
-                  </div>
-                  <div class="action">
-                    <Icon type="copy" @click="$accessor.copy(extAmmId)" />
-                    <a :href="`${url.explorer}/account/${extAmmId}`" target="_blank">
-                      <Icon type="link" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <Icon type="question-circle" />
-          </Tooltip>
-          <Icon type="setting" @click="$accessor.setting.open" />
-          <Tooltip placement="bottomRight">
-            <template slot="title">
-              <span>
-                Displayed data will auto-refresh after
-                {{ autoRefreshTime - countdown }} seconds. Click this circle to update manually.
-              </span>
-            </template>
-            <Progress
-              type="circle"
-              :width="20"
-              :stroke-width="10"
-              :percent="(100 / autoRefreshTime) * countdown"
-              :show-info="false"
-              :class="marketAddress && loading ? 'disabled' : ''"
-              @click="
-                () => {
-                  getOrderBooks()
-                  $accessor.wallet.getTokenAccounts()
-                }
-              "
-            />
-          </Tooltip>
+              </template>
+              <Icon type="question-circle" />
+            </Tooltip>
+            <Icon type="setting" @click="$accessor.setting.open" />
+            <Tooltip placement="bottomRight">
+              <template slot="title">
+                <span>
+                  Displayed data will auto-refresh after
+                  {{ autoRefreshTime - countdown }} seconds. Click this circle to update manually.
+                </span>
+              </template>
+              <Progress
+                type="circle"
+                :width="20"
+                :stroke-width="10"
+                :percent="(100 / autoRefreshTime) * countdown"
+                :show-info="false"
+                :class="marketAddress && loading ? 'disabled' : ''"
+                @click="
+                  () => {
+                    getOrderBooks()
+                    $accessor.wallet.getTokenAccounts()
+                  }
+                "
+              />
+            </Tooltip>
+          </div>
         </div>
 
         <CoinInput
@@ -1516,7 +1515,8 @@ export default Vue.extend({
 }
 
 main{
-  background-image:url(../assets/background1.png);
+  background-image:unset;
+  background-color:#000;
   background-size:cover;
   background-position:center bottom;
 }

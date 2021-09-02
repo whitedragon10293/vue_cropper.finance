@@ -192,9 +192,15 @@
                         <Button
                           size="large" 
                           ghost 
-                          :disabled="!farm.farmInfo.poolInfo.is_allowed"
+                          :disabled="!farm.farmInfo.poolInfo.is_allowed || 
+                                      farm.farmInfo.poolInfo.end_timestamp < currentTimestamp ||
+                                      farm.farmInfo.poolInfo.start_timestamp > currentTimestamp"
                           @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
-                          Stake LP
+                          {{
+                            (!farm.farmInfo.poolInfo.is_allowed)?"Not Allowed":
+                            ((!(farm.farmInfo.poolInfo.end_timestamp >= currentTimestamp))?"Not Started":
+                          farm.farmInfo.poolInfo.start_timestamp >= currentTimestamp?"Ended":"Stake LP")
+                          }}
                         </Button>
                       </div>
                       <div class="btncontainer">
@@ -239,9 +245,9 @@ import { getBigNumber } from '@/utils/layouts'
 import { LiquidityPoolInfo, LIQUIDITY_POOLS } from '@/utils/pools'
 import moment from 'moment'
 import { TOKEN_PROGRAM_ID, u64 } from '@solana/spl-token'
-import { FARM_TEST_MODE, PAY_FARM_FEE, YieldFarm } from '@/utils/farm'
+import { PAY_FARM_FEE, YieldFarm } from '@/utils/farm'
 import { PublicKey } from '@solana/web3.js'
-import { FARM_PROGRAM_ID } from '@/utils/ids'
+import { DEVNET_MODE, FARM_PROGRAM_ID } from '@/utils/ids'
 import { TOKENS } from '@/utils/tokens'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
 
@@ -286,7 +292,8 @@ export default Vue.extend({
       unstaking: false,
       poolType: true,
       endedFarmsPoolId: [] as string[],
-      showCollapse: [] as any[]
+      showCollapse: [] as any[],
+      currentTimestamp: 0
     }
   },
 
@@ -337,7 +344,7 @@ export default Vue.extend({
     TokenAmount,
 
     updateFarms() {
-
+      this.currentTimestamp = moment().unix();
       const farms: any = []
       const endedFarmsPoolId: string[] = []
       for (const [poolId, farmInfo] of Object.entries(this.farm.infos)) {
@@ -370,12 +377,10 @@ export default Vue.extend({
           const liquidityPcValue =
             getBigNumber((liquidityItem?.pc.balance as TokenAmount).toEther()) *
             this.price.prices[liquidityItem?.pc.symbol as string]
-
           const liquidityTotalValue = liquidityPcValue + liquidityCoinValue
           
           const liquidityTotalSupply = getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther())
           const liquidityItemValue = liquidityTotalValue / liquidityTotalSupply
-
           const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue;
           let apr = ((rewardPerTimestampAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
           if(liquidityUsdValue <= 0){
@@ -396,7 +401,7 @@ export default Vue.extend({
 
           const { rewardDebt, depositBalance } = userInfo
           const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
-          const currentTimestamp = moment().unix();
+          const currentTimestamp = this.currentTimestamp;
           const duration = currentTimestamp - last_timestamp.toNumber();
           const rewardPerShareCalc = reward_per_share_net.toNumber() + 1000000000 * reward_per_timestamp.toNumber() * duration / liquidityItem.lp.totalSupply.wei.toNumber();
           
@@ -523,9 +528,6 @@ export default Vue.extend({
       const conn = this.$web3
       const wallet = (this as any).$wallet
       let key = "USDC";
-      if(FARM_TEST_MODE){
-        key = "MYUSDC";
-      }
       const usdcCoin = TOKENS[key];// to test. real - USDC
       const usdcAccountAddress = get(this.wallet.tokenAccounts, `${usdcCoin.mintAddress}.tokenAccountAddress`)
       const usdcBalance = get(this.wallet.tokenAccounts, `${usdcCoin.mintAddress}.balance`)
@@ -661,6 +663,13 @@ export default Vue.extend({
         let amount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.balance`)
         //stake whole lp amount
         amount = amount.wei.toNumber() / Math.pow(10,amount.decimals);
+        let delayTime = 0;
+        while(amount <= 0 && delayTime < 10000){ //after 4 seconds ,it's failed
+          await this.delay(200);
+          delayTime += 200;
+          amount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.balance`)
+          amount = amount.wei.toNumber() / Math.pow(10,amount.decimals);
+        }
         if(amount <= 0){
           console.log("added lp amount is 0")
           return;
