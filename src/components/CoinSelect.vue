@@ -156,10 +156,7 @@ export default Vue.extend({
   methods: {
     filteredTokenList(){
       let filteredList:TokenInfo[] = [];
-      if(this.farmTokenASelect && this.allowedAllFarm){
-        filteredList = this.tokenList;
-      }
-      else if(this.farmTokenASelect && !this.allowedAllFarm){
+      if(this.farmTokenASelect && !this.allowedAllFarm){
         filteredList = this.tokenList.filter((token)=>{
           if(LOCKED_TOKENA_LIST.includes(token.symbol)){
             return false;
@@ -169,12 +166,15 @@ export default Vue.extend({
           }
         })
       }
-      if(this.farmTokenBSelect){
+      else if(this.farmTokenBSelect){
         filteredList = this.tokenList.filter((token)=>{
           if(ALLOWED_TOKENB_LIST.includes(token.symbol)){
             return true;
           }
         })
+      }
+      else {
+        filteredList = this.tokenList;
       }
       return filteredList;
     },
