@@ -732,14 +732,15 @@ export default Vue.extend({
         return
       }
       const { from, to } = this.$route.query
-      if (this.ammId) {
-        await this.$router.push({
-          path: '/liquidity/',
-          query: {
-            ammId: this.ammId
-          }
-        })
-      } else if (this.fromCoin && this.toCoin) {
+      // if (this.ammId) {
+      //   await this.$router.push({
+      //     path: '/liquidity/',
+      //     query: {
+      //       ammId: this.ammId
+      //     }
+      //   })
+      // } else 
+      if (this.fromCoin && this.toCoin) {
         if (this.fromCoin.mintAddress !== from || this.toCoin.mintAddress !== to) {
           await this.$router.push({
             path: '/liquidity/',
