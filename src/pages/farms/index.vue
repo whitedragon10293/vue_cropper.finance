@@ -192,7 +192,9 @@
                         <Button
                           size="large" 
                           ghost 
-                          :disabled="!farm.farmInfo.poolInfo.is_allowed"
+                          :disabled="!farm.farmInfo.poolInfo.is_allowed || 
+                                      farm.farmInfo.poolInfo.end_timestamp < currentTimestamp ||
+                                      farm.farmInfo.poolInfo.start_timestamp > currentTimestamp"
                           @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
                           Stake LP
                         </Button>
@@ -286,7 +288,8 @@ export default Vue.extend({
       unstaking: false,
       poolType: true,
       endedFarmsPoolId: [] as string[],
-      showCollapse: [] as any[]
+      showCollapse: [] as any[],
+      currentTimestamp: 0
     }
   },
 
@@ -337,7 +340,7 @@ export default Vue.extend({
     TokenAmount,
 
     updateFarms() {
-
+      this.currentTimestamp = moment().unix();
       const farms: any = []
       const endedFarmsPoolId: string[] = []
       for (const [poolId, farmInfo] of Object.entries(this.farm.infos)) {
@@ -394,7 +397,7 @@ export default Vue.extend({
 
           const { rewardDebt, depositBalance } = userInfo
           const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
-          const currentTimestamp = moment().unix();
+          const currentTimestamp = this.currentTimestamp;
           const duration = currentTimestamp - last_timestamp.toNumber();
           const rewardPerShareCalc = reward_per_share_net.toNumber() + 1000000000 * reward_per_timestamp.toNumber() * duration / liquidityItem.lp.totalSupply.wei.toNumber();
           
