@@ -406,7 +406,6 @@ export async function swap(
   }
 
   //@zhaohui
-
   let newFromTokenAccount = await createAssociatedTokenAccountIfNotExist(
     fromTokenAccount,
     owner,
