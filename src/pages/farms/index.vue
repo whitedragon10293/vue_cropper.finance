@@ -2,13 +2,6 @@
   <div class="farm container">
     <div class="page-head fs-container">
       <span class="title">Farms</span>
-      <div class="buttons">
-        <!-- <span>
-          <RadioGroup v-model="poolType" style="display: inline-block; margin: 0 auto; padding-right: 30px">
-            <RadioButton class="radioButtonStyle" :value="true"> Active </RadioButton>
-            <RadioButton class="radioButtonStyle" :value="false"> Ended </RadioButton>
-          </RadioGroup>
-        </span> -->
         <NuxtLink to="/farms/create-farm/">
           <div class="btncontainer">
             <Button size="large" ghost>
@@ -16,6 +9,13 @@
             </Button>
           </div>
         </NuxtLink>
+      <div class="buttons">
+        <!-- <span>
+          <RadioGroup v-model="poolType" style="display: inline-block; margin: 0 auto; padding-right: 30px">
+            <RadioButton class="radioButtonStyle" :value="true"> Active </RadioButton>
+            <RadioButton class="radioButtonStyle" :value="false"> Ended </RadioButton>
+          </RadioGroup>
+        </span> -->
         <Tooltip v-if="farm.initialized" placement="bottomRight">
           <template slot="title">
             <span>
@@ -177,9 +177,8 @@
                     </Button>
                     </div>
                     <div v-else class="fs-container">
-                      <div class="btncontainer">
+                      <div class="btncontainer" v-if="!farm.userInfo.depositBalance.isNullOrZero()">
                       <Button
-                        v-if="!farm.userInfo.depositBalance.isNullOrZero()"
                         class="unstake"
                         size="large"
                         ghost
@@ -203,13 +202,13 @@
                           }}
                         </Button>
                       </div>
-                      <div class="btncontainer">
-                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed" size="large" ghost @click="openAddRewardModal(farm)">
+                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed">
+                        <Button size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward
                         </Button>
                       </div>
-                      <div class="btncontainer">
-                        <Button v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed" size="large" ghost @click="payFarmFee(farm)">
+                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed">
+                        <Button size="large" ghost @click="payFarmFee(farm)">
                           Pay Farm Fee
                         </Button>
                       </div>
@@ -909,6 +908,22 @@ export default Vue.extend({
 }
 .farm.container {
   max-width: 1200px;
+  background: #1B2028;
+  margin-top:20px;
+  margin-bottom:20px;
+
+
+  .page-head a{
+    z-index: 2;
+    padding-left: 15px;
+    background: #1b2028;
+    position: absolute;
+    right: 0;
+
+    .btncontainer{
+      display:inline-block
+    }
+  }
 
   .card {
     .card-body {
@@ -919,6 +934,7 @@ export default Vue.extend({
 
       .ant-collapse {
         border: 0;
+        background-color: rgba(0, 0, 0, 0.9471);
 
         .ant-collapse-item {
           border-bottom: 0;
@@ -927,6 +943,11 @@ export default Vue.extend({
         .ant-collapse-item:not(:last-child) {
           border-bottom: 1px solid #d9d9d9;
         }
+
+      }
+
+      .start .btncontainer{
+        display: inline-block;
       }
     }
   }
@@ -1024,6 +1045,13 @@ export default Vue.extend({
 
 <style lang="less">
 .farm {
+
+  .page-head .title{
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+
   .farm-head {
     padding: 24px 32px !important;
   }
@@ -1038,6 +1066,8 @@ export default Vue.extend({
 
   .ant-collapse-content {
     border-top: 1px solid #1c274f;
+    background-color: rgba(0, 0, 0, 0.9471) !important;
+  
   }
 }
 
@@ -1051,6 +1081,7 @@ export default Vue.extend({
     color: #fff;
   }
 }
+
 
   .btncontainer {
     background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
