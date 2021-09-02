@@ -1098,6 +1098,14 @@ const TOKENSBASE_DEVNET: Tokens = {
     referrer: '6MBRfPbzejwVpADXq3LCotZetje3N16m5Yn7LCs2ffU4',
     tags:['cropper']
   },
+  B2B: {
+    symbol: 'B2B',
+    name: 'B2B',
+    mintAddress: 'ECe1Hak68wLS44NEwBVNtZDMxap1bX3jPCoAnDLFWDHz',
+    decimals: 9,
+    referrer: 'ECe1Hak68wLS44NEwBVNtZDMxap1bX3jPCoAnDLFWDHz',
+    tags:['cropper']
+  },
   WSOL: {
     symbol: 'WSOL',
     name: 'Wrapped Solana',
