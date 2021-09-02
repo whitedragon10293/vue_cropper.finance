@@ -1129,6 +1129,14 @@ const TOKENSBASE_DEVNET: Tokens = {
     decimals: 6,
     tags:['cropper']
   },
+  xCOPE: {
+    symbol: 'xCOPE',
+    name: 'xCOPE',
+    mintAddress: '3K6rftdAaQYMPunrtNRHgnK2UAtjm2JwyT2oCiTDouYE',
+    decimals: 0,
+    referrer: '8DTehuES4tfnd2SrqcjN52XofxWXGjiLZRgM12U9pB6f',
+    tags:['cropper']
+  },
 }
 
 export const TOKENSBASE = DEVNET_MODE ? TOKENSBASE_DEVNET : TOKENSBASE_MAINNET_BETA
