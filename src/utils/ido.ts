@@ -111,6 +111,7 @@ export interface IdoPool {
 }
 
 export const IDO_POOLS: IdoPool[] = [
+  /*
   {
     base: { ...TOKENS.LIKE },
     quote: { ...TOKENS.USDC },
@@ -253,6 +254,7 @@ export const IDO_POOLS: IdoPool[] = [
     baseVault: '2Gxcw4Vo7zGGNg9JxksrWYazcpQTWNi8JdQkF3bF5yaN',
     quoteVault: '6TyVHwiEaDRQCf398QjvC6JLqPzK9REvMiS6DsCWG5o4'
   }
+  */
 ]
 
 export function getIdoPoolById(idoId: string) {

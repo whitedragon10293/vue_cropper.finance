@@ -244,7 +244,7 @@
     <div class="page-head your-liquidity fs-container">
       <span class="title">Your Liquidity</span>
     </div>
-
+ 
     <YourLiquidity @onAdd="yourliquidityAdd" />
   </div>
 </template>
