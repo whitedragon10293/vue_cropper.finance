@@ -1114,6 +1114,21 @@ const TOKENSBASE_DEVNET: Tokens = {
     referrer: 'HTcarLHe7WRxBQCWvhVB8AP56pnEtJUV2jDGvcpY3xo5',
     tags:['cropper']
   },
+  WUSDT: {
+    symbol: 'WUSDT',
+    name: 'Wrapped USDT',
+    mintAddress: 'BQcdHdAQW1hczDbBi9hiegXAR7A98Q9jx3X3iBBBDiq4',
+    decimals: 6,
+    referrer: 'CA98hYunCLKgBuD6N8MJSgq1GbW9CXdksLf5mw736tS3',
+    tags:['cropper']
+  },
+  WUSDC: {
+    symbol: 'WUSDC',
+    name: 'Wrapped USDC',
+    mintAddress: 'BXXkv6z8ykpG1yuvUDPgh732wzVHB69RnB9YgSYh3itW',
+    decimals: 6,
+    tags:['cropper']
+  },
 }
 
 export const TOKENSBASE = DEVNET_MODE ? TOKENSBASE_DEVNET : TOKENSBASE_MAINNET_BETA
