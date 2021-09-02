@@ -196,7 +196,11 @@
                                       farm.farmInfo.poolInfo.end_timestamp < currentTimestamp ||
                                       farm.farmInfo.poolInfo.start_timestamp > currentTimestamp"
                           @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
-                          Stake LP
+                          {{
+                            (!farm.farmInfo.poolInfo.is_allowed)?"Not Allowed":
+                            ((!(farm.farmInfo.poolInfo.end_timestamp >= currentTimestamp))?"Not Started":
+                          farm.farmInfo.poolInfo.start_timestamp >= currentTimestamp?"Ended":"Stake LP")
+                          }}
                         </Button>
                       </div>
                       <div class="btncontainer">
