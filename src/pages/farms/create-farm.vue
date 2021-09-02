@@ -637,6 +637,8 @@ export default class CreatePool extends Vue {
     const connection = this.$web3;
     const wallet:any = this.$wallet;
     
+    await this.$accessor.liquidity.requestInfos()
+
     //get liquidity pool info
     let liquidityPoolInfo:any = LIQUIDITY_POOLS.find((item) => item.ammId === this.userCreateAmmId);
 
@@ -898,7 +900,7 @@ export default class CreatePool extends Vue {
 
     let market_t = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-      baseMintAddress: new PublicKey(TOKENS.USDC.mintAddress),
+      baseMintAddress: new PublicKey(TOKENS.B2B.mintAddress),
       quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
       tickSize: 5,
       minOrderSize: 10
