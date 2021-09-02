@@ -1106,6 +1106,14 @@ const TOKENSBASE_DEVNET: Tokens = {
     referrer: 'ECe1Hak68wLS44NEwBVNtZDMxap1bX3jPCoAnDLFWDHz',
     tags:['cropper']
   },
+  ETH: {
+    symbol: 'ETH',
+    name: 'ETH',
+    mintAddress: 'G4UK7D15rHE85Q8HLKQ9BBafd2n2sUCkCRWwvWtBfuPe',
+    decimals: 9,
+    referrer: 'G4UK7D15rHE85Q8HLKQ9BBafd2n2sUCkCRWwvWtBfuPe',
+    tags:['cropper']
+  },
   WSOL: {
     symbol: 'WSOL',
     name: 'Wrapped Solana',
