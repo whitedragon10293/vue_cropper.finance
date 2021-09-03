@@ -123,7 +123,7 @@ export default Vue.extend({
 }
 
 .coin-modal {
-  background: #000829;
+  background: rgba(0, 0, 0, 0.9471);
   border-radius: 4px;
 
   .label {

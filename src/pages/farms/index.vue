@@ -138,20 +138,14 @@
 
               <Row v-if="poolType" :class="isMobile ? 'is-mobile' : ''" :gutter="48">
                 <Col :span="isMobile ? 24 : 4">
-                  <p>Add liquidity:</p>
-                  <NuxtLink
-                    :to="`/liquidity?from=${farm.farmInfo.lp.coin.mintAddress}&to=${farm.farmInfo.lp.pc.mintAddress}&ammId=${getAmmId(farm.farmInfo)}`"
-                  >
-                    {{ farm.farmInfo.lp.name }}
-                  </NuxtLink>
                 </Col>
 
                 <Col :span="isMobile ? 24 : 10">
                   <div class="harvest">
-                    <div class="title">Pending {{ farm.farmInfo.reward.symbol }} Reward</div>
+                    <div class="title">Pending Reward</div>
                     <div class="pending fs-container">
                       <div class="reward">
-                        <div class="token">{{ farm.userInfo.pendingReward.format() }}</div>
+                        <div class="token">{{ farm.farmInfo.reward.symbol }} {{ farm.userInfo.pendingReward.format() }}</div>
                       </div>
                       <div class="btncontainer">
                         <Button
@@ -251,7 +245,6 @@ import { TOKENS } from '@/utils/tokens'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
 
 const CollapsePanel = Collapse.Panel
-
 const RadioGroup = Radio.Group
 const RadioButton = Radio.Button
 
@@ -424,7 +417,7 @@ export default Vue.extend({
         })
       }
 
-      this.farms = farms
+      this.farms = farms.sort((a, b) => (a.farmInfo.poolId < b.farmInfo.poolId ? -1 : 1));
       this.endedFarmsPoolId = endedFarmsPoolId
     },
 
@@ -891,6 +884,7 @@ export default Vue.extend({
           })
         })
         .finally(() => {
+          this.$accessor.farm.requestInfos()
           this.harvesting = false
         })
     }
@@ -971,7 +965,6 @@ export default Vue.extend({
 
   .start {
     .unstake {
-      width: 48px;
       margin-right: 10px;
     }
 

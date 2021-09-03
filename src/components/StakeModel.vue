@@ -59,35 +59,45 @@
             </div>
           </div>
         </div>
-        <Button
-          size="large"
-          ghost
-          :disabled="
-            !farmInfo.lp.coin ||
-            !fromCoinAmount ||
-            !farmInfo.lp.pc ||
-            !farmInfo.lp.mintAddress ||
-            !liquidity.initialized ||
-            liquidity.loading ||
-            gt(fromCoinAmount, farmInfo.lp.coin.balance ? farmInfo.lp.coin.balance.fixed() : '0') ||
-            gt(toCoinAmount, farmInfo.lp.pc.balance ? farmInfo.lp.pc.balance.fixed() : '0') ||
-            suppling
-          "
-          :loading="suppling"
-           @click="$emit('onOk',fromCoinAmount,toCoinAmount,fixedCoin)"
-        >
-          <template v-if="!farmInfo.lp.coin || !farmInfo.lp.pc"> Select a token </template>
-          <template v-else-if="!farmInfo.lp.mintAddress || !liquidity.initialized"> Invalid pair </template>
-          <template v-else-if="!fromCoinAmount"> Enter an amount </template>
-          <template v-else-if="liquidity.loading"> Updating pool information </template>
-          <template v-else-if="gt(fromCoinAmount, farmInfo.lp.coin.balance ? farmInfo.lp.coin.balance.fixed() : '0')">
-            Insufficient {{ farmInfo.lp.coin.symbol }} balance
-          </template>
-          <template v-else-if="gt(toCoinAmount, farmInfo.lp.pc.balance ? farmInfo.lp.pc.balance.fixed() : '')">
-            Insufficient {{ farmInfo.lp.pc.symbol }} balance
-          </template>
-          <template v-else>Supply & Stake</template>
-        </Button>
+
+
+        <div class="btncontainer">
+          <Button
+            size="large"
+            ghost
+            :disabled="
+              !farmInfo.lp.coin ||
+              !fromCoinAmount ||
+              !farmInfo.lp.pc ||
+              !farmInfo.lp.mintAddress ||
+              !liquidity.initialized ||
+              liquidity.loading ||
+              gt(fromCoinAmount, farmInfo.lp.coin.balance ? farmInfo.lp.coin.balance.fixed() : '0') ||
+              gt(toCoinAmount, farmInfo.lp.pc.balance ? farmInfo.lp.pc.balance.fixed() : '0') ||
+              suppling
+            "
+            :loading="suppling"
+             @click="$emit('onOk',fromCoinAmount,toCoinAmount,fixedCoin)"
+          >
+            <template v-if="!farmInfo.lp.coin || !farmInfo.lp.pc"> Select a token </template>
+            <template v-else-if="!farmInfo.lp.mintAddress || !liquidity.initialized"> Invalid pair </template>
+            <template v-else-if="!fromCoinAmount"> Enter an amount </template>
+            <template v-else-if="liquidity.loading"> Updating pool information </template>
+            <template v-else-if="gt(fromCoinAmount, farmInfo.lp.coin.balance ? farmInfo.lp.coin.balance.fixed() : '0')">
+              Insufficient {{ farmInfo.lp.coin.symbol }} balance
+            </template>
+            <template v-else-if="gt(toCoinAmount, farmInfo.lp.pc.balance ? farmInfo.lp.pc.balance.fixed() : '')">
+              Insufficient {{ farmInfo.lp.pc.symbol }} balance
+            </template>
+            <template v-else>Supply & Stake</template>
+          </Button>
+        </div>
+
+        <div style="text-align:center">
+        You will have to validate 2 operations, Supply liquidity pool & Stake
+        </div>
+
+
       </div>
     </div>
   </Modal>
