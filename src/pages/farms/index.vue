@@ -417,7 +417,7 @@ export default Vue.extend({
         })
       }
 
-      this.farms = farms.sort((a, b) => (a.farmInfo.poolId < b.farmInfo.poolId ? -1 : 1));
+      this.farms = farms.sort((a: any, b: any) => (a.farmInfo.poolId < b.farmInfo.poolId ? -1 : 1));
       this.endedFarmsPoolId = endedFarmsPoolId
     },
 
