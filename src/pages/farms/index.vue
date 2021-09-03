@@ -413,11 +413,13 @@ export default Vue.extend({
 
         farms.push({
           userInfo,
+          start: newFarmInfo.poolInfo.start_timestamp.toNumber(),
           farmInfo: newFarmInfo
         })
       }
 
-      this.farms = farms.sort((a: any, b: any) => (a.farmInfo.poolId < b.farmInfo.poolId ? -1 : 1));
+      this.farms = farms.sort((a: any, b: any ) => (a.start < b.start ? -1 : 1));
+      console.log(this.farms);
       this.endedFarmsPoolId = endedFarmsPoolId
     },
 
