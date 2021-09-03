@@ -413,8 +413,8 @@ export default Vue.extend({
 
         farms.push({
           userInfo,
-          start: newFarmInfo.poolInfo.start_timestamp.toNumber(),
-          farmInfo: newFarmInfo
+          farmInfo: newFarmInfo,
+          start: newFarmInfo.poolInfo.start_timestamp.toNumber() as any
         })
       }
 
