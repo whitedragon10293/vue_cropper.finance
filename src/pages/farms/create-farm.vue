@@ -323,7 +323,7 @@
                   style="z-index: 999"
                   :loading="createAmmFlag"
                   :disabled="
-                    createAmmFlag || !(inputPrice !== null && inputBaseValue !== null && inputQuoteValue !== null)
+                    createAmmFlag || !(inputPrice !== null && isAmountValid)
                   "
                   @click="createKey"
                 >
@@ -482,6 +482,7 @@ export default class CreatePool extends Vue {
   marketInputFlag: boolean = true
   marketFlag: boolean = false
   inputMarket: string = ''
+  isAmountValid:boolean = false
   inputQuoteValue: number | null = null
   inputBaseValue: number | null = null
   inputPrice: number | null = null
@@ -553,6 +554,8 @@ export default class CreatePool extends Vue {
       this.inputBaseValue =
         Math.floor(((this.inputQuoteValue ?? parseFloat(val)) / this.inputPrice) * 10 ** this.baseMintDecimals) /
         10 ** this.baseMintDecimals
+      this.validateAmount()
+      
     }
     setTimeout(() => {
       this.liquidityValueChangeFlag = true
@@ -574,6 +577,8 @@ export default class CreatePool extends Vue {
       this.inputQuoteValue =
         Math.floor((this.inputBaseValue ?? parseFloat(val)) * this.inputPrice * 10 ** this.quoteMintDecimals) /
         10 ** this.quoteMintDecimals
+      this.validateAmount()
+      
     }
     setTimeout(() => {
       this.liquidityValueChangeFlag = true
@@ -589,6 +594,23 @@ export default class CreatePool extends Vue {
       } else if (this.inputQuoteValue && this.baseMintDecimals) {
         this.inputBaseValue =
           Math.floor((val / this.inputPrice) * 10 ** this.baseMintDecimals) / 10 ** this.baseMintDecimals
+      }
+      this.validateAmount()
+
+    }
+  }
+
+  async validateAmount(){
+
+    this.isAmountValid = false
+    if(this.inputBaseValue && this.inputQuoteValue && this.baseMintDecimals && this.quoteMintDecimals){
+
+      const walletBaseAmount = parseFloat(get(this.wallet.tokenAccounts, `${this.marketMsg.baseMintAddress.toBase58()}.balance`).fixed());
+      const walletQuoteAmount = parseFloat(get(this.wallet.tokenAccounts, `${this.marketMsg.quoteMintAddress.toBase58()}.balance`).fixed());
+      
+      if(this.inputBaseValue > 0 && this.inputBaseValue < walletBaseAmount && this.inputQuoteValue > 0 && this.inputQuoteValue < walletQuoteAmount)
+      {
+        this.isAmountValid = true
       }
     }
   }
