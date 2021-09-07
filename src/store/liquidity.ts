@@ -391,7 +391,6 @@ export const actions = actionTree(
         publicKeys.push(
           new PublicKey(poolCoinTokenAccount),
           new PublicKey(poolPcTokenAccount),
-          // new PublicKey(ammOpenOrders), @zhaohui
           new PublicKey(ammId),
           new PublicKey(lp.mintAddress)
         )
