@@ -908,7 +908,7 @@ export default class CreatePool extends Vue {
     let market_t = {
       address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
       baseMintAddress: new PublicKey(TOKENS.B2B.mintAddress),
-      quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
+      quoteMintAddress: new PublicKey(TOKENS.CRP.mintAddress),
       tickSize: 5,
       minOrderSize: 10
     }
@@ -935,8 +935,8 @@ export default class CreatePool extends Vue {
 
     // let market_info = {
     //   address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-    //   baseMintAddress: new PublicKey(TOKENS.MYTEST.mintAddress),
-    //   quoteMintAddress: new PublicKey(TOKENS.CROPTEST.mintAddress),
+    //   baseMintAddress: new PublicKey(TOKENS.USDT.mintAddress),
+    //   quoteMintAddress: new PublicKey(TOKENS.CRP.mintAddress),
     //   ammId: new PublicKey('3gSjs6MqyHFsp8DXvaKvVUJjV7qg5itf9qmUGuhnSaWH')
     // }
 

@@ -1,4 +1,4 @@
-# Raydium UI
+# Cropper Finance UI
 
 ## Build Setup
 
