@@ -475,7 +475,7 @@ import {
   LiquidityPoolInfo
 } from '@/utils/pools'
 
-const CROPTEST = getTokenBySymbol('CROPTEST')
+const CRP = getTokenBySymbol('CRP')
 
 export default Vue.extend({
   components: {
@@ -519,7 +519,7 @@ export default Vue.extend({
       selectFromCoin: true,
       fixedFromCoin: true,
 
-      fromCoin: CROPTEST as TokenInfo | null,
+      fromCoin: CRP as TokenInfo | null,
       toCoin: null as TokenInfo | null,
       fromCoinAmount: '',
       toCoinAmount: '',
@@ -753,6 +753,7 @@ export default Vue.extend({
     },
 
     setCoinFromMint(ammIdOrMarket: string | undefined, from: string | undefined, to: string | undefined) {
+      
       this.setCoinFromMintLoading = true
       let fromCoin, toCoin
       try {
@@ -776,6 +777,7 @@ export default Vue.extend({
         // }
         fromCoin = Object.values(TOKENS).find((item) => item.mintAddress === from)
         toCoin = Object.values(TOKENS).find((item) => item.mintAddress === to)
+
         if (fromCoin || toCoin) {
           if (fromCoin) {
             fromCoin.balance = get(this.wallet.tokenAccounts, `${fromCoin.mintAddress}.balance`)
@@ -955,11 +957,11 @@ export default Vue.extend({
           else {
             const lpList_1 = getPoolListByTokenMintAddresses(
               this.fromCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.fromCoin.mintAddress,
-              TOKENS.CROPTEST.mintAddress,
+              TOKENS.CRP.mintAddress,
               undefined
             )
             const lpList_2 = getPoolListByTokenMintAddresses(
-              TOKENS.CROPTEST.mintAddress,
+              TOKENS.CRP.mintAddress,
               this.toCoin.mintAddress === TOKENS.WSOL.mintAddress ? NATIVE_SOL.mintAddress : this.toCoin.mintAddress,
               undefined
             )
@@ -1071,23 +1073,23 @@ export default Vue.extend({
           }
         }
         else if(this.swaptype == 'multi'){
-          const fromPoolInfo = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, TOKENS.CROPTEST.mintAddress,this.fromCoinAmount)
+          const fromPoolInfo = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, TOKENS.CRP.mintAddress,this.fromCoinAmount)
           this.mainAmmId = fromPoolInfo.ammId
 
           let { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
             fromPoolInfo,
             this.fromCoin.mintAddress,
-            TOKENS.CROPTEST.mintAddress,
+            TOKENS.CRP.mintAddress,
             this.fromCoinAmount,
             this.setting.slippage
           )
 
-          const toPoolInfo = findBestLP(this.$accessor.liquidity.infos, TOKENS.CROPTEST.mintAddress, this.toCoin.mintAddress, amountOut.fixed())
+          const toPoolInfo = findBestLP(this.$accessor.liquidity.infos, TOKENS.CRP.mintAddress, this.toCoin.mintAddress, amountOut.fixed())
           this.extAmmId = toPoolInfo.ammId
          
           let final = getSwapOutAmount(
             toPoolInfo,
-            TOKENS.CROPTEST.mintAddress,
+            TOKENS.CRP.mintAddress,
             this.toCoin.mintAddress,
             amountOut.fixed(),
             this.setting.slippage
@@ -1287,7 +1289,7 @@ export default Vue.extend({
           // @ts-ignore
           get(this.wallet.tokenAccounts, `${this.fromCoin.mintAddress}.tokenAccountAddress`),
           // @ts-ignore
-          get(this.wallet.tokenAccounts, `${TOKENS.CROPTEST.mintAddress}.tokenAccountAddress`),
+          get(this.wallet.tokenAccounts, `${TOKENS.CRP.mintAddress}.tokenAccountAddress`),
           // @ts-ignore
           get(this.wallet.tokenAccounts, `${this.toCoin.mintAddress}.tokenAccountAddress`),
           this.fromCoinAmount,
@@ -1306,10 +1308,10 @@ export default Vue.extend({
                 ])
             })
 
-            const description_1 = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.crpAmountWithSlippage} ${TOKENS.CROPTEST.symbol}`
+            const description_1 = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.crpAmountWithSlippage} ${TOKENS.CRP.symbol}`
             this.$accessor.transaction.sub({ txid:txids[0], description:description_1 })
             
-            const description = `Swap ${this.crpAmountWithSlippage} ${TOKENS.CROPTEST.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
+            const description = `Swap ${this.crpAmountWithSlippage} ${TOKENS.CRP.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
             this.$accessor.transaction.sub({ txid:txids[0], description })
 
           })
