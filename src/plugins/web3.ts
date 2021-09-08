@@ -2,6 +2,7 @@ import { Connection } from '@solana/web3.js'
 import { Plugin } from '@nuxt/types'
 
 import { sleep } from '@/utils'
+import { DEVNET_MODE } from '@/utils/ids'
 import { web3Config, commitment } from '@/utils/web3'
 import logger from '@/utils/logger'
 import { NuxtApiInstance, Rpc } from '@/types/api'
@@ -45,8 +46,8 @@ const web3Plugin: Plugin = async (ctx, inject) => {
 
   endpoint = getWeightEndpoint(rpcs)
   
-
-  endpoint = 'https://api.devnet.solana.com'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
+  if(DEVNET_MODE)
+    endpoint = 'https://api.devnet.solana.com'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
   //endpoint = 'http://localhost:8899'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
   const web3 = createWeb3Instance(endpoint)
 

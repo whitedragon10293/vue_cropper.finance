@@ -28,8 +28,8 @@ export interface LiquidityPoolInfo {
   poolCoinTokenAccount: string
   poolPcTokenAccount: string
   
-  feeCoinTokenAccount: string | undefined
-  feePcTokenAccount: string | undefined
+  feeCoinTokenAccount?: string | undefined
+  feePcTokenAccount?: string | undefined
   poolWithdrawQueue: string
   poolTempLpTokenAccount: string
 
@@ -251,9 +251,8 @@ export function isOfficalMarket(marketAddress: string) {
 
   return false
 }
-export const LIQUIDITY_POOLS: LiquidityPoolInfo[] =[]
-// export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = 
-let a = [
+
+export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = [
   {
     name: 'RAY-WUSDT',
     coin: { ...TOKENS.RAY },
@@ -277,9 +276,7 @@ let a = [
     serumCoinVaultAccount: '56KzKfd9LvsY4QuMZcGxcGCd78ZBFQ7JcyMFwgqpXH12',
     serumPcVaultAccount: 'GLntTfM7RHeg5RuAuXcudT4NV7d4BGPrEFq7mmMxn29E',
     serumVaultSigner: '6FYUBnwRVxxYCv1kpad4FaFLJAzLYuevFWmpVp7hViTn',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-SOL',
@@ -304,9 +301,7 @@ let a = [
     serumCoinVaultAccount: '6dDDqzNsLx8u2Prk384Rs1jUxFPFQsKHne5oQxnf4kog',
     serumPcVaultAccount: 'AzxRBcig9mGTfdbUgEdKq48eiNZ2M4ynwQQH4Pvxbcy2',
     serumVaultSigner: 'FhTczYTxkXMyofPMDQFJGHxjcnPrjrEGQMexob4BVwXD',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'LINK-WUSDT',
@@ -331,9 +326,7 @@ let a = [
     serumCoinVaultAccount: '8ZP84HpFb5k4paAgDGgXaMtne537LDFaxEWP89WKBPD1',
     serumPcVaultAccount: 'E3X7J1vyogGKZSySEo3WTS9GzipyTGVd5KKiXeFy1YHu',
     serumVaultSigner: '7bwfaV98FDNtWvgPMo7wY3nE7cE8tKfXkFAVzCxtkw6w',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'ETH-WUSDT',
@@ -358,9 +351,7 @@ let a = [
     serumCoinVaultAccount: 'Gwna45N1JGLmUMGhFVP1ELz8szVSajp12RgPqCbk46n7',
     serumPcVaultAccount: '8uqjWjNQiZvoieaGSoCRkGZExrqMpaYJL5huknCEHBcP',
     serumVaultSigner: '4fgnxw343cfYgcNgWvan8H6j6pNBskBmGX4XMbhxtFbi',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-USDC',
@@ -385,9 +376,7 @@ let a = [
     serumCoinVaultAccount: 'BuMsEd7Ub6MtCCh1eT8pvL6zcBPbiifa1idVWa1BeE2R',
     serumPcVaultAccount: 'G7i7ZKx7rfMXGreLYzvR3ZZERgaGK7646nAgi8yjE8iN',
     serumVaultSigner: 'Aj6H2siiKsnAdAS5YVwuJPdXrHaLodsSyKs7ZiEtEZQN',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-SRM',
@@ -412,9 +401,7 @@ let a = [
     serumCoinVaultAccount: '6wXCSGvFvWLVoiRaXJheHoXec4LiJhiCWnxmQbYc9kv5',
     serumPcVaultAccount: 'G8KH5rE5EqeTpnLjTTNgKhVp47yRHCN28wH27vYFkWCR',
     serumVaultSigner: 'EXZnYg9QCzujDwm621N286d4KLAZiMwpUv64GdECcxbm',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   // v3
   {
@@ -440,9 +427,7 @@ let a = [
     serumCoinVaultAccount: '6hCHQufQsxsHDkHYNmw79WvfsAGXvomdZnkzWN7MYz8f',
     serumPcVaultAccount: '7qM644QyBzMvqLLiEYhJksyPzwUpuQj44EodLb1va8aG',
     serumVaultSigner: '2hzqYES4AcwVkuMdNsNNqi1jqjfKSyL2BNus4kimVXNk',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-USDC',
@@ -467,9 +452,7 @@ let a = [
     serumCoinVaultAccount: 'GGcdamvNDYFhAXr93DWyJ8QmwawUHLCyRqWL3KngtLRa',
     serumPcVaultAccount: '22jHt5WmosAykp3LPGSAKgY45p7VGh4DFWSwp21SWBVe',
     serumVaultSigner: 'FmhXe9uG6zun49p222xt3nG1rBAkWvzVz7dxERQ6ouGw',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-SRM',
@@ -494,9 +477,7 @@ let a = [
     serumCoinVaultAccount: '5QDTh4Bpz4wruWMfayMSjUxRgDvMzvS2ifkarhYtjS1B',
     serumPcVaultAccount: '76CofnHCvo5wEKtxNWfLa2jLDz4quwwSHFMne6BWWqx',
     serumVaultSigner: 'AorjCaSV1L6NGcaFZXEyUrmbSqY3GdB3YXbQnrh85v6F',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-SOL',
@@ -521,9 +502,7 @@ let a = [
     serumCoinVaultAccount: '6U6U59zmFWrPSzm9sLX7kVkaK78Kz7XJYkrhP1DjF3uF',
     serumPcVaultAccount: '4YEx21yeUAZxUL9Fs7YU9Gm3u45GWoPFs8vcJiHga2eQ',
     serumVaultSigner: '7SdieGqwPJo5rMmSQM9JmntSEMoimM4dQn7NkGbNFcrd',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-ETH',
@@ -548,9 +527,7 @@ let a = [
     serumCoinVaultAccount: 'EVVtYo4AeCbmn2dYS1UnhtfjpzCXCcN26G1HmuHwMo7w',
     serumPcVaultAccount: '6ZT6KwvjLnJLpFdVfiRD9ifVUo4gv4MUie7VvPTuk69v',
     serumVaultSigner: 'HXbRDLcX2FyqWJY95apnsTgBoRHyp7SWYXcMYod6EBrQ',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   // v4
   {
@@ -580,9 +557,7 @@ let a = [
     serumCoinVaultAccount: 'A2SMhqA1kMTudVeAeWdzCaYYeG6Dts19iEZd4ZQQAcUm',
     serumPcVaultAccount: 'GhpccNwfein8qP6uhWnP4vuRva1iLivuQQHUTM7tW58r',
     serumVaultSigner: 'F7VdEoWQGmdFK35SD21wAbDWtnkVpcrxM3DPVnmG8Q3i',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'OXY-RAY',
@@ -611,9 +586,7 @@ let a = [
     serumCoinVaultAccount: 'FcDWM8eKUEny2wxopDMrZqgmPr3Tmoen9Dckh3MoVX9N',
     serumPcVaultAccount: '9ya4Hv4XdzntjiLwxpgqnX8eP4MtFf8YWEssF6C5Pqhq',
     serumVaultSigner: 'Bf9MhS6hwAGSWVJ4uLWKSU6fqPAEroRsHX6ithEjGXiG',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'MAPS-RAY',
@@ -642,9 +615,7 @@ let a = [
     serumCoinVaultAccount: '2zriJ5sVApLD9TC9PxbXK41AkVCQBaRreeXtGx7AGE41',
     serumPcVaultAccount: '2qAKnjzokKR4sL6Xtp1nZYKXTmsraXW9CL3HuBZx3qpA',
     serumVaultSigner: 'CH76NgZMpUJ8QQqVNpjyCSpQmZBNZLXW6a5vDHj3aUUC',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'KIN-RAY',
@@ -673,9 +644,7 @@ let a = [
     serumCoinVaultAccount: '2sCJ5YZtwEbpXiw7HSXVx8Qot8hwyCpXNEkswZCssi2J',
     serumPcVaultAccount: 'H6B59E77WZt4JLfaXdZQBKdATRcWaKy5N6Ki1ZRo1Mcv',
     serumVaultSigner: '5V7FCcvmGtqkMJXHiTSeo61MS5LSMUFK1Esr5kn46cEv',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-USDT',
@@ -704,9 +673,7 @@ let a = [
     serumCoinVaultAccount: '2kVNVEgHicvfwiyhT2T51YiQGMPFWLMSp8qXc1hHzkpU',
     serumPcVaultAccount: '5AXZV7XfR7Ctr6yjQ9m9dbgycKeUXWnWqHwBTZT6mqC7',
     serumVaultSigner: 'HzWpBN6ucpsA9wcfmhLAFYqEUmHjE9n2cGHwunG5avpL',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SOL-USDC',
@@ -735,9 +702,7 @@ let a = [
     serumCoinVaultAccount: '36c6YqAwyGKQG66XEp2dJc5JqjaBNv7sVghEtJv4c7u6',
     serumPcVaultAccount: '8CFo8bL8mZQK8abbFyypFMwEDd8tVJjHTTojMLgQTUSZ',
     serumVaultSigner: 'F8Vyqk3unwxkXukZFQeYyGmFfTG3CAX4v24iyrjEYBJV',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'YFI-USDC',
@@ -766,9 +731,7 @@ let a = [
     serumCoinVaultAccount: '2N59Aig7wqhfffAUjMit7T9tk4FmSRzmByMD7mncTesq',
     serumPcVaultAccount: 'FcDTYePeh2KJts4nroCghgceiJmSBRgq2Xd3PfpernZm',
     serumVaultSigner: 'HDdQQNNf9EoCGWhWUgkQHRJVbG3huDXs2z6Fcow3grCr',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SRM-USDC',
@@ -797,9 +760,7 @@ let a = [
     serumCoinVaultAccount: 'Ecfy8et9Mft9Dkavnuh4mzHMa2KWYUbBTA5oDZNoWu84',
     serumPcVaultAccount: 'hUgoKy5wjeFbZrXDW4ecr42T4F5Z1Tos31g68s5EHbP',
     serumVaultSigner: 'GVV4ZT9pccwy9d17STafFDuiSqFbXuRTdvKQ1zJX6ttX',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'FTT-USDC',
@@ -828,9 +789,7 @@ let a = [
     serumCoinVaultAccount: '4LXjM6rptNvhBZTcWk4AL49oF4oA8AH7D4CV6z7tmpX3',
     serumPcVaultAccount: '2ycZAqQ3YNPfBZnKTbz2FqPiV7fmTQpzF95vjMUekP5z',
     serumVaultSigner: 'B5b9ddFHrjndUieLAKkyzB1xmq8sNqGGZPmbyYWPzCyu',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'BTC-USDC',
@@ -859,9 +818,7 @@ let a = [
     serumCoinVaultAccount: 'GZ1YSupuUq9kB28kX9t1j9qCpN67AMMwn4Q72BzeSpfR',
     serumPcVaultAccount: '7sP9fug8rqZFLbXoEj8DETF81KasaRA1fr6jQb6ScKc5',
     serumVaultSigner: 'GBWgHXLf1fX4J1p5fAkQoEbnjpgjxUtr4mrVgtj9wW8a',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SUSHI-USDC',
@@ -890,9 +847,7 @@ let a = [
     serumCoinVaultAccount: 'BJfPQ2iKTJknyWo2wtCVEpRGWVt8sgpvmSQVNwLioQrk',
     serumPcVaultAccount: '2UN8qfXzoUDAxZMX1KqKut93frkt5hFREL8xcw6Hgtsg',
     serumVaultSigner: 'uWhVkK44yR6V5XywVom4oWzDQACSPYHhNjkwXprtUij',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'TOMO-USDC',
@@ -921,9 +876,7 @@ let a = [
     serumCoinVaultAccount: '9tQtmWT3LCbVEoHFK5WK93wmDXv4us5s7NRYhficg9ih',
     serumPcVaultAccount: 'HRFqUnxuegNbAf2auxqRwECyDijkVGDw25BCJkf5ohM5',
     serumVaultSigner: '7i7rf8LANeECyi8TAwwLTyvfiVUo4x12iJtKeeA6eG53',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'LINK-USDC',
@@ -952,9 +905,7 @@ let a = [
     serumCoinVaultAccount: '9BswoEnX3SN7YUnRujZa5ygiL8AXVHXE4xqp8USX4QSY',
     serumPcVaultAccount: '9TibPFxakkdogUYizRhj9Av92fxuY2HxS3nrmme81Sma',
     serumVaultSigner: '8zqs77myZg6wkPjbh9YdSKtNmfPh4FJTzeo9R39mbjCm',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'ETH-USDC',
@@ -983,9 +934,7 @@ let a = [
     serumCoinVaultAccount: '7Nw66LmJB6YzHsgEGQ8oDSSsJ4YzUkEVAvysQuQw7tC4',
     serumPcVaultAccount: 'EsDTx47jjFACkBhy48Go2W7AQPk4UxtT4765f3tpK21a',
     serumVaultSigner: 'C5v68qSzDdGeRcs556YoEMJNsp8JiYEiEhw2hVUR8Z8y',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'xCOPE-USDC',
@@ -1014,9 +963,7 @@ let a = [
     serumCoinVaultAccount: '6LtcYXZVb7zfQG33F5dCDKZ29hyQaUh6BBhWjdHp8moy',
     serumPcVaultAccount: 'FCqm5xfy8ZvMxifVFfSz9Gxv1CTRABVMyLXuJrWvzAq7',
     serumVaultSigner: 'XoGZnpfyqj539wneBe8xUQyD282mwy5AMUaChz12JCH',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SOL-USDT',
@@ -1045,9 +992,7 @@ let a = [
     serumCoinVaultAccount: '29cTsXahEoEBwbHwVc59jToybFpagbBMV6Lh45pWEmiK',
     serumPcVaultAccount: 'EJwyNJJPbHH4pboWQf1NxegoypuY48umbfkhyfPew4E',
     serumVaultSigner: 'CzZAjoEqA6sjqtaiZiPqDkmxG6UuZWxwRWCenbBMc8Xz',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'YFI-USDT',
@@ -1076,9 +1021,7 @@ let a = [
     serumCoinVaultAccount: '5KgKdCWVyWi9YJ6GipzozhWxAvnbQPpUtaxuMXXEn3Zs',
     serumPcVaultAccount: '29CnTKiFKwGPFfLBXDXGRX6ywGz3ToZfqZuLkoa33dbE',
     serumVaultSigner: '6LRcCMsRoGsye95Ck5oSyNqHJW8kk2iXt9z9YQyi9JkV',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SRM-USDT',
@@ -1107,9 +1050,7 @@ let a = [
     serumCoinVaultAccount: 'GxPFMyeb7BUnu2mtGV2Zvorjwt8gxHqwL3r2kVDe6rZ8',
     serumPcVaultAccount: '149gvUQZeip4u8bGra5yyN11btUDahDVHrixzknfKFrL',
     serumVaultSigner: '4yWr7H2p8rt11QnXb2yxQF3zxSdcToReu5qSndWFEJw',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'FTT-USDT',
@@ -1138,9 +1079,7 @@ let a = [
     serumCoinVaultAccount: 'H1VJqo3piiadyVAUQW6yfZq4an8pgDFvAdqHJkRXMDbq',
     serumPcVaultAccount: '9SQ4Sjsszt59X3aLwRrTqa5SLxonEdXk5jF7KUfAxc8Z',
     serumVaultSigner: 'CgV9LcnAukrgDZmqhUwcNQ31z4KEjZEz4DHUSE4bRaVg',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'BTC-USDT',
@@ -1169,9 +1108,7 @@ let a = [
     serumCoinVaultAccount: 'DSf7hGudcxhhegMpZA1UtSiW4RqKgyEex9mqQECWwRgZ',
     serumPcVaultAccount: 'BD8QnhY2T96h6KwyJoCT9abMcPBkiaFuBNK9h6FUNX2M',
     serumVaultSigner: 'EPzuCsSzHwhYWn2j69HQPKWuWz6wuv4ANZiVigLGMBoD',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SUSHI-USDT',
@@ -1200,9 +1137,7 @@ let a = [
     serumCoinVaultAccount: '5LmHe3x8VwGzWZ6rooARZJNMo6AaN1P73478AuhBUjUr',
     serumPcVaultAccount: 'iLCNUheHbq3bE1868XwWXs8enoTvjFnwpnmLFmBQGi3',
     serumVaultSigner: '9GN4139oezNfddWhcAc3c8Ke5aU4cwzcxL8cLkqE37Yy',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'TOMO-USDT',
@@ -1231,9 +1166,7 @@ let a = [
     serumCoinVaultAccount: 'P6qAvA6s7DHzzH4i74CUFAzx5bM4Yj3xk5TKmF7eWdb',
     serumPcVaultAccount: '8zFodcf4pKcRBq7Zhdg4tQeB76op7kSjPC2haPjPkDEm',
     serumVaultSigner: 'ECTnLdZEaxUiCwyjKcts3CoMfT4kj3CNfVCd9B18hRim',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'LINK-USDT',
@@ -1262,9 +1195,7 @@ let a = [
     serumCoinVaultAccount: 'EmS34LncbTGs4yU4GM9bESRYMCFL3JBW6mnAeKB4UtEb',
     serumPcVaultAccount: 'AseZZ8ZRqyvkZMMGAAG8dAqM9XFf2xGX2tWWbko7a4hC',
     serumVaultSigner: 'FezSC2d6sXEcJ9ah8nYxHC18nh4FZzc4u7ZTtRSrk6Nd',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'ETH-USDT',
@@ -1293,9 +1224,7 @@ let a = [
     serumCoinVaultAccount: '2CZ9JbDYPux5obFXb9sefwKyG6cyteNBSzbstYQ3iZxE',
     serumPcVaultAccount: 'D2f4NG1NC1yeBM2SgRe5YUF91w3M4naumGQMWjGtxiiE',
     serumVaultSigner: 'CVVGPFejAj3A75qPy2116iJFma7zGEuL8DgnxhwUaFBF',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'YFI-SRM',
@@ -1324,9 +1253,7 @@ let a = [
     serumCoinVaultAccount: 'GzZCBp3Z3fYHZW9b4WusfQhp7p4rZXeSNahCpn8HBD9',
     serumPcVaultAccount: 'ANK9Lpi4pUe9SxPvcKvd82jkG6AoKvvgo5kN8BCXukfA',
     serumVaultSigner: '9VAdxQgKNLkHgtQ4fkDetwwTKZG8xVaKeUFQwBVG7c7a',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'FTT-SRM',
@@ -1355,9 +1282,7 @@ let a = [
     serumCoinVaultAccount: '8qTUSDRxJ65sGKEUu746xJdCquoP38AqKsQo6ZruSSBk',
     serumPcVaultAccount: 'ALe3hiZR35cCjcrzbJi1vKEhNftdVQjwkt4S8rbPZogq',
     serumVaultSigner: 'CAAeuJAgnP368num8bCv6VMWCqMZ4pTANCcGTAMAJtm2',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'BTC-SRM',
@@ -1386,9 +1311,7 @@ let a = [
     serumCoinVaultAccount: '3ABvHYBeWrpgP82jvHh5TVwid1AjDj9rei7zfY8xh2wz',
     serumPcVaultAccount: 'CSpdPdzzbaNWgwhPRTZ4TNoYS6Vco2w1s7jvqUsYQBzf',
     serumVaultSigner: '9o8LaPeTMJBoYyoUVNm6ju6c5rwfphhYReQsp1vTTyRg',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SUSHI-SRM',
@@ -1417,9 +1340,7 @@ let a = [
     serumCoinVaultAccount: 'BSoAoNFKzK65TjcUpY5JZHBvZVMiYnkdo9upy3mLSTpq',
     serumPcVaultAccount: '8U9azb65o1dJuMs7je987i7hKxJfPZnbNRNeH5beJfo7',
     serumVaultSigner: 'HZtDGZsz2fdXF75H8tyB8skp5a4rvoawgxwXqHTGEdvU',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'TOMO-SRM',
@@ -1448,9 +1369,7 @@ let a = [
     serumCoinVaultAccount: '8W65Bwb83MYKHf82phS9xPUDsR6RpZbAXnSELxsBb3HH',
     serumPcVaultAccount: '5rjDHBsjFv3Z3Dxr5RMj98vj6LA5DNEwZGDM8wyUF1Hy',
     serumVaultSigner: 'EJfMPPTvTKtgj7PUaM17bp2Gbye9CdKjZ5yqonPyY4rB',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'LINK-SRM',
@@ -1479,9 +1398,7 @@ let a = [
     serumCoinVaultAccount: '8J7iJ4uidHscVnNGsEgiEPJsUqrfteN7ifMscB9h4dAq',
     serumPcVaultAccount: 'Bw7SrqDqvAXHi2yphAniH3uBw9N7J6vVi7jMH9B2KYWM',
     serumVaultSigner: 'CvP4Jk6AYBV6Kch6w6FjwuMqHAugQqVrqCNp1eZmGihB',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'ETH-SRM',
@@ -1510,9 +1427,7 @@ let a = [
     serumCoinVaultAccount: '58jqhCZ11r6ZvATqdGfDXPk7LmiR9HS3jQt7kuoBx5CH',
     serumPcVaultAccount: '9NLpT5aZtbbauvEVVFsHqigv2ekTEPK1kojoMMCw6Hhx',
     serumVaultSigner: 'EC5JsbaQVp8tM59TqkQBk4Yv7bzLQq3TrzpepjGr9Ecg',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SRM-SOL',
@@ -1541,9 +1456,7 @@ let a = [
     serumCoinVaultAccount: 'EhAJTsW745jiWjViB7Q4xXcgKf6tMF7RcMX9cbTuXVBk',
     serumPcVaultAccount: 'HFSNnAxfhDt4DnmY9yVs2HNFnEMaDJ7RxMVNB9Y5Hgjr',
     serumVaultSigner: '6vBhv2L33KVJvAQeiaW3JEZLrJU7TtGaqcwPdrhytYWG',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'STEP-USDC',
@@ -1572,9 +1485,7 @@ let a = [
     serumCoinVaultAccount: 'CVNye3Xr9Jv26c8TVqZZHq4F43BhoWWfmrzyp1M9YA67',
     serumPcVaultAccount: 'AnGbReAhCDFkR83nB8mXTDX5dQJFB8Pwicu6pGMfCLjt',
     serumVaultSigner: 'FbwU5U1Doj2PSKRJi7pnCny4dFPPJURwALkFhHwdHaMW',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'MEDIA-USDC',
@@ -1603,9 +1514,7 @@ let a = [
     serumCoinVaultAccount: 'D8ToFvpVWmNnfJzjHuumRJ4eoJc39hsWWcLtFZQpzQTt',
     serumPcVaultAccount: '6RSpnBYaegSKisXaJxeP36mkdVPe9SP3p2kDERz8Ahhi',
     serumVaultSigner: 'Cz2m3hW2Vcb8oEFz12uoWcdq8mKb9D1N7RTyXpigoFXU',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'ROPE-USDC',
@@ -1634,9 +1543,7 @@ let a = [
     serumCoinVaultAccount: 'F8PdvS5QFhSqgVdUFo6ivXdXC4nDEiKGc4XU97ZhCKgH',
     serumPcVaultAccount: '61zxdnLpgnFgdk9Jom5f6d6cZ6cTbwnC6QqmJag1N9jB',
     serumVaultSigner: 'rCFXUwdmQvRK9jtnCip3SdDm1cLn8nB6HHgEHngzfjQ',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'MER-USDC',
@@ -1665,9 +1572,7 @@ let a = [
     serumCoinVaultAccount: '4ctYuY4ZvCVRvF22QDw8LzUis9yrnupoLQNXxmZy1BGm',
     serumPcVaultAccount: 'DovDds7NEzFn493DJ2yKBRgqsYgDXg6z38pUGXe1AAWQ',
     serumVaultSigner: 'BUDJ4F1ZknbZiwHb6xHEsH6o1LuW394DE8wKT8CoAYNF',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'COPE-USDC',
@@ -1696,9 +1601,7 @@ let a = [
     serumCoinVaultAccount: '2ShBow4Bof4dkLjx8VTRjLXXvUydiBNF7bHzDaxPjpKq',
     serumPcVaultAccount: 'EFdqJhawpCReiK2DcrbbUUWWc6cd8mqgZm5MSbQ3TR33',
     serumVaultSigner: 'A6q5h5Wx9iqeoVsvYWA7xofUcKx6XUPPab8BTVrW91Bs',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'ALEPH-USDC',
@@ -1727,9 +1630,7 @@ let a = [
     serumCoinVaultAccount: 'EBRqW7DaUGFBHRbfgRagpSf9jTSS3yp9MAi3RvabdBGz',
     serumPcVaultAccount: '9QTMfdkgPWqLriB9J7FcYvroUEqfw6zW2VCi1dAabdUt',
     serumVaultSigner: 'HKt6xFufxTBBs719WQPbro9t1DfDxffurxFhTPntMgoe',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'TULIP-USDC',
@@ -1758,9 +1659,7 @@ let a = [
     serumCoinVaultAccount: '6qH3FNTSGKw34SEEj7GXbQ6kMQXHwuyGsAAeV5hLPhJc',
     serumPcVaultAccount: '6AdJbeH76BBSJ34DeQ6LLdauF6W8fZRrMKEfLt3YcMcT',
     serumVaultSigner: '5uJEd4wfVH84HyFEBf5chfJMTTPHBddXi1S7GmBE6x14',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'WOO-USDC',
@@ -1789,9 +1688,7 @@ let a = [
     serumCoinVaultAccount: '54vv5QSZkmHpQzpvUmpS5ZreDwmbuXPdbGp9ybzgcsTM',
     serumPcVaultAccount: '7PL69dV89XXJg9V6wzzdu9p2ymhVwBWqp82sUzWvjnp2',
     serumVaultSigner: 'CTcvsPoWroF2e2iiZWe6ztBwNQHiDyAVCs8EbQ5Annig',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SNY-USDC',
@@ -1820,9 +1717,7 @@ let a = [
     serumCoinVaultAccount: 'CddTJJj2tDWUk6Kteh3KSBJJh4HvkoWMXcQjZuXaaAzP',
     serumPcVaultAccount: 'BGr1LWgHKaekkmScogSU1SYSRUaJBBPFeBAEBvuwf7CE',
     serumVaultSigner: '3APrMUDUQ16iEsL4vTaovTf5fPXAEwtXmWXvD9xQVPaB',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'BOP-RAY',
@@ -1851,9 +1746,7 @@ let a = [
     serumCoinVaultAccount: 'CTv9hnW3nbANzJ2yyzmyMCoUxv5s95ndxcBbLzV39z3w',
     serumPcVaultAccount: 'GXFttVfXbH7rU6GJnBVs3LyyuiPU8a6sW2tv5K5ZGEAQ',
     serumVaultSigner: '5JEwQ7hM1qFCBwJkZ2JyjkoJ99ojJXRx2bFjLcFobDvC',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SLRS-USDC',
@@ -1882,9 +1775,7 @@ let a = [
     serumCoinVaultAccount: '6B527pfkvbvbLRDgjASLGygdaQ1fFLwmmqyFCgTacsKH',
     serumPcVaultAccount: 'Bsa11vdveUhSouxAXSYCE4yXToUP58N9EEeM1P8qbtp3',
     serumVaultSigner: 'CjiJdQ9a7dnjTKfVPZ2fwn31NtgJA1kRU55pwDE8HHrM',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'SAMO-RAY',
@@ -1913,9 +1804,7 @@ let a = [
     serumCoinVaultAccount: 'BpHuL7HNTJDDGiw4ELpnYQdhTNNgZ53ennhtkQjGawGS',
     serumPcVaultAccount: 'BzsbZPiwLMJHhSFNVdtGqi9MWKhYijgq34Z6YjYkQJUr',
     serumVaultSigner: 'F2f14Nw7kqBeGwgFymm7sEPcZrKWWN56hvN5yx2vc6sE',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'renBTC-USDC',
@@ -1944,9 +1833,7 @@ let a = [
     serumCoinVaultAccount: 'EqnX836tGG4PYSBPgzzQecbTP47AZQRVfcy4RqQW8F3D',
     serumPcVaultAccount: '7yiA6p6BXxZwcm38St3vTzyGNEmZjw8x7Ko2nyTfvVx3',
     serumVaultSigner: '9aZNHmGZrNnB3fKmBj5B9oD7moA1nFviZqNUSkx2tctg',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'renDOGE-USDC',
@@ -1975,9 +1862,7 @@ let a = [
     serumCoinVaultAccount: '5UbUbaVLXnZq1eibQSUxdsk6Lp38bgdTjbjQPssXGgwW',
     serumPcVaultAccount: '4KMsmK7gPdKMAKmEcHqtBB5EhNnWVRd71v3a5uBwhQ2T',
     serumVaultSigner: 'Gwe1pE3rV4LLviNZqrEFPAeLchwvHrftBUQsnJtEkpSa',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-USDC',
@@ -2006,9 +1891,7 @@ let a = [
     serumCoinVaultAccount: 'GGcdamvNDYFhAXr93DWyJ8QmwawUHLCyRqWL3KngtLRa',
     serumPcVaultAccount: '22jHt5WmosAykp3LPGSAKgY45p7VGh4DFWSwp21SWBVe',
     serumVaultSigner: 'FmhXe9uG6zun49p222xt3nG1rBAkWvzVz7dxERQ6ouGw',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-SRM',
@@ -2037,9 +1920,7 @@ let a = [
     serumCoinVaultAccount: '5QDTh4Bpz4wruWMfayMSjUxRgDvMzvS2ifkarhYtjS1B',
     serumPcVaultAccount: '76CofnHCvo5wEKtxNWfLa2jLDz4quwwSHFMne6BWWqx',
     serumVaultSigner: 'AorjCaSV1L6NGcaFZXEyUrmbSqY3GdB3YXbQnrh85v6F',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-ETH',
@@ -2068,9 +1949,7 @@ let a = [
     serumCoinVaultAccount: 'EVVtYo4AeCbmn2dYS1UnhtfjpzCXCcN26G1HmuHwMo7w',
     serumPcVaultAccount: '6ZT6KwvjLnJLpFdVfiRD9ifVUo4gv4MUie7VvPTuk69v',
     serumVaultSigner: 'HXbRDLcX2FyqWJY95apnsTgBoRHyp7SWYXcMYod6EBrQ',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'RAY-SOL',
@@ -2099,9 +1978,7 @@ let a = [
     serumCoinVaultAccount: '6U6U59zmFWrPSzm9sLX7kVkaK78Kz7XJYkrhP1DjF3uF',
     serumPcVaultAccount: '4YEx21yeUAZxUL9Fs7YU9Gm3u45GWoPFs8vcJiHga2eQ',
     serumVaultSigner: '7SdieGqwPJo5rMmSQM9JmntSEMoimM4dQn7NkGbNFcrd',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    official: true
   },
   {
     name: 'DXL-USDC',
@@ -2112,26 +1989,198 @@ let a = [
     version: 4,
     programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
 
-    ammId: 'CeukZz6Ri1ScKiBVgoaX4nmnakGhCVSUKAJZNAYo4Wfz',
+    ammId: 'asdEJnE7osjgnSyQkSZJ3e5YezbmXuDQPiyeyiBxoUm',
     ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
-    ammOpenOrders: '8a8eAcPNvA9ZWEgPwUSKUxeYB2XniYFAX6J425GY2KBT',
-    ammTargetOrders: 'ARsoB5dNnNrrHaDJhpZpHjHsULfAKm3FnkvKAVFN3bbn',
+    ammOpenOrders: '4zuyAKT81y9mSSrjq8sN872zwgcD5ncQGyCXwRJDn6tC',
+    ammTargetOrders: 'H2GMj87upPeBQT3ywzqudJodwyTFpPmwuwtiZ7DQB8Md',
     // no need
     ammQuantities: NATIVE_SOL.mintAddress,
-    poolCoinTokenAccount: 'BsLmVsTtipTWn2JZ8yM5y8bkmCgaikTuuTmcnG4kxqgw',
-    poolPcTokenAccount: 'ADV2oaafkSNUpDTnLAGvzsWSJyH8yxcif6p2rvoS3aJj',
-    poolWithdrawQueue: '8zLSVdburxujhvof12rLYFTTeZy8E1PDxHU3W8YaZhr2',
-    poolTempLpTokenAccount: 'HNq5TbrGAwbP3CN6HbTRJs1C4SU79HyNwPFgJ2xG6nke',
+    poolCoinTokenAccount: 'FHAqAqqdyZFaxUTCg19hH9pRfKKChwNekFrY428NVPtT',
+    poolPcTokenAccount: '7jzwUCSq1R1QX72PKRDjZ4xgUm6Q6iiLW9BY8tnj8wkc',
+    poolWithdrawQueue: '3WBnh4HbddG6sMvv6s1GALVLPq6xfwVat3WqufZKKFXa',
+    poolTempLpTokenAccount: '9DRSmvcrXC7AtNrhf9tgfBuwT4q5hXyWaAybe5yfRU7q',
     serumProgramId: SERUM_PROGRAM_ID_V3,
-    serumMarket: '6fwZ9L21aPUyo6nvBwfARndboqjxzYLR5uRPs6j9dAda',
-    serumBids: 'vtSdo8u6VvLCNhjYPYgEv6kyh1PxWbvGoowMmDQw1ma',
-    serumAsks: '8Lpko7J73z75xg4iehSGEgE4WGDH7oDqZLLESZnr29go',
-    serumEventQueue: 'Eq2hpGaWg6Qnjhx7EsWDtnWbBZogBFT1eKUCm7nzXcyG',
-    serumCoinVaultAccount: '2CafCmtaDRkQXS34Y6oESSUXoRQ8uLr3u1fQHrzu16UB',
-    serumPcVaultAccount: '7BK2Usouf7oNdiAiRE7ee1A6Bd48VhKAYrrqqBPrRVBy',
-    serumVaultSigner: 'Eh29NHjCEXf9VegK7HB4eeNSs4DmwySnrnjQHoxdxSEX',
-    official: true,
-    feeCoinTokenAccount:'',
-    feePcTokenAccount:'',
+    serumMarket: 'DYfigimKWc5VhavR4moPBibx9sMcWYVSjVdWvPztBPTa',
+    serumBids: '2Z6Do29oGtze6dnVMXAVw8mkRxFpLGc8uS2RjfrWoCyy',
+    serumAsks: 'FosLnuNKUKqfqYviAPdp1doC3dKpXQXvAeRGM5xAoUCJ',
+    serumEventQueue: 'EW5QgqGUZ7dSmXLXiuWB8AAsjSjpb8kaaoxAUqK1DWyg',
+    serumCoinVaultAccount: '9ZaKDVrjCaPRZTqnuteGc8iBmJhdaGVf8JV2HBT67wbX',
+    serumPcVaultAccount: '5Y65XyuJemmRU7G1AQQTvWKSge8WDVYhb2knd7htJHoh',
+    serumVaultSigner: 'y6FHXgMwWvvpoiox6Ut6mUAUHgbJMXNJnXQm7MQkEdE',
+    official: true
+  },
+  {
+    name: 'LIKE-USDC',
+    coin: { ...TOKENS.LIKE },
+    pc: { ...TOKENS.USDC },
+    lp: { ...LP_TOKENS['LIKE-USDC-V4'] },
+
+    version: 4,
+    programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+
+    ammId: 'GmaDNMWsTYWjaXVBjJTHNmCWAKU6cn5hhtWWYEZt4odo',
+    ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+    ammOpenOrders: 'Crn5beRFeyj4Xw13E2wdJ9YkkLLEZzKYmtTV4LFDx3MN',
+    ammTargetOrders: '7XjS6MrvBRi9JeFWBMAYPaKhKgR3b7xnVdYDBkFb4CXR',
+    // no need
+    ammQuantities: NATIVE_SOL.mintAddress,
+    poolCoinTokenAccount: '8LoHX6f6bMdQVs4mThoH2KwX2dQDSkqVFADi4ZjDQv9T',
+    poolPcTokenAccount: '2Fwm8M8vuPXEXxvKz98VdawDxsK9W8uRuJyJhvtRdhid',
+    poolWithdrawQueue: 'CW9zJ2JbBekkdd5SdvPapPcbziR8d1UHBzW7nNn1W3ga',
+    poolTempLpTokenAccount: 'FVHsnC1nhwMcrAzFwcK4dgUtDdYFM1VrTJ8Rp8Mb1LkY',
+    serumProgramId: SERUM_PROGRAM_ID_V3,
+    serumMarket: '3WptgZZu34aiDrLMUiPntTYZGNZ72yT1yxHYxSdbTArX',
+    serumBids: 'GzHpnQSfS7KdqLKgiEEP7pkYnwEBz9zaE7De2CjmCrNV',
+    serumAsks: 'FpEBAT9qP1so4ASUTiEWxyXH2SJvgoBYUiZ1AbPimcS7',
+    serumEventQueue: 'CUMDMV9KtE22RUZECUNHxiq7FmUiRusyKa1rHUJfRptq',
+    serumCoinVaultAccount: 'Dd9F1fugQj2xtduyNvFS5TtxP9vKnuxVMcrPsHFnLyqp',
+    serumPcVaultAccount: 'BnXXu8kLUXrwg3MpcVRVPLZw9bpX2mLd95qtCMnSUtu7',
+    serumVaultSigner: 'MKCHeoqNGWU8TJBkdF1M76nMUteJCwuBRUJfCtR3iV7',
+    official: true
+  },
+  {
+    name: 'mSOL-USDC',
+    coin: { ...TOKENS.mSOL },
+    pc: { ...TOKENS.USDC },
+    lp: { ...LP_TOKENS['mSOL-USDC-V4'] },
+
+    version: 4,
+    programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+
+    ammId: 'ZfvDXXUhZDzDVsapffUyXHj9ByCoPjP4thL6YXcZ9ix',
+    ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+    ammOpenOrders: '4zoatXFjMSirW2niUNhekxqeEZujjC1oioKCEJQMLeWF',
+    ammTargetOrders: 'Kq9Vgb8ntBzZy5doEER2p4Zpt8SqW2GqJgY5BgWRjDn',
+    // no need
+    ammQuantities: NATIVE_SOL.mintAddress,
+    poolCoinTokenAccount: '8JUjWjAyXTMB4ZXcV7nk3p6Gg1fWAAoSck7xekuyADKL',
+    poolPcTokenAccount: 'DaXyxj42ZDrp3mjrL9pYjPNyBp5P8A2f37am4Kd4EyrK',
+    poolWithdrawQueue: 'CfjpUvQAoU4hadb9nReTCAqBFFP7MpJyBW97ezbiWgsQ',
+    poolTempLpTokenAccount: '3EdqPYv3hLJFXC3U9LH7yA7HX6Z7gRxT7vGQQJrxScDH',
+    serumProgramId: SERUM_PROGRAM_ID_V3,
+    serumMarket: '6oGsL2puUgySccKzn9XA9afqF217LfxP5ocq4B3LWsjy',
+    serumBids: '8qyWhEcpuvEsdCmY1kvEnkTfgGeWHmi73Mta5jgWDTuT',
+    serumAsks: 'PPnJy6No31U45SVSjWTr45R8Q73X6bNHfxdFqr2vMq3',
+    serumEventQueue: 'BC8Tdzz7rwvuYkJWKnPnyguva27PQP5DTxosHVQrEzg9',
+    serumCoinVaultAccount: '2y3BtF5oRBpLwdoaGjLkfmT3FY3YbZCKPbA9zvvx8Pz7',
+    serumPcVaultAccount: '6w5hF2hceQRZbaxjPJutiWSPAFWDkp3YbY2Aq3RpCSKe',
+    serumVaultSigner: '9dEVMESKXcMQNndoPc5ji9iTeDJ9GfToboy8prkZeT96',
+    official: true
+  },
+  {
+    name: 'mSOL-SOL',
+    coin: { ...TOKENS.mSOL },
+    pc: { ...NATIVE_SOL },
+    lp: { ...LP_TOKENS['mSOL-SOL-V4'] },
+
+    version: 4,
+    programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+
+    ammId: 'EGyhb2uLAsRUbRx9dNFBjMVYnFaASWMvD6RE1aEf2LxL',
+    ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+    ammOpenOrders: '6c1u1cNEELKPmuH352WPNNEPdfTyVPHsei39DUPemC42',
+    ammTargetOrders: 'CLuMpSesLPqdxewQTxfiLdifQfDfRsxkFhPgiChmdGfk',
+    // no need
+    ammQuantities: NATIVE_SOL.mintAddress,
+    poolCoinTokenAccount: '85SxT7AdDQvJg6pZLoDf7vPiuXLj5UYZLVVNWD1NjnFK',
+    poolPcTokenAccount: 'BtGUR6y7uwJ6UGXNMcY3gCLm7dM3WaBdmgtKVgGnE1TJ',
+    poolWithdrawQueue: '7vvoHxA6di9EvzJKL6bmojbZnH3YaRXu2LitufrQhM21',
+    poolTempLpTokenAccount: 'ACn8TZ27fQ85kgdPKUfkETB4dS5JPFoq53z7uCgtHDai',
+    serumProgramId: SERUM_PROGRAM_ID_V3,
+    serumMarket: '5cLrMai1DsLRYc1Nio9qMTicsWtvzjzZfJPXyAoF4t1Z',
+    serumBids: 'JAABQk3n6S8W85LC6RpqTvGgP9wJFb8kfqir6kUhBXkQ',
+    serumAsks: 'psFs3Dm7quZZn3BhvrT1LdWCVtbMqxXanU7ZYdHULj6',
+    serumEventQueue: '4bmSJJCrx3dehFQ8kXAE1c4L9kfP8DyHow4tFw6aRJZe',
+    serumCoinVaultAccount: '2qmHPJn3URkrboLiJkQ5tBB4bmYWdb6MyhQzZ6ms7wf9',
+    serumPcVaultAccount: 'A6eEM36Vpyti2PoHK8h8Dqk5zu7YTaSRTQb7XXL8tcrV',
+    serumVaultSigner: 'EHMK3DdPiPBd9aBjeRU4aZjD7z568rmwHCSAAxRooPq6',
+    official: true
+  },
+  {
+    name: 'MER-PAI',
+    coin: { ...TOKENS.MER },
+    pc: { ...TOKENS.PAI },
+    lp: { ...LP_TOKENS['MER-PAI-V4'] },
+
+    version: 4,
+    programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+
+    ammId: '6GUF8Qb5FWmifzYpRdKomFNbSQAsLShhT45GbTGg34VJ',
+    ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+    ammOpenOrders: 'Gh3w9pfjwbZX2FVrMy6PzUQG5rhihKduGCB7UaPGUTZw',
+    ammTargetOrders: '37k5Xe8Sej1TrjrGsR2HyRR1EjYECV1HcS3Xh6Jnxggi',
+    // no need
+    ammQuantities: NATIVE_SOL.mintAddress,
+    poolCoinTokenAccount: 'ApnMY7ahxTMssU1dzxYEfMcag1aSa5s4Axje3nqnnrXH',
+    poolPcTokenAccount: 'BuQxGhmS82ZhczEGbUyi9R7TjxczXTMRoD4nQ4GvqxCf',
+    poolWithdrawQueue: 'CrvN8Zi4c6BHVFc3mAB8CZSZRftY73WtpBH2Zade9MKZ',
+    poolTempLpTokenAccount: '5W9V96yUqk95zUYawoCfEittj4VT4Nbv8NVjevJ4kN78',
+    serumProgramId: SERUM_PROGRAM_ID_V3,
+    serumMarket: 'FtxAV7xEo6DLtTszffjZrqXknAE4wpTSfN6fBHW4iZpE',
+    serumBids: 'Hi6bo1sodi7X2GrpeVpk5mKKG42Ga8n4Gi3Fxr2WK6rg',
+    serumAsks: '75a4ASjShTXZPdxNzm4RoSEVydLBFfDa1V81Wcf7Xw59',
+    serumEventQueue: '7WDqc3MAApvgDskQBDKVVPmya3Src228sAk8Lag8ovph',
+    serumCoinVaultAccount: '2Duueu4HUnv6e4qUqdM4DKECM9X3XggBsXp5eLYuSLXe',
+    serumPcVaultAccount: '3GEqHH6VAnyqrgG9jRB4Qy9PMTYJmSBvg7u3LtBWHEWD',
+    serumVaultSigner: '7cBPvLMQvf1X5rzLMNKrx7TY5M186rTR49yJNHNSp81s',
+    official: true
+  },
+  {
+    name: 'PORT-USDC',
+    coin: { ...TOKENS.PORT },
+    pc: { ...TOKENS.USDC },
+    lp: { ...LP_TOKENS['PORT-USDC-V4'] },
+
+    version: 4,
+    programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+
+    ammId: '6nJes56KF999Q8VtQTrgWEHJGAfGMuJktGb8x2uWff2u',
+    ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+    ammOpenOrders: 'ENfqr7WFKJy9VRwfDkgL4HvMM6GU7pHyowzZsZwx8P39',
+    ammTargetOrders: '9wjp6tFY1XNH6KhdCHeDgeUsNLVjTwxA3iC9k5aun2NW',
+    // no need
+    ammQuantities: NATIVE_SOL.mintAddress,
+    poolCoinTokenAccount: 'GGurDvQctUDgcegSYZetkNGytcWEfLes6yXzYruhLuLP',
+    poolPcTokenAccount: '3FmHEQRHaKMS4vA41eYTVmfxX9ErxdAScS2tvgWvNHSz',
+    poolWithdrawQueue: 'ETie1oDMcoTD8jzrseAcvTqZYyyoWxR92LH15nA6Lfub',
+    poolTempLpTokenAccount: 'GEJfHTwURq89KcM1RgvFZRweb4f7H8NAsmyMg2kTPBEs',
+    serumProgramId: SERUM_PROGRAM_ID_V3,
+    serumMarket: '8x8jf7ikJwgP9UthadtiGFgfFuyyyYPHL3obJAuxFWko',
+    serumBids: '9Y24T3co7Cc7cGbG2mFc9n3LQonAWgtayqfLz3p28JPa',
+    serumAsks: '8uQcJBapCnxy3tNEB8tfmssUvqYWvuCsSHYtdNFbFFjm',
+    serumEventQueue: '8ptDxtRLWXAKYQYRoRXpKmrJje31p8dsDsxeZHEksqtV',
+    serumCoinVaultAccount: '8rNKJFsd9yuGx7xTTm9sb23JLJuWJ29zTSTznGFpUBZB',
+    serumPcVaultAccount: '5Vs1UWLxZHHRW6yRYEEK3vpzE5HbQ8BFm27PnAaDjqgb',
+    serumVaultSigner: '63ZaXnSj7SxWLFEcjmK79fyGokJxhR3UEXomN7q7Po25',
+    official: true
+  },
+  {
+    name: 'MNGO-USDC',
+    coin: { ...TOKENS.MNGO },
+    pc: { ...TOKENS.USDC },
+    lp: { ...LP_TOKENS['MNGO-USDC-V4'] },
+
+    version: 4,
+    programId: LIQUIDITY_POOL_PROGRAM_ID_V4,
+
+    ammId: '34tFULRrRwh4bMcBLPtJaNqqe5pVgGZACi5sR8Xz95KC',
+    ammAuthority: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+    ammOpenOrders: '58G7RrYRntVvVj9rVgDwGhAJoWhMWHNyDCoMydYUwSR6',
+    ammTargetOrders: '2qBcjDqDywhB7Kgb1VYq8K5svJh37BB8oC5kBE4VqA7q',
+    // no need
+    ammQuantities: NATIVE_SOL.mintAddress,
+    poolCoinTokenAccount: '91fMidHL8Yr8KRcu4Zu2RPRRg1FbXxZ7DV43rAyKRLjn',
+    poolPcTokenAccount: '93oFfbcayY2WkcR6d9AyqPcRC121dXmWarFJkwPErRRE',
+    poolWithdrawQueue: 'FhnSdMoRPj75bLs6yzaDPFfiuucUZhVDiyM78WEhaKJo',
+    poolTempLpTokenAccount: 'FZAwAb6UxNiwDTbQZ3bPKYA4PkbYpurh8YpAH8G424Lv',
+    serumProgramId: SERUM_PROGRAM_ID_V3,
+    serumMarket: '3d4rzwpy9iGdCZvgxcu7B1YocYffVLsQXPXkBZKt2zLc',
+    serumBids: '3nAdH9wTEhPoW4e2s8K2cXfn4jZH8FBCkUqtzWpsZaGb',
+    serumAsks: 'HxbWm3iabHEFeHG9LVGYycTwn7aJVYYHbpQyhZhAYnfn',
+    serumEventQueue: 'H1VVmwbM96BiBJq46zubSBm6VBhfM2FUhLVUqKGh1ee9',
+    serumCoinVaultAccount: '7Ex7id4G37HynuiCAv5hTYM4BnPB9y4NU85QcaNWZy3G',
+    serumPcVaultAccount: '9UB1NhGeDuV1apHdtK5LeAEjP7kZFH8vVYGdh2yGFRi8',
+    serumVaultSigner: 'BFkxdUwW17eANhfs1xNmBqEcegb4EStQxVb5VaMS2dq6',
+    official: true
   }
-]
+]  

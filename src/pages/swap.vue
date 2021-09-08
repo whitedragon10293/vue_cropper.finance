@@ -951,7 +951,6 @@ export default Vue.extend({
           if(lpList.length > 0)
           {
             this.swaptype = 'single'
-
           }
           else {
             const lpList_1 = getPoolListByTokenMintAddresses(
@@ -969,7 +968,6 @@ export default Vue.extend({
               this.swaptype = 'multi'
             }
           }
-          
         }
         
         if (marketAddress) {
@@ -1066,7 +1064,10 @@ export default Vue.extend({
               false
             ).fixed()
             impact = priceImpact
-            endpoint = 'CropperFinance Pool'
+            if(poolInfo.version == 5)
+              endpoint = 'CropperFinance Pool'
+            else
+              endpoint = 'Raydium Pool'
           }
         }
         else if(this.swaptype == 'multi'){
@@ -1228,7 +1229,7 @@ export default Vue.extend({
           .finally(() => {
             this.swaping = false
           })
-      } else if (this.endpoint === 'CropperFinance Pool' && this.swaptype == 'single') {
+      } else if ((this.endpoint === 'CropperFinance Pool' || this.endpoint === 'Raydium Pool') && this.swaptype == 'single') {
         const poolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.mainAmmId)
         swap(
           this.$web3,

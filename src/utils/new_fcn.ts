@@ -265,7 +265,7 @@ export const withdrawInstruction = (
   });
 };
 
-export const swapInstruction = (
+export const swapInstruction_v5 = (
   tokenSwap: PublicKey,
   authority: PublicKey,
   userTransferAuthority: PublicKey,

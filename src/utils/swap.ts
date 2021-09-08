@@ -16,7 +16,7 @@ import {
 } from '@/utils/web3'
 import { TokenAmount } from '@/utils/safe-math'
 import { ACCOUNT_LAYOUT } from '@/utils/layouts'
-import { swapInstruction } from '@/utils/new_fcn'
+import { swapInstruction_v5 } from '@/utils/new_fcn'
 // eslint-disable-next-line
 import { TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, MEMO_PROGRAM_ID, SERUM_PROGRAM_ID_V3, FIXED_FEE_ACCOUNT } from './ids'
 import { closeAccount } from '@project-serum/serum/lib/token-instructions'
@@ -51,6 +51,17 @@ export function getOutAmount(
 }
 
 export function getSwapOutAmount(
+  poolInfo: any,
+  fromCoinMint: string,
+  toCoinMint: string,
+  amount: string,
+  slippage: number
+){
+  const getSwapOutAmount_fcn = (poolInfo.version == 5)? getSwapOutAmount_v5: getSwapOutAmount_v4
+  return getSwapOutAmount_fcn(poolInfo, fromCoinMint, toCoinMint, amount, slippage);
+}
+
+function getSwapOutAmount_v5(
   poolInfo: any,
   fromCoinMint: string,
   toCoinMint: string,
@@ -125,6 +136,81 @@ export function getSwapOutAmount(
     }
   }
 }
+
+function getSwapOutAmount_v4(
+  poolInfo: any,
+  fromCoinMint: string,
+  toCoinMint: string,
+  amount: string,
+  slippage: number
+) {
+  const { coin, pc, fees } = poolInfo
+  const { swapFeeNumerator, swapFeeDenominator } = fees
+
+  if (fromCoinMint === coin.mintAddress && toCoinMint === pc.mintAddress) {
+    // coin2pc
+    const fromAmount = new TokenAmount(amount, coin.decimals, false)
+    const denominator = coin.balance.wei.plus(fromAmount.wei)
+    const amountOut = pc.balance.wei.multipliedBy(fromAmount.wei).dividedBy(denominator)
+    const amountOutWithFee = amountOut.dividedBy(swapFeeDenominator).multipliedBy(swapFeeDenominator - swapFeeNumerator)
+    const amountOutWithSlippage = amountOutWithFee.dividedBy(1 + slippage / 100)
+
+    const outBalance = pc.balance.wei.minus(amountOut)
+    const beforePrice = new TokenAmount(
+      parseFloat(new TokenAmount(pc.balance.wei, pc.decimals).fixed()) /
+        parseFloat(new TokenAmount(coin.balance.wei, coin.decimals).fixed()),
+      pc.decimals,
+      false
+    )
+    const afterPrice = new TokenAmount(
+      parseFloat(new TokenAmount(outBalance, pc.decimals).fixed()) /
+        parseFloat(new TokenAmount(denominator, coin.decimals).fixed()),
+      pc.decimals,
+      false
+    )
+    const priceImpact =
+      ((parseFloat(beforePrice.fixed()) - parseFloat(afterPrice.fixed())) / parseFloat(beforePrice.fixed())) * 100
+
+    return {
+      amountIn: fromAmount,
+      amountOut: new TokenAmount(amountOutWithFee, pc.decimals),
+      amountOutWithSlippage: new TokenAmount(amountOutWithSlippage, pc.decimals),
+      priceImpact
+    }
+  } else {
+    // pc2coin
+    const fromAmount = new TokenAmount(amount, pc.decimals, false)
+    const denominator = pc.balance.wei.plus(fromAmount.wei)
+    const amountOut = coin.balance.wei.multipliedBy(fromAmount.wei).dividedBy(denominator)
+    const amountOutWithFee = amountOut.dividedBy(swapFeeDenominator).multipliedBy(swapFeeDenominator - swapFeeNumerator)
+    const amountOutWithSlippage = amountOutWithFee.dividedBy(1 + slippage / 100)
+
+    const outBalance = coin.balance.wei.minus(amountOut)
+
+    const beforePrice = new TokenAmount(
+      parseFloat(new TokenAmount(pc.balance.wei, pc.decimals).fixed()) /
+        parseFloat(new TokenAmount(coin.balance.wei, coin.decimals).fixed()),
+      pc.decimals,
+      false
+    )
+    const afterPrice = new TokenAmount(
+      parseFloat(new TokenAmount(denominator, pc.decimals).fixed()) /
+        parseFloat(new TokenAmount(outBalance, coin.decimals).fixed()),
+      pc.decimals,
+      false
+    )
+    const priceImpact =
+      ((parseFloat(afterPrice.fixed()) - parseFloat(beforePrice.fixed())) / parseFloat(beforePrice.fixed())) * 100
+
+    return {
+      amountIn: fromAmount,
+      amountOut: new TokenAmount(amountOutWithFee, coin.decimals),
+      amountOutWithSlippage: new TokenAmount(amountOutWithSlippage, coin.decimals),
+      priceImpact
+    }
+  }
+}
+
 
 export function forecastBuy(market: any, orderBook: any, pcIn: any, slippage: number) {
   let coinOut = 0
@@ -354,6 +440,146 @@ export async function swap(
   toTokenAccount: string,
   aIn: string,
   aOut: string
+){
+  const swap_fcn = (poolInfo.version == 5)? swap_v5: swap_v4;
+  return await swap_fcn(
+    connection, 
+    wallet, 
+    poolInfo, 
+    fromCoinMint, 
+    toCoinMint,
+    fromTokenAccount, 
+    toTokenAccount, 
+    aIn, 
+    aOut)
+}
+
+async function swap_v4(
+  connection: Connection,
+  wallet: any,
+  poolInfo: any,
+  fromCoinMint: string,
+  toCoinMint: string,
+  fromTokenAccount: string,
+  toTokenAccount: string,
+  aIn: string,
+  aOut: string
+) {
+  const transaction = new Transaction()
+  const signers: Account[] = []
+
+  const owner = wallet.publicKey
+
+  const from = getTokenByMintAddress(fromCoinMint)
+  const to = getTokenByMintAddress(toCoinMint)
+  if (!from || !to) {
+    throw new Error('Miss token info')
+  }
+
+  const amountIn = new TokenAmount(aIn, from.decimals, false)
+  const amountOut = new TokenAmount(aOut, to.decimals, false)
+
+  let fromMint = fromCoinMint
+  let toMint = toCoinMint
+
+  if (fromMint === NATIVE_SOL.mintAddress) {
+    fromMint = TOKENS.WSOL.mintAddress
+  }
+  if (toMint === NATIVE_SOL.mintAddress) {
+    toMint = TOKENS.WSOL.mintAddress
+  }
+
+  let wrappedSolAccount: PublicKey | null = null
+  let wrappedSolAccount2: PublicKey | null = null
+
+  if (fromCoinMint === NATIVE_SOL.mintAddress) {
+    wrappedSolAccount = await createTokenAccountIfNotExist(
+      connection,
+      wrappedSolAccount,
+      owner,
+      TOKENS.WSOL.mintAddress,
+      getBigNumber(amountIn.wei) + 1e7,
+      transaction,
+      signers
+    )
+  }
+  if (toCoinMint === NATIVE_SOL.mintAddress) {
+    wrappedSolAccount2 = await createTokenAccountIfNotExist(
+      connection,
+      wrappedSolAccount2,
+      owner,
+      TOKENS.WSOL.mintAddress,
+      1e7,
+      transaction,
+      signers
+    )
+  }
+
+  const newFromTokenAccount = await createAssociatedTokenAccountIfNotExist(
+    fromTokenAccount,
+    owner,
+    fromMint,
+    transaction
+  )
+  const newToTokenAccount = await createAssociatedTokenAccountIfNotExist(toTokenAccount, owner, toMint, transaction)
+
+  transaction.add(
+    swapInstruction_v4(
+      new PublicKey(poolInfo.programId),
+      new PublicKey(poolInfo.ammId),
+      new PublicKey(poolInfo.ammAuthority),
+      new PublicKey(poolInfo.ammOpenOrders),
+      new PublicKey(poolInfo.ammTargetOrders),
+      new PublicKey(poolInfo.poolCoinTokenAccount),
+      new PublicKey(poolInfo.poolPcTokenAccount),
+      new PublicKey(poolInfo.serumProgramId),
+      new PublicKey(poolInfo.serumMarket),
+      new PublicKey(poolInfo.serumBids),
+      new PublicKey(poolInfo.serumAsks),
+      new PublicKey(poolInfo.serumEventQueue),
+      new PublicKey(poolInfo.serumCoinVaultAccount),
+      new PublicKey(poolInfo.serumPcVaultAccount),
+      new PublicKey(poolInfo.serumVaultSigner),
+      wrappedSolAccount ?? newFromTokenAccount,
+      wrappedSolAccount2 ?? newToTokenAccount,
+      owner,
+      Math.floor(getBigNumber(amountIn.toWei())),
+      Math.floor(getBigNumber(amountOut.toWei()))
+    )
+  )
+
+  if (wrappedSolAccount) {
+    transaction.add(
+      closeAccount({
+        source: wrappedSolAccount,
+        destination: owner,
+        owner
+      })
+    )
+  }
+  if (wrappedSolAccount2) {
+    transaction.add(
+      closeAccount({
+        source: wrappedSolAccount2,
+        destination: owner,
+        owner
+      })
+    )
+  }
+  return await sendTransaction(connection, wallet, transaction, signers)
+}
+
+
+async function swap_v5(
+  connection: Connection,
+  wallet: any,
+  poolInfo: any,
+  fromCoinMint: string,
+  toCoinMint: string,
+  fromTokenAccount: string,
+  toTokenAccount: string,
+  aIn: string,
+  aOut: string
 ) {
   const transaction = new Transaction()
   const signers: Account[] = []
@@ -427,7 +653,7 @@ export async function swap(
   let poolToAccount = normal_dir? poolInfo.poolPcTokenAccount: poolInfo.poolCoinTokenAccount
 
   transaction.add(
-    swapInstruction(
+    swapInstruction_v5(
       new PublicKey(poolInfo.ammId),
       new PublicKey(poolInfo.ammAuthority),
       owner,
@@ -606,7 +832,7 @@ export async function place(
   ])
 }
 
-export function swapInstruction_v1(
+export function swapInstruction_v4(
   programId: PublicKey,
   // tokenProgramId: PublicKey,
   // amm
