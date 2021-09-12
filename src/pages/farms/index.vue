@@ -116,12 +116,12 @@
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
                   <div class="title">Apr</div>
-                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="value"> - </div>
                   <div v-else class="value">{{ farm.farmInfo.apr }}%</div>
                 </Col>
                 <Col v-if="!isMobile && poolType" class="state" :span="4">
                   <div class="title">Liquidity</div>
-                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="value"> - </div>
                   <div v-else class="value">
                     ${{
                       Math.round(farm.farmInfo.liquidityUsdValue)
