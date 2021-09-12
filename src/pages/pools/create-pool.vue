@@ -75,7 +75,7 @@
             </div>
           </Col>
         </Row>
-        <Row v-if="current === 0" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
+        <Row v-if="current === 0 && wallet.connected" style="align-items: baseline; line-height: 40px; padding-bottom: 20px">
           <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><div style="padding-bottom: 10px; word-break: break-word">
               $$This tool is for advanced users. Before attempting to create a new liquidity pool, we suggest going
