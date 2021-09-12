@@ -89,6 +89,12 @@
             >
               <Row slot="header" class="farm-head" :class="isMobile ? 'is-mobile' : ''" :gutter="0">
                 <Col class="lp-icons" :span="isMobile ? 12 : 8">
+
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="label soon"> Soon </div>
+
+                  <div v-if="currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="label ended"> Ended </div>
+
+
                   <div class="icons">
                     <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
                     <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
@@ -186,7 +192,7 @@
                         <Icon type="minus" />
                       </Button>
                       </div>
-                      <div class="btncontainer">
+                      <div class="btncontainer" v-if="currentTimestamp < farm.farmInfo.poolInfo.end_timestamp && farm.farmInfo.poolInfo.start_timestamp < currentTimestamp">
                         <Button
                           size="large" 
                           ghost 
@@ -201,17 +207,18 @@
                           }}
                         </Button>
                       </div>
+
                       <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="unstarted">
                         <div class="token">
                            {{ getCountdownFromPeriod(farm.farmInfo.poolInfo.start_timestamp - currentTimestamp) }}
                         </div>
                       </div>
-                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed">
+                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp">
                         <Button size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward
                         </Button>
                       </div>
-                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed">
+                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp">
                         <Button size="large" ghost @click="payFarmFee(farm)">
                           Pay Farm Fee
                         </Button>
@@ -238,7 +245,6 @@
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import { Tooltip, Progress, Collapse, Spin, Icon, Row, Col, Button, Radio } from 'ant-design-vue'
-
 import { get, cloneDeep } from 'lodash-es'
 import { TokenAmount } from '@/utils/safe-math'
 import { FarmInfo } from '@/utils/farms'
@@ -253,7 +259,6 @@ import { PublicKey } from '@solana/web3.js'
 import { DEVNET_MODE, FARM_PROGRAM_ID } from '@/utils/ids'
 import { TOKENS } from '@/utils/tokens'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
-
 const CollapsePanel = Collapse.Panel
 const RadioGroup = Radio.Group
 const RadioButton = Radio.Button
@@ -916,7 +921,7 @@ export default Vue.extend({
       remain = remain % 60;
       let seconds = remain;
       
-      return ""+days+"d : "+hours + "h : "+minutes+"m : "+seconds+"s";
+      return ""+days+"d : "+hours + "h : "+minutes+"m";
       
     }
   }
@@ -1137,6 +1142,25 @@ export default Vue.extend({
       border-color: transparent;
     }
 
+  }
+
+
+  .label.soon{
+      border: 1px solid #13d89d;
+      color:#13d89d;
+    position: absolute;
+    padding: 0 20px 0 20px;
+    border-radius: 3px;
+    right: 60px;
+  }
+
+  .label.ended{
+      border: 1px solid #f00;
+      color:#f00;
+    position: absolute;
+    padding: 0 20px 0 20px;
+    border-radius: 3px;
+    right: 60px;
   }
 
 main{

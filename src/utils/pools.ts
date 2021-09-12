@@ -251,6 +251,33 @@ export function isOfficalMarket(marketAddress: string) {
 
   return false
 }
+
+export function getAllPools() {
+
+  const polo:any = []
+
+  LIQUIDITY_POOLS.forEach(function (value) {
+    let item = {
+      'name' : value.coin.name + ' - ' + value.pc.name,
+      'coin1' : value.coin,
+      'coin2' : value.pc,
+      'lp_mint' : value.lp.mintAddress,
+      'lp' : {
+        coin : cloneDeep(value.coin) ,
+        pc : cloneDeep(value.pc),
+        mintAddress : cloneDeep(value.lp.mintAddress)
+      }
+
+    };
+
+
+
+
+    polo.push(item);
+  });
+  return polo
+}
+
 export const LIQUIDITY_POOLS: LiquidityPoolInfo[] =[]
 // export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = 
 let a = [
