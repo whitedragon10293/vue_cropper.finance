@@ -122,7 +122,9 @@ const RadioButton = Radio.Button
   },
 
   computed: {
-    ...mapState(['wallet', 'swap', 'liquidity', 'price', 'url', 'setting'])
+    ...mapState([
+      // 'wallet', 
+      'swap', 'liquidity', 'price', 'url', 'setting'])
   },
 
   data() {
