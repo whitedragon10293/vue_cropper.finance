@@ -274,22 +274,6 @@
             ></span>
             <span> {{ Number(fromCoinAmount * x).toFixed(fromCoin.decimals) }} {{ fromCoin.symbol }} </span>
           </div>  Temporary-->
-          <div
-            v-if="endpoint"
-            :class="`fs-container price-impact ${
-              priceImpact > 10 ? 'error-style' : priceImpact > 5 ? 'warning-style' : ''
-            }`"
-          >
-            <span class="name">
-              Price Impact {{ priceImpact > 5 ? 'Warning' : '' }}
-              <Tooltip placement="right">
-                <template slot="title">
-                  The difference between the market price and estimated price due to trade size
-                </template>
-                <Icon type="question-circle" style="cursor: pointer" /> </Tooltip
-            ></span>
-            <span :style="`color: ${priceImpact <= 5 ? '#31d0aa' : ''}`"> {{ priceImpact.toFixed(2) }}% </span>
-          </div>
         </div>
 
         <div v-if="officialPool === false">
@@ -353,7 +337,7 @@
           "
           :loading="swaping"
           style="width: 100%"
-          :class="`swap-btn ${priceImpact > 10 ? 'error-style' : priceImpact > 5 ? 'warning-style' : ''}`"
+          :class="`swap-btn ${priceImpact > 10 ? '' : priceImpact > 5 ? '' : ''}`"
           @click="placeOrder"
         >
           <template v-if="!fromCoin || !toCoin"> Select a token </template>
@@ -389,7 +373,7 @@
           <template v-else-if="toCoin.mintAddress === TOKENS.xCOPE.mintAddress && gt(5, toCoinAmount)">
             xCOPE amount must greater than 5
           </template>
-          <template v-else>{{ isWrap ? 'Unwrap' : priceImpact > 5 ? 'Swap Anyway' : 'Swap' }}</template>
+          <template v-else>{{ isWrap ? 'Unwrap' : priceImpact > 5 ? 'Swap' : 'Swap' }}</template>
         </Button>
         </div>
         <div v-if="solBalance && +solBalance.balance.fixed() - 0.05 <= 0" class="not-enough-sol-alert">

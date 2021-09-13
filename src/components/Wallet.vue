@@ -1,10 +1,14 @@
 <template>
   <div>
-    <div v-if="!wallet.connected" ghost @click="$accessor.wallet.openModal" class="btncontainer">
-      <Button>Connect wallet</Button>
+
+    <div class="btncontainer" v-if="!wallet.connected" ghost @click="$accessor.wallet.openModal">
+    <Button>
+      <Icon type="wallet" />
+      Connect
+    </Button>
     </div>
 
-    <div v-else ghost @click="$accessor.wallet.openModal" class="btncontainer">
+    <div class="btncontainer" v-else ghost @click="$accessor.wallet.openModal">
     <Button>
       <Icon type="wallet" />
       {{ wallet.address.substr(0, 4) }}
@@ -21,40 +25,18 @@
       @cancel="$accessor.wallet.closeModal"
     >
       <div v-if="!wallet.connected" class="select-wallet">
-        <Button v-for="info in wallets" :key="info.name" ghost @click="connect(info)">
-          <span>{{ info.name }}</span>
-          <img :src="importIcon(`/wallets/${info.name.replace(' ', '-').toLowerCase()}.png`)" />
+        <Button v-for="(info, name) in wallets" :key="name" ghost @click="connect(name, info)">
+          <span>{{ name }}</span>
+          <img :src="importIcon(`/wallets/${name.replace(' ', '-').toLowerCase()}.png`)" />
         </Button>
       </div>
       <div v-else class="wallet-info">
         <p class="address">{{ wallet.address }}</p>
 
+        <div class="btncontainer">
         <Button ghost @click="disconnect"> DISCONNECT </Button>
-
-        <div v-if="historyList.length" class="tx-history-panel">
-          <h2>Recent Transactions</h2>
-          <div v-for="txInfo in historyList" :key="txInfo.txid" class="tx-item">
-            <div class="extra-info">
-              <Icon
-                v-if="txInfo.status === 'Success' || txInfo.s === 's' /* old data polyfill*/"
-                class="icon"
-                type="check-circle"
-                :style="{ color: '#52c41a' }"
-              />
-              <Icon
-                v-else-if="txInfo.status === 'Fail' || txInfo.s === 'f' /* old data polyfill*/"
-                class="icon"
-                type="close-circle"
-                :style="{ color: '#f5222d' }"
-              />
-              <Icon v-else class="icon" type="loading" :style="{ color: '#1890ff' }" />
-              <a :href="`${$accessor.url.explorer}/tx/${txInfo.txid}`" target="_blank">{{
-                txInfo.description || txInfo.d /* old data polyfill*/
-              }}</a>
-            </div>
-            <div class="extra-info time">{{ $dayjs(txInfo.time || txInfo.t /* old data polyfill*/) }}</div>
-          </div>
         </div>
+
       </div>
     </Modal>
   </div>
@@ -68,31 +50,39 @@ import {
   Context
   // PublicKey
 } from '@solana/web3.js'
-// @ts-ignore
-import SolanaWalletAdapter from '@project-serum/sol-wallet-adapter'
 
 import importIcon from '@/utils/import-icon'
 import logger from '@/utils/logger'
-import { web3Config, commitment } from '@/utils/web3'
-import {
-  WalletAdapter,
-  SolongWalletAdapter,
-  MathWalletAdapter,
-  PhantomWalletAdapter,
-  BloctoWalletAdapter,
-  LedgerWalletAdapter,
-  Coin98WalletAdapter
-} from '@/wallets'
+import { commitment } from '@/utils/web3'
+import LocalStorage from '@/utils/local-storage'
+import type { WalletAdapter } from '@solana/wallet-adapter-base'
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom'
+import { SolongWalletAdapter } from '@solana/wallet-adapter-solong'
+import { MathWalletWalletAdapter } from '@solana/wallet-adapter-mathwallet'
+import { SolletWalletAdapter } from '@solana/wallet-adapter-sollet'
+import { LedgerWalletAdapter, getDerivationPath } from '@solana/wallet-adapter-ledger'
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
+import { Coin98WalletAdapter } from '@solana/wallet-adapter-coin98'
+import { SlopeWalletAdapter } from '@solana/wallet-adapter-slope'
+import { SafePalWalletAdapter } from '@solana/wallet-adapter-safepal'
+import { BloctoWalletAdapter } from '@solana/wallet-adapter-blocto'
+import { BitpieWalletAdapter } from '@solana/wallet-adapter-bitpie'
+// import { TorusWalletAdapter } from '@solana/wallet-adapter-torus'
 
 // fix: Failed to resolve directive: ant-portal
 Vue.use(Modal)
 
 interface WalletInfo {
-  name: string
-  url: string
-  installUrl?: string
+  // official website
+  website: string
+  // provider url for web wallet
+  providerUrl?: string
+  // chrome extension install url
+  chromeUrl?: string
+  // firefox extension install url
+  firefoxUrl?: string
   // isExtension: boolean
-  getAdapter: ({ providerUrl, endpoint }: { providerUrl: any; endpoint: string }) => WalletAdapter | undefined
+  getAdapter: (providerUrl?: string) => WalletAdapter
 }
 
 @Component({
@@ -105,107 +95,113 @@ interface WalletInfo {
 export default class Wallet extends Vue {
   /* ========== DATA ========== */
   // TrustWallet ezDeFi
-  wallets: WalletInfo[] = [
-    {
-      name: 'Phantom',
-      url: 'https://phantom.app',
-      installUrl: 'https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa',
+  wallets: { [key: string]: WalletInfo } = {
+    Phantom: {
+      website: 'https://phantom.app',
+      chromeUrl: 'https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa',
       getAdapter() {
-        if ((window as any).solana === undefined || !(window as any).solana.isPhantom) {
-          return
-        }
-
         return new PhantomWalletAdapter()
       }
     },
-    {
-      name: 'Sollet Web',
-      url: 'https://www.sollet.io',
-      getAdapter({ providerUrl, endpoint }: { providerUrl: string; endpoint: string }) {
-        return new SolanaWalletAdapter(providerUrl, endpoint)
-      }
-    },
-    {
-      name: 'Sollet Extension',
-      url: 'https://www.sollet.io',
-      installUrl: 'https://chrome.google.com/webstore/detail/sollet/fhmfendgdocmcbmfikdcogofphimnkno',
-      getAdapter({ endpoint }: { endpoint: string }) {
-        if ((window as any).sollet === undefined) {
-          return
-        }
-
-        return new SolanaWalletAdapter((window as any).sollet, endpoint)
-      }
-    },
-    {
-      name: 'Ledger',
-      url: 'https://www.ledger.com',
+    'Solflare Extension': {
+      website: 'https://solflare.com',
+      firefoxUrl: 'https://addons.mozilla.org/en-US/firefox/addon/solflare-wallet',
       getAdapter() {
-        return new LedgerWalletAdapter()
+        return new SolflareWalletAdapter()
       }
     },
-    {
-      name: 'MathWallet',
-      url: 'https://mathwallet.org',
-      installUrl: 'https://chrome.google.com/webstore/detail/math-wallet/afbcbjpbpfadlkmhmclhkeeodmamcflc',
-      getAdapter() {
-        if ((window as any).solana === undefined || !(window as any).solana.isMathWallet) {
-          return
-        }
-
-        return new MathWalletAdapter()
+    'Sollet Web': {
+      website: 'https://www.sollet.io',
+      providerUrl: 'https://www.sollet.io',
+      getAdapter(providerUrl) {
+        return new SolletWalletAdapter({ provider: providerUrl })
       }
     },
-    {
-      name: 'Solong',
-      url: 'https://solongwallet.com',
-      installUrl: 'https://chrome.google.com/webstore/detail/solong/memijejgibaodndkimcclfapfladdchj',
+    'Sollet Extension': {
+      website: 'https://www.sollet.io',
+      chromeUrl: 'https://chrome.google.com/webstore/detail/sollet/fhmfendgdocmcbmfikdcogofphimnkno',
       getAdapter() {
-        if ((window as any).solong === undefined) {
-          return
-        }
-
+        return new SolletWalletAdapter({ provider: (window as any).sollet })
+      }
+    },
+    Ledger: {
+      website: 'https://www.ledger.com',
+      getAdapter() {
+        return new LedgerWalletAdapter({ derivationPath: getDerivationPath() })
+      }
+    },
+    MathWallet: {
+      website: 'https://mathwallet.org',
+      chromeUrl: 'https://chrome.google.com/webstore/detail/math-wallet/afbcbjpbpfadlkmhmclhkeeodmamcflc',
+      getAdapter() {
+        return new MathWalletWalletAdapter()
+      }
+    },
+    Solong: {
+      website: 'https://solongwallet.com',
+      chromeUrl: 'https://chrome.google.com/webstore/detail/solong/memijejgibaodndkimcclfapfladdchj',
+      getAdapter() {
         return new SolongWalletAdapter()
       }
     },
-    {
-      name: 'Coin98',
-      url: 'https://www.coin98.com',
-      installUrl: 'https://chrome.google.com/webstore/detail/coin98-wallet/aeachknmefphepccionboohckonoeemg',
+    Coin98: {
+      website: 'https://www.coin98.com',
+      chromeUrl: 'https://chrome.google.com/webstore/detail/coin98-wallet/aeachknmefphepccionboohckonoeemg',
       getAdapter() {
-        if ((window as any).coin98 === undefined) {
-          return
-        }
-
         return new Coin98WalletAdapter()
       }
     },
-    {
-      name: 'Blocto',
-      url: 'https://blocto.portto.io',
+    Blocto: {
+      website: 'https://blocto.portto.io',
       getAdapter() {
-        if ((window as any).solana === undefined || !(window as any).solana.isBlocto) {
-          return
-        }
-
         return new BloctoWalletAdapter()
       }
     },
-    {
-      name: 'Solflare',
-      url: 'https://solflare.com/access-wallet',
-      getAdapter({ providerUrl, endpoint }: { providerUrl: string; endpoint: string }) {
-        return new SolanaWalletAdapter(providerUrl, endpoint)
+    Safepal: {
+      website: 'https://safepal.io',
+      getAdapter() {
+        return new SafePalWalletAdapter()
       }
     },
-    {
-      name: 'Bonfida',
-      url: 'https://bonfida.com/wallet',
-      getAdapter({ providerUrl, endpoint }: { providerUrl: string; endpoint: string }) {
-        return new SolanaWalletAdapter(providerUrl, endpoint)
+    Slope: {
+      website: 'https://slope.finance',
+      chromeUrl: 'https://chrome.google.com/webstore/detail/slope-finance-wallet/pocmplpaccanhmnllbbkpgfliimjljgo',
+      getAdapter() {
+        return new SlopeWalletAdapter()
+      }
+    },
+    Bitpie: {
+      website: 'https://bitpie.com',
+      getAdapter() {
+        return new BitpieWalletAdapter()
+      }
+    },
+    // Torus: {
+    //   website: 'https://tor.us',
+    //   getAdapter() {
+    //     return new TorusWalletAdapter({
+    //       options: {
+    //         clientId: ''
+    //       }
+    //     })
+    //   }
+    // },
+    'Solflare Web': {
+      website: 'https://solflare.com',
+      providerUrl: 'https://solflare.com/access-wallet',
+      getAdapter(providerUrl) {
+        return new SolletWalletAdapter({ provider: providerUrl })
       }
     }
-  ]
+  }
+
+  connectingWallet = {
+    name: null as string | null,
+    adapter: null as WalletAdapter | null
+  }
+
+  // autoConnect
+  lastWalletName = LocalStorage.get('WALLET_NAME')
 
   // auto refresh
   walletTimer: number | undefined = undefined
@@ -215,6 +211,8 @@ export default class Wallet extends Vue {
   idoTimer: number | undefined = undefined
   // web3 listener
   walletListenerId = null as number | null
+
+  debugCount = 0
 
   /* ========== COMPUTED ========== */
   get wallet() {
@@ -239,10 +237,12 @@ export default class Wallet extends Vue {
 
   // history
   get historyList() {
-    const rawList = Object.entries(this.$accessor.transaction.history).map(([txid, txInfo]) => ({
-      ...(txInfo as any),
-      txid
-    }))
+    const rawList = Object.entries(this.$accessor.transaction.history[this.$accessor.wallet.address] ?? {}).map(
+      ([txid, txInfo]) => ({
+        ...(txInfo as any),
+        txid
+      })
+    )
     return rawList.sort((a, b) => {
       return (b.time || b.t) - (a.time || a.t)
     })
@@ -262,6 +262,10 @@ export default class Wallet extends Vue {
     this.setIdoTimer()
   }
 
+  mounted() {
+    this.autoConnect()
+  }
+
   beforeDestroy() {
     window.clearInterval(this.walletTimer)
     window.clearInterval(this.priceTimer)
@@ -275,76 +279,60 @@ export default class Wallet extends Vue {
   /* ========== METHODS ========== */
   importIcon = importIcon
 
-  connect(wallet: WalletInfo) {
-    const { rpcs } = web3Config
-    const endpoint = rpcs[0].url
-
-    const { name, url, installUrl } = wallet
-    const adapter = wallet.getAdapter({ providerUrl: url, endpoint })
-
-    if (!adapter) {
-      // is extension and not installed
-      this.$notify.error({
-        message: 'Connect wallet failed',
-        description: (h: any) => {
-          const msg = [
-            `Please install and initialize ${name} wallet extension first, `,
-            h('a', { attrs: { href: url, target: '_blank' } }, 'click here to visit official website')
-          ]
-
-          if (installUrl) {
-            msg.push(' or ')
-            msg.push(h('a', { attrs: { href: installUrl, target: '_blank' } }, 'click here to install extension'))
-          }
-
-          return h('div', msg)
-        }
-      })
-      return
-    }
-
-    adapter.on('connect', () => {
-      this.$accessor.wallet.closeModal().then(() => {
-        if (adapter.publicKey) {
-          // mock wallet
-          // const address = new PublicKey('')
-          // Vue.prototype.$wallet = {
-          //   connected: true,
-          //   publicKey: address,
-          //   signTransaction: (transaction: any) => {
-          //     console.log(transaction)
-          //   }
-          // }
-          // this.$accessor.wallet.setConnected(address.toBase58())
-
-          Vue.prototype.$wallet = adapter
-          this.$accessor.wallet.setConnected(adapter.publicKey.toBase58())
-
-          this.subWallet()
-          this.$notify.success({
-            message: 'Wallet connected',
-            description: ''
-          })
-        }
-      })
-    })
-
-    adapter.on('disconnect', () => {
-      this.disconnect()
-    })
-
-    try {
-      adapter.connect()
-    } catch (error) {
-      this.$notify.error({
-        message: 'Connect wallet failed',
-        description: error.message
-      })
+  autoConnect() {
+    const name = this.lastWalletName
+    if (name && !this.$accessor.wallet.connected) {
+      const info = this.wallets[name]
+      if (info) {
+        this.connect(name, info)
+      }
     }
   }
 
+  onConnect() {
+    const { name, adapter } = this.connectingWallet
+
+    this.$accessor.wallet.closeModal().then(() => {
+      if (adapter && adapter.publicKey) {
+        // mock wallet
+        // const address = new PublicKey('')
+        // Vue.prototype.$wallet = {
+        //   connected: true,
+        //   publicKey: address,
+        //   signTransaction: (transaction: any) => {
+        //     console.log(transaction)
+        //   }
+        // }
+        // this.$accessor.wallet.setConnected(address.toBase58())
+
+        Vue.prototype.$wallet = adapter
+        this.$accessor.wallet.setConnected(adapter.publicKey.toBase58())
+
+        this.subWallet()
+        this.$notify.success({
+          message: 'Wallet connected',
+          description: `Connect to ${name}`
+        })
+
+        LocalStorage.set('WALLET_NAME', name)
+      }
+    })
+  }
+
+  onDisconnect() {
+    this.disconnect()
+  }
+
   disconnect() {
-    Vue.prototype.$wallet.disconnect()
+    this.connectingWallet = {
+      name: null,
+      adapter: null
+    }
+
+    try {
+      Vue.prototype.$wallet.disconnect()
+    } catch (error) {}
+
     Vue.prototype.$wallet = null
 
     this.unsubWallet()
@@ -354,6 +342,84 @@ export default class Wallet extends Vue {
       message: 'Wallet disconnected',
       description: ''
     })
+  }
+
+  onWalletError(error: Error) {
+    const { name } = this.connectingWallet
+
+    if (name) {
+      const info = this.wallets[name]
+
+      if (info) {
+        const { website, chromeUrl, firefoxUrl } = info
+
+        if (['WalletNotFoundError', 'WalletNotInstalledError', 'WalletNotReadyError'].includes(error.name)) {
+          const errorName = error.name
+            .replace('Error', '')
+            .split(/(?=[A-Z])/g)
+            .join(' ')
+
+          this.$notify.error({
+            message: errorName,
+            description: (h: any) => {
+              const msg = [
+                `Please install and initialize ${name} wallet extension first, `,
+                h('a', { attrs: { href: website, target: '_blank' } }, 'click here to visit official website')
+              ]
+
+              if (chromeUrl || firefoxUrl) {
+                const installUrl = /Firefox/.test(navigator.userAgent) ? firefoxUrl : chromeUrl
+                if (installUrl) {
+                  msg.push(' or ')
+                  msg.push(h('a', { attrs: { href: installUrl, target: '_blank' } }, 'click here to install extension'))
+                }
+              }
+
+              return h('div', msg)
+            }
+          })
+
+          return
+        }
+      }
+    }
+
+    if (['SecurityError'].includes(error.name)) {
+      this.onConnect()
+      return
+    }
+
+    this.$notify.error({
+      message: 'Connect wallet failed',
+      description: `${error.name}`
+    })
+  }
+
+  connect(name: string, wallet: WalletInfo) {
+    const { providerUrl } = wallet
+
+    const adapter = wallet.getAdapter(providerUrl)
+
+    if (adapter) {
+      // adapter.on('ready', onReady)
+      adapter.on('connect', this.onConnect)
+      adapter.on('disconnect', this.onDisconnect)
+      adapter.on('error', this.onWalletError)
+
+      this.connectingWallet = {
+        name,
+        adapter
+      }
+
+      adapter.connect()
+
+      return () => {
+        // adapter.off('ready', onReady)
+        adapter.off('connect', this.onConnect)
+        adapter.off('disconnect', this.onDisconnect)
+        adapter.off('error', this.onWalletError)
+      }
+    }
   }
 
   onWalletChange(_accountInfo: AccountInfo<Buffer>, context: Context): void {
@@ -383,6 +449,15 @@ export default class Wallet extends Vue {
   unsubWallet() {
     if (this.walletListenerId) {
       this.$web3.removeAccountChangeListener(this.walletListenerId)
+    }
+  }
+
+  debug() {
+    if (this.debugCount < 10) {
+      this.debugCount += 1
+    } else {
+      this.$router.push({ path: '/debug/' })
+      this.debugCount = 0
     }
   }
 
@@ -464,31 +539,8 @@ export default class Wallet extends Vue {
 .ant-modal-content {
   background-color: #1B2028;
 
-  .ant-modal-header{
-    background-color: #1B2028;
-  }
-  .ant-modal-title{
-    background-color: #1B2028;
-    text-align:center
-  }
   .ant-modal-close {
     color: @text-color;
-  }
-
-  button.ant-btn-background-ghost{
-    background-color: #2D3139 !important;
-    border: none !important;
-  }
-
-  .wallet-info .address{
-    border-radius: 7px;
-    background-color: #2D3139 !important;
-    padding-top: 15px;
-    padding-bottom: 15px;
-  }
-
-  .btncontainer{
-    display: inline-block !important;
   }
 }
 
@@ -501,6 +553,7 @@ export default class Wallet extends Vue {
     width: 100%;
     height: 48px;
     text-align: left;
+    margin-bottom: 10px;
 
     img {
       height: 32px;
@@ -508,23 +561,10 @@ export default class Wallet extends Vue {
       border-radius: 50%;
     }
   }
-
-  button:not(:first-child) {
-    margin-top: 10px;
-  }
-}
-</style>
-
-<style lang="less" scoped>
-.wallet-info {
-  text-align: center;
-
-  .address {
-    font-size: 17px;
-  }
 }
 
-  .btncontainer {
+  
+header .btncontainer {
     background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
     display: block;
     text-align: center;
@@ -546,6 +586,38 @@ export default class Wallet extends Vue {
   }
 
 
+  .ant-modal-header{
+    background-color: #1B2028;
+  }
+  .ant-modal-title{
+    background-color: #1B2028;
+    text-align:center
+  }
+
+</style>
+
+<style lang="less" scoped>
+.wallet-info {
+  text-align: center;
+}
+
+
+  button.ant-btn-background-ghost{
+    background-color: #2D3139 !important;
+    border: none !important;
+  }
+
+  .wallet-info .address{
+    border-radius: 7px;
+    background-color: #2D3139 !important;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-size: 17px;
+  }
+
+  .btncontainer{
+    display: inline-block !important;
+  }
 
 .tx-history-panel {
 display:none;
@@ -579,4 +651,3 @@ display:none;
   }
 }
 </style>
-

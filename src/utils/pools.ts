@@ -1,4 +1,5 @@
 import {
+  DEVNET_MODE,
   LIQUIDITY_POOL_PROGRAM_ID_V2,
   LIQUIDITY_POOL_PROGRAM_ID_V3,
   LIQUIDITY_POOL_PROGRAM_ID_V4,
@@ -182,11 +183,10 @@ export function canWrap(fromMintAddress: string, toMintAddress: string): boolean
 
 export function getPoolByLpMintAddress(lpMintAddress: string): LiquidityPoolInfo | undefined {
   const pool = LIQUIDITY_POOLS.find((pool) => pool.lp.mintAddress === lpMintAddress)
-
   if (pool) {
     return cloneDeep(pool)
   }
-
+  console.log(pool)
   return pool
 }
 
@@ -252,7 +252,33 @@ export function isOfficalMarket(marketAddress: string) {
   return false
 }
 
-export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = [
+export function getAllPools() {
+
+  const polo:any = []
+
+  LIQUIDITY_POOLS.forEach(function (value) {
+    let item = {
+      'name' : value.coin.name + ' - ' + value.pc.name,
+      'coin1' : value.coin,
+      'coin2' : value.pc,
+      'lp_mint' : value.lp.mintAddress,
+      'lp' : {
+        coin : cloneDeep(value.coin) ,
+        pc : cloneDeep(value.pc),
+        mintAddress : cloneDeep(value.lp.mintAddress)
+      }
+
+    };
+
+
+
+
+    polo.push(item);
+  });
+  return polo
+}
+
+export const LIQUIDITY_POOLS: LiquidityPoolInfo[] = DEVNET_MODE ? [] : [
   {
     name: 'RAY-WUSDT',
     coin: { ...TOKENS.RAY },

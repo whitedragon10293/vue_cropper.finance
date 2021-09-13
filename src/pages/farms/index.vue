@@ -89,6 +89,12 @@
             >
               <Row slot="header" class="farm-head" :class="isMobile ? 'is-mobile' : ''" :gutter="0">
                 <Col class="lp-icons" :span="isMobile ? 12 : 8">
+
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="label soon"> Soon </div>
+
+                  <div v-if="currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="label ended"> Ended </div>
+
+
                   <div class="icons">
                     <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
                     <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
@@ -97,21 +103,26 @@
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
                   <div class="title">{{ isMobile ? 'Reward' : 'Pending Reward' }}</div>
-                  <div class="value">{{ farm.userInfo.pendingReward.format() }}</div>
+                  
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
+                  <div v-else class="value">{{ farm.userInfo.pendingReward.format() }}</div>
                 </Col>
                 <Col v-if="!isMobile" class="state" :span="4">
                   <div class="title">Staked</div>
-                  <div class="value">
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
+                  <div v-else class="value">
                     {{ farm.userInfo.depositBalance.format() }}
                   </div>
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
                   <div class="title">Apr</div>
-                  <div class="value">{{ farm.farmInfo.apr }}%</div>
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="value"> - </div>
+                  <div v-else class="value">{{ farm.farmInfo.apr }}%</div>
                 </Col>
                 <Col v-if="!isMobile && poolType" class="state" :span="4">
                   <div class="title">Liquidity</div>
-                  <div class="value">
+                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="value"> - </div>
+                  <div v-else class="value">
                     ${{
                       Math.round(farm.farmInfo.liquidityUsdValue)
                         .toString()
@@ -181,7 +192,7 @@
                         <Icon type="minus" />
                       </Button>
                       </div>
-                      <div class="btncontainer">
+                      <div class="btncontainer" v-if="currentTimestamp < farm.farmInfo.poolInfo.end_timestamp && farm.farmInfo.poolInfo.start_timestamp < currentTimestamp">
                         <Button
                           size="large" 
                           ghost 
@@ -191,17 +202,23 @@
                           @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
                           {{
                             (!farm.farmInfo.poolInfo.is_allowed)?"Not Allowed":
-                            ((!(farm.farmInfo.poolInfo.end_timestamp >= currentTimestamp))?"Not Started":
-                          farm.farmInfo.poolInfo.start_timestamp >= currentTimestamp?"Ended":"Stake LP")
+                            (currentTimestamp > farm.farmInfo.poolInfo.end_timestamp?"Ended":
+                            farm.farmInfo.poolInfo.start_timestamp > currentTimestamp?"Unstarted":"Stake LP")
                           }}
                         </Button>
                       </div>
-                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed">
+
+                      <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="unstarted">
+                        <div class="token">
+                           {{ getCountdownFromPeriod(farm.farmInfo.poolInfo.start_timestamp - currentTimestamp) }}
+                        </div>
+                      </div>
+                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp">
                         <Button size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward
                         </Button>
                       </div>
-                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed">
+                      <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && !farm.farmInfo.poolInfo.is_allowed && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp">
                         <Button size="large" ghost @click="payFarmFee(farm)">
                           Pay Farm Fee
                         </Button>
@@ -228,7 +245,6 @@
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import { Tooltip, Progress, Collapse, Spin, Icon, Row, Col, Button, Radio } from 'ant-design-vue'
-
 import { get, cloneDeep } from 'lodash-es'
 import { TokenAmount } from '@/utils/safe-math'
 import { FarmInfo } from '@/utils/farms'
@@ -243,7 +259,6 @@ import { PublicKey } from '@solana/web3.js'
 import { DEVNET_MODE, FARM_PROGRAM_ID } from '@/utils/ids'
 import { TOKENS } from '@/utils/tokens'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
-
 const CollapsePanel = Collapse.Panel
 const RadioGroup = Radio.Group
 const RadioButton = Radio.Button
@@ -373,13 +388,17 @@ export default Vue.extend({
           
           const liquidityTotalSupply = getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther())
           const liquidityItemValue = liquidityTotalValue / liquidityTotalSupply
-          const liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue;
+          let liquidityUsdValue = getBigNumber(lp.balance.toEther()) * liquidityItemValue;
           let apr = ((rewardPerTimestampAmountTotalValue / liquidityUsdValue) * 100).toFixed(2)
-          if(liquidityUsdValue <= 0){
+          if(apr === "NaN" || apr === "Infinity"){
             apr = "0";
+          }
+          if(liquidityUsdValue === NaN){
+            liquidityUsdValue = 0;
           }
           // @ts-ignore
           newFarmInfo.apr = apr
+          
           // @ts-ignore
           newFarmInfo.liquidityUsdValue = liquidityUsdValue
 
@@ -410,15 +429,18 @@ export default Vue.extend({
             pendingReward: new TokenAmount(0, farmInfo.reward.decimals)
           }
         }
-
-        farms.push({
-          userInfo,
-          farmInfo: newFarmInfo
-        })
+        if((newFarmInfo as any).poolInfo.is_allowed > 0 || 
+          (newFarmInfo as any).poolInfo.owner.toBase58() === this.wallet.address){
+          farms.push({
+            userInfo,
+            farmInfo: newFarmInfo
+          })
+        }
+        
       }
 
       this.farms = farms.sort((a: any, b: any ) => (a.farmInfo.poolInfo.start_timestamp.toNumber() < b.farmInfo.poolInfo.start_timestamp.toNumber() ? -1 : 1));
-      console.log(this.farms);
+      //console.log(this.farms);
       this.endedFarmsPoolId = endedFarmsPoolId
     },
 
@@ -888,6 +910,19 @@ export default Vue.extend({
           this.$accessor.farm.requestInfos()
           this.harvesting = false
         })
+    },
+    getCountdownFromPeriod(period:number){
+      let remain = period;
+      let days = Math.floor(remain / ( 24 * 3600));
+      remain = remain % (24 * 3600);
+      let hours = Math.floor(remain / 3600);
+      remain = remain % 3600;
+      let minutes = Math.floor(remain / 60);
+      remain = remain % 60;
+      let seconds = remain;
+      
+      return ""+days+"d : "+hours + "h : "+minutes+"m";
+      
     }
   }
 })
@@ -965,6 +1000,17 @@ export default Vue.extend({
   }
 
   .start {
+    .unstarted {
+      .token {
+        font-weight: 600;
+        font-size: 20px;
+      }
+
+      .value {
+        font-size: 12px;
+      }
+    }
+    
     .unstake {
       margin-right: 10px;
     }
@@ -1096,6 +1142,25 @@ export default Vue.extend({
       border-color: transparent;
     }
 
+  }
+
+
+  .label.soon{
+      border: 1px solid #13d89d;
+      color:#13d89d;
+    position: absolute;
+    padding: 0 20px 0 20px;
+    border-radius: 3px;
+    right: 60px;
+  }
+
+  .label.ended{
+      border: 1px solid #f00;
+      color:#f00;
+    position: absolute;
+    padding: 0 20px 0 20px;
+    border-radius: 3px;
+    right: 60px;
   }
 
 main{

@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 
-export const DEVNET_MODE = false//true;
+export const DEVNET_MODE = true;// false//true;
 
 export const FIXED_FEE_ACCOUNT = new PublicKey('2Pv5mjmKYAtXNpr3mcsXf7HjtS3fieJeFoWPATVT5rWa')
 
