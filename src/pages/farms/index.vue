@@ -45,24 +45,22 @@
       title="Supply & Stake LP"
       :loading="staking"
       :farmInfo="farmInfo"
-      @onOk="stake"
+      @onOk="supplyAndStake"
       @onCancel="cancelStake"
     />
+    <StakeErrorModal 
+      v-if="stakeLPError"
+      @onRetry="onRetryStakeLP"
+      @onRemove="onRemoveLiquidity"
+      @onNothing="onNothing"
+    />
     
-    <!--CoinModal
-      v-if="stakeModalOpening"
-      title="Stake LP"
-      :coin="lp"
-      :loading="staking"
-      @onOk="stake"
-      @onCancel="cancelStake"
-    /-->
     <CoinModal
       v-if="unstakeModalOpening"
       title="Unstake LP"
       :coin="lp"
       :loading="unstaking"
-      @onOk="unstake"
+      @onOk="unstakeAndRemove"
       @onCancel="cancelUnstake"
     />
     <CoinModal
@@ -94,7 +92,7 @@
 
                   <div v-if="currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="label ended"> Ended </div>
 
-
+                  <div v-if="farm.labelized" class="labelized">LABELIZED</div>
                   <div class="icons">
                     <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
                     <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
@@ -300,7 +298,10 @@ export default Vue.extend({
       poolType: true,
       endedFarmsPoolId: [] as string[],
       showCollapse: [] as any[],
-      currentTimestamp: 0
+      currentTimestamp: 0,
+      tempInfo:null as any,
+      stakeLPError : false,
+      labelizedAmms:{} as any
     }
   },
 
@@ -349,8 +350,30 @@ export default Vue.extend({
 
   methods: {
     TokenAmount,
+    async updateLabelizedAmms()
+    {
+      this.labelizedAmms = {};
+      let responseData
+      try{
+        responseData = await fetch(
+          'https://api.cropper.finance/farms/'
+        ).then(res => res.json());
+      }
+      catch{
+        // dummy data
+        responseData = [{"ammID":"ADjGcPYAu5VZWdKwhqU3cLCgX733tEaGTYaXS2TsB2hF","labelized":true},{"ammID":"8j7uY3UiVkJprJnczC7x5c1S6kPYQnpxVUiPD7NBnKAo","labelized":true}]
+      }
+      finally{
+        responseData.forEach((element:any) => {
+          this.labelizedAmms[element.ammID] = element.labelized;
+        });
+        console.log(this.labelizedAmms)
+      }
+      
+    },
 
-    updateFarms() {
+    async updateFarms() {
+      await this.updateLabelizedAmms();
       this.currentTimestamp = moment().unix();
       const farms: any = []
       const endedFarmsPoolId: string[] = []
@@ -431,7 +454,15 @@ export default Vue.extend({
         }
         if((newFarmInfo as any).poolInfo.is_allowed > 0 || 
           (newFarmInfo as any).poolInfo.owner.toBase58() === this.wallet.address){
+          let labelized = false;
+          if(lp){
+            const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
+            if(this.labelizedAmms[liquidityItem.ammId]){
+              labelized = true;
+            }
+          }
           farms.push({
+            labelized,
             userInfo,
             farmInfo: newFarmInfo
           })
@@ -613,9 +644,7 @@ export default Vue.extend({
         })
       }
     },
-    stake(fromCoinAmount: string,toCoinAmount: string,fixedCoin: string) {
-
-      
+    supplyAndStake(fromCoinAmount: string,toCoinAmount: string,fixedCoin: string) {
       this.staking = true
 
       const conn = this.$web3
@@ -637,7 +666,9 @@ export default Vue.extend({
         message: 'Making transaction...',
         description: '',
         duration: 0
-      })
+      });
+
+      let txStatus = "";
       addLiquidity(
         conn,
         wallet,
@@ -665,68 +696,134 @@ export default Vue.extend({
         const description = `Add liquidity for ${fromCoinAmount} ${this.farmInfo.lp.coin?.symbol} and ${toCoinAmount} ${this.farmInfo.lp.pc?.symbol}`
         this.$accessor.transaction.sub({ txid, description })
 
-        let txStatus = this.$accessor.transaction.history[txid].status;
-        while(txStatus === "Pending"){
-          await this.delay(500);
+        txStatus = this.$accessor.transaction.history[txid].status;
+        let totalDelayTime = 0;
+        while(txStatus === "Pending" && totalDelayTime < 10000){
+          let delayTime = 500;
+          await this.delay(delayTime);
+          totalDelayTime += delayTime;
           txStatus = this.$accessor.transaction.history[txid].status;
-          await this.delay(500);
+          await this.delay(delayTime);
+          totalDelayTime += delayTime;
         }
         if(txStatus === "Fail"){
           console.log("add lp failed")
           return;
         }
+        //update wallet token account infos
+        this.$accessor.wallet.getTokenAccounts();
+        let delayForUpdate = 500;
+        await this.delay(delayForUpdate);
+
         let amount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.balance`)
-        //stake whole lp amount
-        amount = amount.wei.toNumber() / Math.pow(10,amount.decimals);
-        let delayTime = 0;
-        while(amount <= 0 && delayTime < 10000){ //after 4 seconds ,it's failed
-          await this.delay(200);
-          delayTime += 200;
-          amount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.balance`)
+        if(amount){
           amount = amount.wei.toNumber() / Math.pow(10,amount.decimals);
         }
+        else{
+          amount = 0;
+        }
+
+        totalDelayTime = 0;
+        while(amount <= 0 && totalDelayTime < 10000){ 
+          let dealyTime = 200;
+          await this.delay(dealyTime);
+          totalDelayTime += dealyTime;
+          amount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.balance`)
+          if(amount){
+            amount = amount.wei.toNumber() / Math.pow(10,amount.decimals);
+          }
+          else{
+            amount = 0;
+          }
+        }
+
         if(amount <= 0){
+          this.$notify.error({
+            key,
+            message: 'Add liquidity failed',
+            description: "Added LP token amount is 0"
+          })
           console.log("added lp amount is 0")
           return;
         }
 
-        deposit(conn, wallet, this.farmInfo, lpAccount, rewardAccount, infoAccount, amount)
-        .then((txid) => {
-          this.$notify.info({
-            key,
-            message: 'Transaction has been sent',
-            description: (h: any) =>
-              h('div', [
-                'Confirmation is in progress.  Check your transaction on ',
-                h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
-              ])
-          })
-
-          const description = `Stake ${amount} ${this.farmInfo.lp.name}`
-          this.$accessor.transaction.sub({ txid, description })
-        })
-        .catch((error) => {
-          this.$notify.error({
-            key,
-            message: 'Stake failed',
-            description: error.message
-          })
-        })
-        .finally(() => {
-          this.staking = false
-          this.stakeModalOpening = false
-          this.farmInfo = null
-        })
+        this.stakeLP(conn, wallet,this.farmInfo, lpAccount, rewardAccount, infoAccount, amount);
+        
       })
       .catch((error) => {
         this.$notify.error({
           key,
           message: 'Add liquidity failed',
           description: error.message
-        })
+        });
       })
       .finally(async () => {
       })
+    },
+    async stakeLP(conn:any, wallet:any,farmInfo:any,lpAccount:any, rewardAccount:any, infoAccount:any, amount:number){
+
+      const key = getUnixTs().toString()
+
+      deposit(conn, wallet, farmInfo, lpAccount, rewardAccount, infoAccount, amount)
+      .then((txid) => {
+        this.$notify.info({
+          key,
+          message: 'Transaction has been sent',
+          description: (h: any) =>
+            h('div', [
+              'Confirmation is in progress.  Check your transaction on ',
+              h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+            ])
+        })
+
+        const description = `Stake ${amount} ${this.farmInfo.lp.name}`
+        this.$accessor.transaction.sub({ txid, description })
+      })
+      .catch((error) => {
+        this.$notify.error({
+          key,
+          message: 'Stake failed',
+          description: error.message
+        });
+        this.tempInfo = {
+          conn:conn,
+          wallet:wallet,
+          farmInfo:farmInfo,
+          lpAccount:lpAccount,
+          rewardAccount:rewardAccount,
+          infoAccount:infoAccount,
+          amount:amount
+        };
+        this.stakeLPError = true;
+      })
+      .finally(() => {
+        this.staking = false
+        this.stakeModalOpening = false
+        this.farmInfo = null
+      })
+    },
+    onRetryStakeLP(){
+      this.stakeLPError = false;
+      if(!this.tempInfo)
+      {
+        return;
+      }
+
+      this.stakeLP(this.tempInfo.conn,this.tempInfo.wallet,this.tempInfo.farmInfo,this.tempInfo.lpAccount,this.tempInfo.rewardAccount,this.tempInfo.infoAccount,this.tempInfo.amount);
+      this.tempInfo = null;
+    },
+    onRemoveLiquidity(){
+      this.stakeLPError = false;
+      if(!this.tempInfo)
+      {
+        return;
+      }
+
+      const fromCoinAccount = get(this.wallet.tokenAccounts, `${this.tempInfo.farmInfo.lp.coin.mintAddress}.tokenAccountAddress`)
+      const toCoinAccount = get(this.wallet.tokenAccounts, `${this.tempInfo.farmInfo.lp.pc.mintAddress}.tokenAccountAddress`)
+      this.removeLP(this.tempInfo.conn,this.tempInfo.wallet,this.tempInfo.farmInfo.lp,this.tempInfo.lpAccount,fromCoinAccount,toCoinAccount,this.tempInfo.amount);
+
+      this.tempInfo = null;
     },
     async delay(ms: number) {
         return new Promise( resolve => setTimeout(resolve, ms) );
@@ -735,6 +832,10 @@ export default Vue.extend({
       this.lp = null
       this.farmInfo = null
       this.stakeModalOpening = false
+    },
+    onNothing(){
+      this.stakeLPError = false;
+      this.tempInfo = null;
     },
     cancelAddReward() {
       this.rewardCoin = null
@@ -751,7 +852,7 @@ export default Vue.extend({
       this.unstakeModalOpening = true
     },
 
-    unstake(amount: string) {
+    unstakeAndRemove(amount: string) {
       this.unstaking = true
 
       const conn = this.$web3
@@ -807,35 +908,7 @@ export default Vue.extend({
           }
           value = value.toString();
 
-          const poolInfo = get(this.liquidity.infos, lp.mintAddress);
-          //remove whole lp amount
-          removeLiquidity(conn, wallet, poolInfo, lpAccount, fromCoinAccount, toCoinAccount, value)
-          .then((txid) => {
-            this.$notify.info({
-              key,
-              message: 'Transaction has been sent',
-              description: (h: any) =>
-                h('div', [
-                  'Confirmation is in progress.  Check your transaction on ',
-                  h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
-                ])
-            })
-
-            const description = `Remove liquidity for ${value} ${lp.name}`
-
-            this.$accessor.transaction.sub({ txid, description })
-          })
-          .catch((error) => {
-            this.$notify.error({
-              key,
-              message: 'Remove liquidity failed',
-              description: error.message
-            })
-          })
-          .finally(() => {
-            this.unstaking = false
-            this.unstakeModalOpening = false
-          })
+          this.removeLP(conn, wallet,lp,lpAccount, fromCoinAccount, toCoinAccount, value);
 
         })
         .catch((error) => {
@@ -847,6 +920,38 @@ export default Vue.extend({
         })
         .finally(() => {
         })
+    },
+    removeLP(conn:any,wallet:any,lp:any,lpAccount:any, fromCoinAccount:any, toCoinAccount:any, value:any){
+      const key = getUnixTs().toString()
+      const poolInfo = get(this.liquidity.infos, lp.mintAddress);
+      //remove whole lp amount
+      removeLiquidity(conn, wallet, poolInfo, lpAccount, fromCoinAccount, toCoinAccount, value)
+      .then((txid) => {
+        this.$notify.info({
+          key,
+          message: 'Transaction has been sent',
+          description: (h: any) =>
+            h('div', [
+              'Confirmation is in progress.  Check your transaction on ',
+              h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+            ])
+        })
+
+        const description = `Remove liquidity for ${value} ${lp.name}`
+
+        this.$accessor.transaction.sub({ txid, description })
+      })
+      .catch((error) => {
+        this.$notify.error({
+          key,
+          message: 'Remove liquidity failed',
+          description: error.message
+        })
+      })
+      .finally(() => {
+        this.unstaking = false
+        this.unstakeModalOpening = false
+      })
     },
 
     cancelUnstake() {
@@ -1161,6 +1266,13 @@ export default Vue.extend({
     padding: 0 20px 0 20px;
     border-radius: 3px;
     right: 60px;
+  }
+
+  .labelized{
+    color:#13d89d;
+    position: absolute;
+    padding: 0 0 0 48px;
+    bottom:20px;
   }
 
 main{
