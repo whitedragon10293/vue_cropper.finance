@@ -104,10 +104,7 @@
           <Collapse v-model="showCollapse" expand-icon-position="right">
             <CollapsePanel
               v-for="farm in showFarms"
-              v-show="
-                (!endedFarmsPoolId.includes(farm.farmInfo.poolId) && !farm.farmInfo.legacy && poolType) ||
-                ((endedFarmsPoolId.includes(farm.farmInfo.poolId) || farm.farmInfo.legacy) && !poolType)
-              "
+              v-show="true"
               :key="farm.farmInfo.poolId"
               :show-arrow="poolType"
             >
@@ -490,7 +487,7 @@ export default Vue.extend({
           if(apr === "NaN" || apr === "Infinity"){
             apr = "0";
           }
-          if(liquidityUsdValue === NaN){
+          if(isNaN(liquidityUsdValue)){
             liquidityUsdValue = 0;
           }
           // @ts-ignore
@@ -500,7 +497,7 @@ export default Vue.extend({
           newFarmInfo.liquidityUsdValue = liquidityUsdValue
 
           if (rewardPerTimestampAmount.toEther().toString() === '0') {
-            endedFarmsPoolId.push(poolId)
+            //endedFarmsPoolId.push(poolId)
           }
         }
 
@@ -544,26 +541,31 @@ export default Vue.extend({
         
       }
 
-      this.farms = farms.sort((a: any, b: any ) => (a.farmInfo.poolInfo.start_timestamp.toNumber() < b.farmInfo.poolInfo.start_timestamp.toNumber() ? -1 : 1));
-      //console.log(this.farms);
+      this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
       this.endedFarmsPoolId = endedFarmsPoolId
-      this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly);
+      this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly, this.currentPage);
     },
     filterFarms(searchName:string, searchCertifiedFarm:number, searchLifeFarm:number, stakedOnly:boolean, pageNum:number = 1){
       this.currentPage = pageNum;
+      this.showFarms = this.farms;
 
-      if(searchName === ""){
-        this.showFarms = this.farms;
-      }
-      else{
+      //filter for not allowed famrs
+      this.showFarms = this.showFarms.filter((farm:any)=>
+                                              farm.farmInfo.poolInfo.is_allowed > 0 || 
+                                              (farm.farmInfo.poolInfo.owner.toBase58() === this.wallet.address &&
+                                              farm.farmInfo.poolInfo.is_allowed === 0));
+
+      if(searchName != ""){
         this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName));
       }
+
       if(searchCertifiedFarm == 0){//labelized
         this.showFarms = this.showFarms.filter((farm:any)=>farm.labelized);
       }
       else if(searchCertifiedFarm == 1){//permissionless
         this.showFarms = this.showFarms.filter((farm:any)=>!farm.labelized);
       }
+
       const currentTimestamp = moment().unix();
       if(searchLifeFarm == 0){//Opened
         this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.start_timestamp < currentTimestamp && farm.farmInfo.poolInfo.end_timestamp > currentTimestamp);
@@ -574,13 +576,15 @@ export default Vue.extend({
       else if(searchLifeFarm == 2){//Ended
         this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.end_timestamp < currentTimestamp);
       }
+
+      if(stakedOnly){
+        this.showFarms = this.showFarms.filter((farm:any)=>farm.userInfo.depositBalance.wei.toNumber() > 0);
+      }
+
       let max = this.showFarms.length;
       let start = (this.currentPage-1) * this.pageSize;
       let end = this.currentPage * this.pageSize < max ? this.currentPage * this.pageSize : max;
-      console.log(max,start,end)
-      if(start < max){
-        //this.showFarms = this.showFarms.slice(start, end);
-      }
+      this.showFarms = this.showFarms.slice(start, end);
       
 
     },
