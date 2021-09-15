@@ -75,9 +75,35 @@
     <div v-if="farm.initialized">
       <div class="card">
         <div class="card-body">
+          <div style="text-align: center; width: 100%">
+            <div style="width: 30%; display: inline-block">
+              <Input v-model="searchName" size="large" class="input-search" placeholder="search token symbol">
+                <Icon slot="prefix" type="search" />
+              </Input>
+            </div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 15%; display: inline-block">
+              <Select :options="certifiedOptions" v-model="searchCertifiedFarm" style="width:150px">
+              </Select>
+            </div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 15%; display: inline-block">
+              <Select :options="lifeOptions" v-model="searchLifeFarm" style="width:150px">
+              </Select>
+            </div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 15%; display: inline-block">
+              <div class="toggle">
+                <label class="label">Staked Only</label>
+                <Toggle v-model="stakedOnly" />
+              </div>
+            </div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 5%; display: inline-block"></div>
+          </div>
           <Collapse v-model="showCollapse" expand-icon-position="right">
             <CollapsePanel
-              v-for="farm in farms"
+              v-for="farm in showFarms"
               v-show="
                 (!endedFarmsPoolId.includes(farm.farmInfo.poolId) && !farm.farmInfo.legacy && poolType) ||
                 ((endedFarmsPoolId.includes(farm.farmInfo.poolId) || farm.farmInfo.legacy) && !poolType)
@@ -227,6 +253,12 @@
               </Row>
             </CollapsePanel>
           </Collapse>
+          <div style="text-align: center; width: 100%">
+            <div style="width: 80%; display: inline-block">
+              <Pagination :total="totalCount" :showTotal="(total, range) => `${range[0]}-${range[1]} of ${total} items`" :pageSize="pageSize" :defaultCurrent="1" v-model="currentPage">
+              </Pagination>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -242,7 +274,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import { Tooltip, Progress, Collapse, Spin, Icon, Row, Col, Button, Radio } from 'ant-design-vue'
+import { Tooltip, Progress, Collapse, Spin, Icon, Row, Col, Button, Radio, Input, Select, Switch as Toggle, Pagination } from 'ant-design-vue'
 import { get, cloneDeep } from 'lodash-es'
 import { TokenAmount } from '@/utils/safe-math'
 import { FarmInfo } from '@/utils/farms'
@@ -264,6 +296,8 @@ const RadioButton = Radio.Button
 export default Vue.extend({
   components: {
     Tooltip,
+    Toggle,
+    Input,
     Progress,
     Collapse,
     CollapsePanel,
@@ -271,7 +305,9 @@ export default Vue.extend({
     Icon,
     Row,
     Col,
-    Button
+    Button,
+    Select,
+    Pagination
   },
 
 //    ,
@@ -282,7 +318,9 @@ export default Vue.extend({
     return {
       isMobile: false,
 
-      farms: [] as any,
+      farms: [] as any[],
+      showFarms:[] as any[],
+      searchName:"",
 
       lp: null,
       rewardCoin: null,
@@ -301,7 +339,15 @@ export default Vue.extend({
       currentTimestamp: 0,
       tempInfo:null as any,
       stakeLPError : false,
-      labelizedAmms:{} as any
+      labelizedAmms:{} as any,
+      certifiedOptions:[{value:0,label:"Labelized"},{value:1,label:"Permissionless"},{value:2,label:"All"}],
+      lifeOptions:[{value:0,label:"Opened"},{value:1,label:"Future"},{value:2,label:"Ended"},{value:3,label:"All"}],
+      searchCertifiedFarm:0,
+      searchLifeFarm:0,
+      stakedOnly:false,
+      totalCount:110,
+      pageSize:10,
+      currentPage:1,
     }
   },
 
@@ -341,7 +387,37 @@ export default Vue.extend({
         }
       },
       deep: true
-    }
+    },
+    searchName:{
+      handler(newSearchName:string) {
+        this.filterFarms(newSearchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly);
+      },
+      deep: true
+    },
+    searchCertifiedFarm:{
+      handler(newSearchCertifiedFarm:any) {
+        this.filterFarms(this.searchName, newSearchCertifiedFarm, this.searchLifeFarm, this.stakedOnly);
+      },
+      deep: true
+    },
+    searchLifeFarm:{
+      handler(newSearchLifeFarm:any) {
+        this.filterFarms(this.searchName, this.searchCertifiedFarm, newSearchLifeFarm, this.stakedOnly);
+      },
+      deep: true
+    },
+    stakedOnly:{
+      handler(newStakedOnly:any) {
+        this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, newStakedOnly);
+      },
+      deep: true
+    },
+    currentPage:{
+      handler(newPage:number) {
+        this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly, newPage);
+      },
+      deep: true
+    },
   },
 
   mounted() {
@@ -367,9 +443,7 @@ export default Vue.extend({
         responseData.forEach((element:any) => {
           this.labelizedAmms[element.ammID] = element.labelized;
         });
-        console.log(this.labelizedAmms)
       }
-      
     },
 
     async updateFarms() {
@@ -473,6 +547,42 @@ export default Vue.extend({
       this.farms = farms.sort((a: any, b: any ) => (a.farmInfo.poolInfo.start_timestamp.toNumber() < b.farmInfo.poolInfo.start_timestamp.toNumber() ? -1 : 1));
       //console.log(this.farms);
       this.endedFarmsPoolId = endedFarmsPoolId
+      this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly);
+    },
+    filterFarms(searchName:string, searchCertifiedFarm:number, searchLifeFarm:number, stakedOnly:boolean, pageNum:number = 1){
+      this.currentPage = pageNum;
+
+      if(searchName === ""){
+        this.showFarms = this.farms;
+      }
+      else{
+        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName));
+      }
+      if(searchCertifiedFarm == 0){//labelized
+        this.showFarms = this.showFarms.filter((farm:any)=>farm.labelized);
+      }
+      else if(searchCertifiedFarm == 1){//permissionless
+        this.showFarms = this.showFarms.filter((farm:any)=>!farm.labelized);
+      }
+      const currentTimestamp = moment().unix();
+      if(searchLifeFarm == 0){//Opened
+        this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.start_timestamp < currentTimestamp && farm.farmInfo.poolInfo.end_timestamp > currentTimestamp);
+      }
+      else if(searchLifeFarm == 1){//Future
+        this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.start_timestamp > currentTimestamp);
+      }
+      else if(searchLifeFarm == 2){//Ended
+        this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.end_timestamp < currentTimestamp);
+      }
+      let max = this.showFarms.length;
+      let start = (this.currentPage-1) * this.pageSize;
+      let end = this.currentPage * this.pageSize < max ? this.currentPage * this.pageSize : max;
+      console.log(max,start,end)
+      if(start < max){
+        //this.showFarms = this.showFarms.slice(start, end);
+      }
+      
+
     },
 
     updateCurrentLp(newTokenAccounts: any) {
@@ -1303,5 +1413,8 @@ main{
 }
 .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child {
   border: 1px solid #d9d9d9;
+}
+.input-search{
+  border-radius: 5px;
 }
 </style>
