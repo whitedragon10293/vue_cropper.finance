@@ -77,7 +77,7 @@
         <div class="card-body">
           <div style="text-align: center; width: 100%">
             <div style="width: 30%; display: inline-block">
-              <Input v-model="searchName" size="large" class="input-search" placeholder="search token symbol">
+              <Input v-model="searchName" size="large" class="input-search" placeholder="search by name">
                 <Icon slot="prefix" type="search" />
               </Input>
             </div>
@@ -95,7 +95,7 @@
             <div style="width: 15%; display: inline-block">
               <div class="toggle">
                 <label class="label">Staked Only</label>
-                <Toggle v-model="stakedOnly" />
+                <Toggle v-model="stakedOnly" :disabled="!wallet.connected || searchLifeFarm === 1" />
               </div>
             </div>
             <div style="width: 5%; display: inline-block"></div>
@@ -580,6 +580,8 @@ export default Vue.extend({
       if(stakedOnly){
         this.showFarms = this.showFarms.filter((farm:any)=>farm.userInfo.depositBalance.wei.toNumber() > 0);
       }
+
+      this.totalCount = this.showFarms.length;
 
       let max = this.showFarms.length;
       let start = (this.currentPage-1) * this.pageSize;
