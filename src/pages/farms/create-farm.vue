@@ -170,6 +170,9 @@
               >$$
             </div>
             <div>Input Serum Market ID:</div>
+            <div>CRP/USDC: HPU7v2yCGM6sRujWEMaTPiiiX2qMb6fun3eWjTzSgSw1</div>
+            <div>CRP/USDT: 3iCYi5bQxXN5X4omCxME1jj9D91vNpYYqzbiSw9u7tcG</div>
+            <div>B2B/CRP: 2hEeVE354k6mpvHvzg8K8HvEAkL9HUMiZbcjarkuy7W7</div>
           </Col>
           <Col style="line-height: 20px" :span="24"><input v-model="inputMarket" :disabled="!marketInputFlag" /></Col>
 
@@ -903,45 +906,45 @@ export default class CreatePool extends Vue {
   async getMarketMsg() {
 
     //@zhaohui
-    this.getMarketLoading = true
+    // this.getMarketLoading = true
 
-    let market_t = {
-      address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-      baseMintAddress: new PublicKey(TOKENS.B2B.mintAddress),
-      quoteMintAddress: new PublicKey(TOKENS.CRP.mintAddress),
-      tickSize: 5,
-      minOrderSize: 10
-    }
-
-    this.expectAmmId = (
-        await createAssociatedId(
-          new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
-          new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-          AMM_ASSOCIATED_SEED
-        )
-      ).toString()
-
-    let price_t = 3.5, baseMintDecimals_t = 9, quoteMintDecimals_t = 9
-    this.stepsStatus = 'process'
-    this.stepTitleInputMarket = 'Import Serum Market ID'
-    this.current = 2
-    this.marketMsg = market_t
-    this.marketPrice = price_t
-    this.marketTickSize = getBigNumber(new BigNumber(market_t.tickSize))
-    this.baseMintDecimals = baseMintDecimals_t
-    this.quoteMintDecimals = quoteMintDecimals_t
-    this.marketStr = this.inputMarket
-    this.getMarketLoading = false
-
-    // let market_info = {
+    // let market_t = {
     //   address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
-    //   baseMintAddress: new PublicKey(TOKENS.USDT.mintAddress),
+    //   baseMintAddress: new PublicKey(TOKENS.B2B.mintAddress),
     //   quoteMintAddress: new PublicKey(TOKENS.CRP.mintAddress),
-    //   ammId: new PublicKey('3gSjs6MqyHFsp8DXvaKvVUJjV7qg5itf9qmUGuhnSaWH')
+    //   tickSize: 5,
+    //   minOrderSize: 10
     // }
 
-    // createAmm(this.$web3, this.$wallet, market_info, 0.5, 1)
-    return;
+    // this.expectAmmId = (
+    //     await createAssociatedId(
+    //       new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V4),
+    //       new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
+    //       AMM_ASSOCIATED_SEED
+    //     )
+    //   ).toString()
+
+    // let price_t = 3.5, baseMintDecimals_t = 9, quoteMintDecimals_t = 9
+    // this.stepsStatus = 'process'
+    // this.stepTitleInputMarket = 'Import Serum Market ID'
+    // this.current = 2
+    // this.marketMsg = market_t
+    // this.marketPrice = price_t
+    // this.marketTickSize = getBigNumber(new BigNumber(market_t.tickSize))
+    // this.baseMintDecimals = baseMintDecimals_t
+    // this.quoteMintDecimals = quoteMintDecimals_t
+    // this.marketStr = this.inputMarket
+    // this.getMarketLoading = false
+
+    // // let market_info = {
+    // //   address: new PublicKey('9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT'),
+    // //   baseMintAddress: new PublicKey(TOKENS.USDT.mintAddress),
+    // //   quoteMintAddress: new PublicKey(TOKENS.CRP.mintAddress),
+    // //   ammId: new PublicKey('3gSjs6MqyHFsp8DXvaKvVUJjV7qg5itf9qmUGuhnSaWH')
+    // // }
+
+    // // createAmm(this.$web3, this.$wallet, market_info, 0.5, 1)
+    // return;
 
     this.getMarketLoading = true
     this.marketInputFlag = !this.marketInputFlag
