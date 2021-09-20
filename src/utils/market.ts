@@ -95,7 +95,7 @@ export async function getMarket(conn: any, marketAddress: string): Promise<any |
     }
     if (!coinOrPcInTokenFlag) {
       throw new Error(
-        'Only markets that contain USDC, USDT, SOL, RAY, or SRM as the Quote Token are currently supported.'
+        'Only markets that contain USDC, USDT, SOL, CRP, or SRM as the Quote Token are currently supported.'
       )
     }
     const asks: number[] = []
