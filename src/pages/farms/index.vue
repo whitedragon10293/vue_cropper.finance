@@ -111,9 +111,9 @@
               <Row slot="header" class="farm-head" :class="isMobile ? 'is-mobile' : ''" :gutter="0">
                 <Col class="lp-icons" :span="isMobile ? 12 : 8">
 
-                  <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="label soon"> Soon </div>
-
                   <div v-if="currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="label ended"> Ended </div>
+                  <div v-if="currentTimestamp < farm.farmInfo.poolInfo.start_timestamp && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp" class="label soon"> Soon </div>
+
 
                   <div v-if="farm.labelized" class="labelized">LABELIZED</div>
                   <div class="icons">
@@ -419,6 +419,17 @@ export default Vue.extend({
 
   mounted() {
     this.updateFarms()
+
+    var hash = window.location.hash;
+    if (hash) {
+      hash = hash.substring(1);
+      this.searchName = hash;
+      if(this.searchName){
+        this.searchCertifiedFarm = 2;
+        this.searchLifeFarm = 3;
+      }
+    }
+
   },
 
   methods: {
@@ -555,8 +566,10 @@ export default Vue.extend({
                                               (farm.farmInfo.poolInfo.owner.toBase58() === this.wallet.address &&
                                               farm.farmInfo.poolInfo.is_allowed === 0));
 
-      if(searchName != ""){
-        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName));
+      if(searchName != "" && this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase())){
+        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase());
+      } else if(searchName != ""){
+        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName.toLowerCase()));
       }
 
       if(searchCertifiedFarm == 0){//labelized
