@@ -126,13 +126,13 @@
                   <div class="title">{{ isMobile ? 'Reward' : 'Pending Reward' }}</div>
                   
                   <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
-                  <div v-else class="value">{{ farm.userInfo.pendingReward.format() }}</div>
+                  <div v-else class="value">{{ !wallet.connected ? 0 : farm.userInfo.pendingReward.format() }}</div>
                 </Col>
                 <Col v-if="!isMobile" class="state" :span="4">
                   <div class="title">Staked</div>
                   <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
                   <div v-else class="value">
-                    {{ farm.userInfo.depositBalance.format() }}
+                    {{ !wallet.connected ? 0 : farm.userInfo.depositBalance.format() }}
                   </div>
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
@@ -177,7 +177,7 @@
                     <div class="title">Pending Reward</div>
                     <div class="pending fs-container">
                       <div class="reward">
-                        <div class="token">{{ farm.farmInfo.reward.symbol }} {{ farm.userInfo.pendingReward.format() }}</div>
+                        <div class="token">{{ !wallet.connected ? 0 : farm.farmInfo.reward.symbol }} {{ farm.userInfo.pendingReward.format() }}</div>
                       </div>
                       <div class="btncontainer">
                         <Button
