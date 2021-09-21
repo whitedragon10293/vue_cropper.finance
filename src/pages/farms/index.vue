@@ -196,7 +196,8 @@
 
                 <Col :span="isMobile ? 24 : 10">
                   <div class="start">
-                    <div class="title">Start farming</div>
+                    <div class="title">Start farming 
+                      <Icon type="twitter" /></div>
                     <div v-if="!wallet.connected" @click="$accessor.wallet.openModal" class="btncontainer">
                     <Button size="large" ghost>
                       Connect Wallet
@@ -234,6 +235,9 @@
                            {{ getCountdownFromPeriod(farm.farmInfo.poolInfo.start_timestamp - currentTimestamp) }}
                         </div>
                       </div>
+
+
+
                       <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp">
                         <Button size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward

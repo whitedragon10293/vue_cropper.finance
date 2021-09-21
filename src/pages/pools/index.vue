@@ -484,6 +484,7 @@ export default class Pools extends Vue {
 
       }
     });
+    console.log(polo);
     return polo
   }
 

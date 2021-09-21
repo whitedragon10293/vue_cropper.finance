@@ -479,7 +479,8 @@ export default class CreatePool extends Vue {
   isCRPTokenPair:boolean = false
   ammIdSelectShow:boolean = false
   ammIdSelectList: any = []
-  
+
+  farmId: any = null  
   current: number = 0
   
   marketInputFlag: boolean = true
@@ -715,7 +716,8 @@ export default class CreatePool extends Vue {
         }
         loopCount++;
       }
-      
+
+      this.farmId = createdFarm.farmId
       let fetchedFarm = await YieldFarm.loadFarm(
         connection,
         createdFarm.farmId,
@@ -739,7 +741,9 @@ export default class CreatePool extends Vue {
   }
  
   gotoFarms(){
-    this.$router.push({ path: `/farms` })
+    this.$accessor.farm.requestInfos()
+    this.$accessor.wallet.getTokenAccounts()
+    this.$router.push({ path: `/farms/#${this.farmId}` })
   }
   goToFarmInfo(){
     this.current ++;
