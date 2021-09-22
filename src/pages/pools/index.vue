@@ -480,30 +480,33 @@ export default class Pools extends Vue {
 
       value.liquidity = liquidityTotalValue;
 
+      if(window.poolsDatas){
 
-    if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['1day']){
-      value.volume_24h = window.poolsDatas[value.ammId]['1day'];
-    } else {
-      value.volume_24h = 0;
-    }
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['1day']){
+          value.volume_24h = window.poolsDatas[value.ammId]['1day'];
+        } else {
+          value.volume_24h = 0;
+        }
 
-    if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['7day']){
-      value.volume_7d = window.poolsDatas[value.ammId]['7day'];
-    } else {
-      value.volume_7d = 0;
-    }
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['7day']){
+          value.volume_7d = window.poolsDatas[value.ammId]['7day'];
+        } else {
+          value.volume_7d = 0;
+        }
 
-    if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
-      value.fee_24h = window.poolsDatas[value.ammId]['fees'];
-    } else {
-      value.fee_24h = 0;
-    }
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
+          value.fee_24h = window.poolsDatas[value.ammId]['fees'];
+        } else {
+          value.fee_24h = 0;
+        }
 
-    if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
-      value.apy = window.poolsDatas[value.ammId]['fees'] * 365 / liquidityTotalValue;
-    } else {
-      value.apy = 0;
-    }
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
+          value.apy = window.poolsDatas[value.ammId]['fees'] * 365 / liquidityTotalValue;
+        } else {
+          value.apy = 0;
+        }
+
+      }
 
     
 
