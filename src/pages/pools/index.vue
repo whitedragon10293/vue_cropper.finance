@@ -70,10 +70,10 @@
             <span>{{ pool.name }}</span>
           </span>
           <span slot="liquidity" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }}</span>
-          <span slot="volume_24h" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }} (?)</span>
-          <span slot="volume_7d" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }} (?)</span>
-          <span slot="fee_24h" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }} (?)</span>
-          <span slot="apy" slot-scope="text"> {{ new TokenAmount(text, 2, false).format() }}% (?)</span>
+          <span slot="volume_24h" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }}</span>
+          <span slot="volume_7d" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }}</span>
+          <span slot="fee_24h" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }}</span>
+          <span slot="apy" slot-scope="text"> {{ new TokenAmount(text, 2, false).format() }}%</span>
           <span slot="current" slot-scope="text"> ${{ new TokenAmount(text, 2, false).format() }}</span>
           <span slot="apu" slot-scope="text, pool"  >{{ text }} 
 
@@ -113,9 +113,11 @@ import { getBigNumber } from '@/utils/layouts'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
 import { LiquidityPoolInfo } from '@/utils/pools'
 import { getUnixTs } from '@/utils'
+import { DEVNET_MODE } from '../../utils/ids'
 const RadioGroup = Radio.Group
 const poolAdd = false
 const RadioButton = Radio.Button
+declare const window: any;
 @Component({
   head: {
     title: 'Cropper Finance Pools'
@@ -148,6 +150,20 @@ const RadioButton = Radio.Button
     Icon
   },
   async asyncData({ $api }) {
+
+    window.poolsDatas = {} as any;
+
+    try{
+      window.poolsDatas = await fetch(
+        DEVNET_MODE ? 'https://api.croppppp.com/' : 'https://api.cropper.finance/pools/'
+      ).then(res => res.json());
+    }
+    catch{
+      window.poolsDatas = []
+    } finally{
+
+    }
+
     const pools = getAllPools()
     return { pools }
   }
@@ -464,6 +480,36 @@ export default class Pools extends Vue {
 
 
       value.liquidity = liquidityTotalValue;
+
+      if(!window.poolsDatas){
+        window.poolsDatas = {}
+      }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['1day']){
+          value.volume_24h = window.poolsDatas[value.ammId]['1day'];
+        } else {
+          value.volume_24h = 0;
+        }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['7day']){
+          value.volume_7d = window.poolsDatas[value.ammId]['7day'];
+        } else {
+          value.volume_7d = 0;
+        }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
+          value.fee_24h = window.poolsDatas[value.ammId]['fees'];
+        } else {
+          value.fee_24h = 0;
+        }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
+          value.apy = window.poolsDatas[value.ammId]['fees'] * 365 / liquidityTotalValue;
+        } else {
+          value.apy = 0;
+        }
+
+    
 
       if(liquidityPcValue != 0 && liquidityCoinValue != 0){
 
