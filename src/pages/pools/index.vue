@@ -480,7 +480,9 @@ export default class Pools extends Vue {
 
       value.liquidity = liquidityTotalValue;
 
-      if(window.poolsDatas){
+      if(!window.poolsDatas){
+        window.poolsDatas = {}
+      }
 
         if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['1day']){
           value.volume_24h = window.poolsDatas[value.ammId]['1day'];
@@ -505,8 +507,6 @@ export default class Pools extends Vue {
         } else {
           value.apy = 0;
         }
-
-      }
 
     
 
