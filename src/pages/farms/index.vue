@@ -177,7 +177,7 @@
                     <div class="title">Pending Reward</div>
                     <div class="pending fs-container">
                       <div class="reward">
-                        <div class="token">{{ !wallet.connected ? 0 : farm.farmInfo.reward.symbol }} {{ farm.userInfo.pendingReward.format() }}</div>
+                        <div class="token">{{ farm.farmInfo.reward.symbol }} {{ !wallet.connected ? 0 : farm.userInfo.pendingReward.format() }}</div>
                       </div>
                       <div class="btncontainer">
                         <Button
@@ -196,8 +196,7 @@
 
                 <Col :span="isMobile ? 24 : 10">
                   <div class="start">
-                    <div class="title">Start farming 
-                      <Icon type="twitter" /></div>
+                    <div class="title">Start farming</div>
                     <div v-if="!wallet.connected" @click="$accessor.wallet.openModal" class="btncontainer">
                     <Button size="large" ghost>
                       Connect Wallet
@@ -236,8 +235,6 @@
                         </div>
                       </div>
 
-
-
                       <div class="btncontainer" v-if="farm.farmInfo.poolInfo.owner.toBase58() == wallet.address && farm.farmInfo.poolInfo.is_allowed && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp">
                         <Button size="large" ghost @click="openAddRewardModal(farm)">
                           Add Reward
@@ -249,6 +246,14 @@
                         </Button>
                       </div>
                     </div>
+
+                      <div class="btncontainer">
+                        <a target="_blank" :href=farm.farmInfo.twitterShare>
+                          <Button size="large" ghost>   
+                            Share
+                          </Button>
+                        </a>
+                      </div>
                   </div>
                 </Col>
               </Row>
@@ -428,12 +433,15 @@ export default Vue.extend({
     if (hash) {
       hash = hash.substring(1);
       this.searchName = hash;
-      if(this.searchName){
-        this.searchCertifiedFarm = 2;
-        this.searchLifeFarm = 3;
-      }
+    } else {
+      const query = new URLSearchParams(window.location.search);
+      this.searchName = query.get('s');
     }
 
+    if(this.searchName){
+      this.searchCertifiedFarm = 2;
+      this.searchLifeFarm = 3;
+    }
   },
 
   methods: {
@@ -507,7 +515,7 @@ export default Vue.extend({
           }
           // @ts-ignore
           newFarmInfo.apr = apr
-          
+
           // @ts-ignore
           newFarmInfo.liquidityUsdValue = liquidityUsdValue
 
@@ -547,6 +555,9 @@ export default Vue.extend({
               labelized = true;
             }
           }
+
+          newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
+
           farms.push({
             labelized,
             userInfo,
