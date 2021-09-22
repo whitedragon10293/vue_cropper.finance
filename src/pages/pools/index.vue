@@ -504,7 +504,7 @@ export default class Pools extends Vue {
         }
 
         if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
-          value.apy = window.poolsDatas[value.ammId]['fees'] * 365 / liquidityTotalValue;
+          value.apy = window.poolsDatas[value.ammId]['fees'] * 365 * 100 / liquidityTotalValue;
         } else {
           value.apy = 0;
         }
