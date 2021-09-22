@@ -1,6 +1,6 @@
 <template>
   <Modal
-    title="Confirm the AMM ID of the pool you wish to trade"
+    title="Confirm the AMM ID"
     :visible="show"
     :footer="null"
     :mask-closable="false"
@@ -22,7 +22,7 @@
           <div>
             <span
               >{{ liquidity.ammId
-              }}<span style="color: red">{{ !liquidity.official ? ' (Permissionless)' : '(Official)' }}</span></span
+              }}</span
             >
           </div>
 
@@ -35,7 +35,7 @@
           </div>
         </div>
       </div>
-      <Button v-if="userClose" size="large" ghost @click="$emit('onSelect', undefined)">Cancel</Button>
+      <Button v-if="userClose" size="large" ghost @click="$emit('onSelect', undefined)">Create a new one</Button>
     </div>
   </Modal>
 </template>

@@ -131,7 +131,7 @@
               </Button>
             </div>
           </Col>
-          <Col style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
+          <Col v-if="userCreateAmmId===''" style="line-height: 20px" :span="24" :class="isMobile ? 'item-title-mobile' : 'item-title'"
             ><br />
             <div><b>Option 2 - Create new AMM ID:</b></div>
           </Col>
@@ -760,12 +760,16 @@ export default class CreatePool extends Vue {
     this.current = 5;
   }
   createNewAMMID(){
+    this.userCreateAmmId = ''
     this.current++;
   }
   onAmmIdSelect(liquidityInfo: LiquidityPoolInfo | undefined) {
     this.ammIdSelectShow = false
     if (liquidityInfo) {
       this.userCreateAmmId = liquidityInfo.ammId
+    } else {
+      this.userCreateAmmId = ''
+      this.current++;
     }
   }
   openFromCoinSelect() {
@@ -1021,7 +1025,6 @@ export default class CreatePool extends Vue {
 
     createAmm(this.$web3, this.$wallet, this.marketMsg, this.inputBaseValue, this.inputQuoteValue)
       .then(async (data) => {
-        this.current = 4
         this.stepsStatus = 'process'
         this.userCreateAmmId = data
         if (localStorage.getItem('userCreateAMMID') !== null) {
@@ -1039,6 +1042,7 @@ export default class CreatePool extends Vue {
         this.updateLocalData()
         this.createAmmFlag = true
         await this.$accessor.liquidity.requestInfos()
+        this.current = 5
       })
       .catch((error) => {
         this.stepsStatus = 'error'
