@@ -478,13 +478,10 @@ export default class Pools extends Vue {
         } else {
           value.current = 0;
         }
-
-
         polo.push(value);
 
       }
     });
-    console.log(polo);
     return polo
   }
 
