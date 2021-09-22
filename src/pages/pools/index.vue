@@ -117,6 +117,7 @@ import { DEVNET_MODE } from '../../utils/ids'
 const RadioGroup = Radio.Group
 const poolAdd = false
 const RadioButton = Radio.Button
+declare const window: any;
 @Component({
   head: {
     title: 'Cropper Finance Pools'
