@@ -435,6 +435,7 @@ export default Vue.extend({
       this.searchName = hash;
     } else {
       const query = new URLSearchParams(window.location.search);
+      if(query.get('s'))
       this.searchName = query.get('s');
     }
 
@@ -556,7 +557,7 @@ export default Vue.extend({
             }
           }
 
-          newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
+          (newFarmInfo as any).twitterShare = `http://twitter.com/share?text=Earn ${(newFarmInfo as any).reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${(newFarmInfo as any).poolId} &hashtags=${(newFarmInfo as any).lp.coin.symbol},${(newFarmInfo as any).lp.pc.symbol},yieldfarming,Solana`
 
           farms.push({
             labelized,
