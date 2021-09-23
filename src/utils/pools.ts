@@ -257,7 +257,7 @@ export function getAllPools() {
   const polo:any = []
 
   LIQUIDITY_POOLS.forEach(function (value) {
-  console.log(value);
+
     let item = {
       'name' : value.coin.name + ' - ' + value.pc.name,
       'coin1' : value.coin,
@@ -271,9 +271,6 @@ export function getAllPools() {
       'ammId' : value.ammId
 
     };
-
-
-
 
     polo.push(item);
   });

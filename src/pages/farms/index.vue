@@ -136,7 +136,17 @@
                   </div>
                 </Col>
                 <Col class="state" :span="isMobile ? 6 : 4">
-                  <div class="title">Apr</div>
+                  <div class="title">Total Apr 
+                    <Tooltip placement="right" v-if="!(farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp)">
+                      <template slot="title">
+                        <div>
+                          Farm APR : {{farm.farmInfo.apr_details.apr}}%<br />
+                          Fees : {{farm.farmInfo.apr_details.apy}}%
+                        </div>
+                      </template>
+                      <Icon type="question-circle" />
+                    </Tooltip>
+                  </div>
                   <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="value"> - </div>
                   <div v-else class="value">{{ farm.farmInfo.apr }}%</div>
                 </Col>
@@ -346,6 +356,7 @@ export default Vue.extend({
       tempInfo:null as any,
       stakeLPError : false,
       labelizedAmms:{} as any,
+      poolsDatas:{} as any,
       certifiedOptions:[{value:0,label:"Labelized"},{value:1,label:"Permissionless"},{value:2,label:"All"}],
       lifeOptions:[{value:0,label:"Opened"},{value:1,label:"Future"},{value:2,label:"Ended"},{value:3,label:"All"}],
       searchCertifiedFarm:0,
@@ -435,6 +446,7 @@ export default Vue.extend({
       this.searchName = hash;
     } else {
       const query = new URLSearchParams(window.location.search);
+      if(query.get('s'))
       this.searchName = query.get('s') as string;
     }
 
@@ -464,6 +476,18 @@ export default Vue.extend({
           this.labelizedAmms[element.ammID] = element.labelized;
         });
       }
+
+      try{
+        this.poolsDatas = await fetch(
+          DEVNET_MODE ? 'https://api.croppppp.com/' : 'https://api.cropper.finance/pools/'
+        ).then(res => res.json());
+      }
+      catch{
+        this.poolsDatas = []
+      } finally{
+        // nothing to do ..
+      }
+
     },
 
     async updateFarms() {
@@ -480,7 +504,7 @@ export default Vue.extend({
         // @ts-ignore
         const { reward, lp } = farmInfo
 
-        const newFarmInfo = cloneDeep(farmInfo)
+        const newFarmInfo: any = cloneDeep(farmInfo)
 
         if (reward && lp) {
           const rewardPerTimestampAmount = new TokenAmount(getBigNumber(reward_per_timestamp), reward.decimals)
@@ -515,6 +539,18 @@ export default Vue.extend({
           }
           // @ts-ignore
           newFarmInfo.apr = apr
+
+          newFarmInfo.apr_details = {
+              'apr' : Math.round((apr as any) * 100) / 100,
+              'apy' : 0
+          } as any
+
+          if(this.poolsDatas[liquidityItem.ammId] && this.poolsDatas[liquidityItem.ammId]['fees'] && liquidityTotalValue > 0){
+            let apy = this.poolsDatas[liquidityItem.ammId]['fees'] * 365 * 100 / liquidityTotalValue;
+            newFarmInfo.apr = Math.round((((apr as any) * 1) - ((apy as any) * -1)) * 100) / 100;
+            newFarmInfo.apr_details.apy = Math.round(apy * 100) / 100;
+          }
+
 
           // @ts-ignore
           newFarmInfo.liquidityUsdValue = liquidityUsdValue
@@ -556,7 +592,7 @@ export default Vue.extend({
             }
           }
 
-          (newFarmInfo as any).twitterShare = `http://twitter.com/share?text=Earn ${(newFarmInfo as any).reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${(newFarmInfo as any).poolId} &hashtags=${(newFarmInfo as any).lp.coin.symbol},${(newFarmInfo as any).lp.pc.symbol},yieldfarming,Solana`
+          (newFarmInfo as any).twitterShare = `http://twitter.com/share?text=Earn ${(newFarmInfo as any).reward.name} with our new farm on @CropperFinance&url=https://cropper.finance/farms/?s=${(newFarmInfo as any).poolId} &hashtags=${(newFarmInfo as any).lp.coin.symbol},${(newFarmInfo as any).lp.pc.symbol},yieldfarming,Solana`
 
           farms.push({
             labelized,
@@ -581,10 +617,10 @@ export default Vue.extend({
                                               (farm.farmInfo.poolInfo.owner.toBase58() === this.wallet.address &&
                                               farm.farmInfo.poolInfo.is_allowed === 0));
 
-      if(searchName != "" && this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase())){
-        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase());
+      if(searchName != "" && this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase())){
+        this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase());
       } else if(searchName != ""){
-        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName.toLowerCase()));
+        this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase().includes((searchName as string).toLowerCase()));
       }
 
       if(searchCertifiedFarm == 0){//labelized

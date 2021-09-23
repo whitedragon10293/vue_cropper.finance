@@ -500,3 +500,14 @@ export const actions = actionTree(
     }
   }
 )
+
+export const getTotalSupply = async (
+  conn:any, 
+  mintAddress:string
+) =>{
+  const info = await conn.getAccountInfo(new PublicKey(mintAddress))
+  const data = Buffer.from(info.data)
+  const parsed = MINT_LAYOUT.decode(data)
+  let total_supply = new TokenAmount(getBigNumber(parsed.supply), parsed.decimals).fixed()
+  return total_supply
+}

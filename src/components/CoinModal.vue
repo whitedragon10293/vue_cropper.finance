@@ -38,7 +38,7 @@
       <Col :span="12">
         <Button
           :loading="loading"
-          :disabled="loading || isNullOrZero(value) || !lte(value, coin.balance.toEther())"
+          :disabled="loading || isNullOrZero(value) || !lte(value, coin.balance.toEther()) || !validateTotalSupply()"
           ghost
           @click="$emit('onOk', value)"
         >
@@ -55,7 +55,8 @@ import { Modal, Row, Col, Button } from 'ant-design-vue'
 
 import { inputRegex, escapeRegExp } from '@/utils/regex'
 import { lt, lte, isNullOrZero } from '@/utils/safe-math'
-
+import {getTotalSupply} from '@/store/liquidity'
+const MIN_LP_SUPPLY = 0.001
 // fix: Failed to resolve directive: ant-portal
 Vue.use(Modal)
 
@@ -87,7 +88,6 @@ export default Vue.extend({
       value: ''
     }
   },
-
   watch: {
     // input amount change
     value(newValue: string, oldValue: string) {
@@ -103,9 +103,42 @@ export default Vue.extend({
     lt,
     lte,
     isNullOrZero,
+    validateTotalSupply()
+    {
+      if(this.title == "Remove Liquidity")
+      {
+        const lp_info = Object(this.$accessor.liquidity.infos)[this.coin.mintAddress]
+        if(lp_info)
+        {
+            const totalSupply = lp_info.lp.totalSupply.fixed()
+            const res = parseFloat(this.value) <= (parseFloat(totalSupply)  - MIN_LP_SUPPLY)//
+            return res
+        }
+        else
+        {
+          return false
+        }
+      }
+      return true
+    },
 
-    setMax() {
-      this.value = this.coin.balance.fixed()
+    setMax() 
+    {
+
+      if(this.title == "Remove Liquidity")
+      {
+        let self = this
+
+        const lp_info = Object(this.$accessor.liquidity.infos)[this.coin.mintAddress]
+        if(lp_info){
+          const totalSupply = lp_info.lp.totalSupply.fixed()
+          self.value = "" + Math.min(parseFloat(self.coin.balance.fixed()), parseFloat(totalSupply)  - MIN_LP_SUPPLY)
+        }
+      }
+      else
+      {
+        this.value = this.coin.balance.fixed()
+      }
     }
   }
 })
