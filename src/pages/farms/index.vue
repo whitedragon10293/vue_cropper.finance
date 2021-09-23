@@ -435,6 +435,7 @@ export default Vue.extend({
       this.searchName = hash;
     } else {
       const query = new URLSearchParams(window.location.search);
+      if(query.get('s'))
       this.searchName = query.get('s') as string;
     }
 
@@ -581,10 +582,10 @@ export default Vue.extend({
                                               (farm.farmInfo.poolInfo.owner.toBase58() === this.wallet.address &&
                                               farm.farmInfo.poolInfo.is_allowed === 0));
 
-      if(searchName != "" && this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase())){
-        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase());
+      if(searchName != "" && this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase())){
+        this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase());
       } else if(searchName != ""){
-        this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName.toLowerCase()));
+        this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase().includes((searchName as string).toLowerCase()));
       }
 
       if(searchCertifiedFarm == 0){//labelized
