@@ -82,7 +82,6 @@
                     class="button_div"
                     v-if="wallet.connected"
                     style="z-index: 999; width: 100%"
-                    @click="createNewAMMID()"
                   >
                     Register to whitelist
                   </Button>
