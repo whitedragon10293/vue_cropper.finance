@@ -372,7 +372,7 @@ export class YieldFarm {
   ){
     
     let accountRentExempt = await connection.getMinimumBalanceForRentExemption(
-        MintLayout.span
+      AccountLayout.span
       );
     let newTokenAccount = await createSplAccount(
       instructions,

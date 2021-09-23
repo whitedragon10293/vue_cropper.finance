@@ -2,7 +2,7 @@
   <div class="farm container">
     <div class="page-head fs-container">
       <span class="title">Private Farms</span>
-        <NuxtLink to="/farms/create-farm/">
+        <NuxtLink to="/fertilizer/project/">
           <div class="btncontainer">
             <Button size="large" ghost>
               Create a PF
@@ -61,20 +61,22 @@
             
         </div>
         <div>
-            <Row v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile' : ''" :gutter="0" @click="goToProject(farm)">
-                <Col class="lp-icons" :span="8">
-                    <div class="icons">
-                    <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
-                    <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
-                    </div>
-                    {{ isMobile ? farm.farmInfo.lp.symbol : farm.farmInfo.lp.name }}
-                </Col>
-                <Col class="state" :span="8">
-                    <div class="title">Project 1</div>
-                </Col>
-                <Col class="state pf-arrow" :span="8">
-                    >
-                </Col>
+            <Row v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile' : ''" :gutter="0" >
+                <div @click="goToProject(farm)">
+                    <Col class="lp-icons" :span="8">
+                        <div class="icons">
+                        <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
+                        <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
+                        </div>
+                        {{ isMobile ? farm.farmInfo.lp.symbol : farm.farmInfo.lp.name }}
+                    </Col>
+                    <Col class="state" :span="8">
+                        <div class="title">Project 1</div>
+                    </Col>
+                    <Col class="state pf-arrow" :span="8">
+                        >
+                    </Col>
+                </div>
             </Row>
         </div>
         </div>
@@ -208,34 +210,10 @@ export default Vue.extend({
     },
     searchName:{
       handler(newSearchName:string) {
-        this.filterFarms(newSearchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly);
+        this.filterFarms(newSearchName);
       },
       deep: true
-    },
-    searchCertifiedFarm:{
-      handler(newSearchCertifiedFarm:any) {
-        this.filterFarms(this.searchName, newSearchCertifiedFarm, this.searchLifeFarm, this.stakedOnly);
-      },
-      deep: true
-    },
-    searchLifeFarm:{
-      handler(newSearchLifeFarm:any) {
-        this.filterFarms(this.searchName, this.searchCertifiedFarm, newSearchLifeFarm, this.stakedOnly);
-      },
-      deep: true
-    },
-    stakedOnly:{
-      handler(newStakedOnly:any) {
-        this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, newStakedOnly);
-      },
-      deep: true
-    },
-    currentPage:{
-      handler(newPage:number) {
-        this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly, newPage);
-      },
-      deep: true
-    },
+    }
   },
 
   mounted() {
@@ -260,9 +238,9 @@ export default Vue.extend({
     TokenAmount,
     goToProject(farm:any){
         this.$router.push({
-           path: '/swap/',
+           path: '/fertilizer/project/',
            query: {
-            //ammId: this.ammId
+            //farmId: this.farm.farmInfo.poolId
            }
        })
     },
@@ -389,54 +367,22 @@ export default Vue.extend({
 
       this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
       this.endedFarmsPoolId = endedFarmsPoolId
-      this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly, this.currentPage);
+      this.filterFarms(this.searchName);
     },
-    filterFarms(searchName:string, searchCertifiedFarm:number, searchLifeFarm:number, stakedOnly:boolean, pageNum:number = 1){
-      this.currentPage = pageNum;
+    filterFarms(searchName:string){
       this.showFarms = this.farms;
 
-      //filter for not allowed famrs
+      //filter for not allowed farms
       this.showFarms = this.showFarms.filter((farm:any)=>
                                               farm.farmInfo.poolInfo.is_allowed > 0 || 
                                               (farm.farmInfo.poolInfo.owner.toBase58() === this.wallet.address &&
                                               farm.farmInfo.poolInfo.is_allowed === 0));
 
-      if(searchName != "" && this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase())){
+      if(searchName != "" && searchName != null && this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase())){
         this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.poolId.toLowerCase() == searchName.toLowerCase());
-      } else if(searchName != ""){
+      } else if(searchName != "" && searchName != null){
         this.showFarms = this.farms.filter((farm:any)=>farm.farmInfo.lp.symbol.toLowerCase().includes(searchName.toLowerCase()));
       }
-
-      if(searchCertifiedFarm == 0){//labelized
-        this.showFarms = this.showFarms.filter((farm:any)=>farm.labelized);
-      }
-      else if(searchCertifiedFarm == 1){//permissionless
-        this.showFarms = this.showFarms.filter((farm:any)=>!farm.labelized);
-      }
-
-      const currentTimestamp = moment().unix();
-      if(searchLifeFarm == 0){//Opened
-        this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.start_timestamp < currentTimestamp && farm.farmInfo.poolInfo.end_timestamp > currentTimestamp);
-      }
-      else if(searchLifeFarm == 1){//Future
-        this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.start_timestamp > currentTimestamp);
-      }
-      else if(searchLifeFarm == 2){//Ended
-        this.showFarms = this.showFarms.filter((farm:any)=>farm.farmInfo.poolInfo.end_timestamp < currentTimestamp);
-      }
-
-      if(stakedOnly){
-        this.showFarms = this.showFarms.filter((farm:any)=>farm.userInfo.depositBalance.wei.toNumber() > 0);
-      }
-
-      this.totalCount = this.showFarms.length;
-
-      let max = this.showFarms.length;
-      let start = (this.currentPage-1) * this.pageSize;
-      let end = this.currentPage * this.pageSize < max ? this.currentPage * this.pageSize : max;
-      this.showFarms = this.showFarms.slice(start, end);
-      
-
     },
 
     updateCurrentLp(newTokenAccounts: any) {
