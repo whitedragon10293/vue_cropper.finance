@@ -903,7 +903,7 @@ export default Vue.extend({
       }
     },
 
-    stake(amount: string) {
+    stake(amount: number) {
       this.staking = true
 
       const conn = this.$web3
@@ -913,6 +913,7 @@ export default Vue.extend({
       const rewardAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
       const infoAccount = get(this.farm.stakeAccounts, `${this.farmInfo.poolId}.stakeAccountAddress`)
 
+      const key = getUnixTs().toString()
 
       if(amount <= 0){
         this.$notify.error({
