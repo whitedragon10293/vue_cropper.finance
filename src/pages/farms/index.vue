@@ -302,7 +302,7 @@ import moment from 'moment'
 import { TOKEN_PROGRAM_ID, u64 } from '@solana/spl-token'
 import { PAY_FARM_FEE, YieldFarm } from '@/utils/farm'
 import { PublicKey } from '@solana/web3.js'
-import { DEVNET_MODE, FARM_PROGRAM_ID, DEVNET_MODE } from '@/utils/ids'
+import { DEVNET_MODE, FARM_PROGRAM_ID } from '@/utils/ids'
 import { TOKENS } from '@/utils/tokens'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
 const CollapsePanel = Collapse.Panel
@@ -541,13 +541,13 @@ export default Vue.extend({
           newFarmInfo.apr = apr
 
           newFarmInfo.apr_details = {
-              'apr' : Math.round(apr * 100) / 100,
+              'apr' : Math.round((apr as any) * 100) / 100,
               'apy' : 0
-          }
+          } as any
 
           if(this.poolsDatas[liquidityItem.ammId] && this.poolsDatas[liquidityItem.ammId]['fees'] && liquidityTotalValue > 0){
             let apy = this.poolsDatas[liquidityItem.ammId]['fees'] * 365 * 100 / liquidityTotalValue;
-            newFarmInfo.apr = Math.round(((apr * 1) - (apy * -1)) * 100) / 100;
+            newFarmInfo.apr = Math.round((((apr as any) * 1) - ((apy as any) * -1)) * 100) / 100;
             newFarmInfo.apr_details.apy = Math.round(apy * 100) / 100;
           }
 
