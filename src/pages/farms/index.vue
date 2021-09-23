@@ -540,15 +540,15 @@ export default Vue.extend({
           // @ts-ignore
           newFarmInfo.apr = apr
 
-          newFarmInfo.apr_details = {
+          (newFarmInfo as any).apr_details = {
               'apr' : Math.round((apr as any) * 100) / 100,
               'apy' : 0
           } as any
 
           if(this.poolsDatas[liquidityItem.ammId] && this.poolsDatas[liquidityItem.ammId]['fees'] && liquidityTotalValue > 0){
             let apy = this.poolsDatas[liquidityItem.ammId]['fees'] * 365 * 100 / liquidityTotalValue;
-            newFarmInfo.apr = Math.round((((apr as any) * 1) - ((apy as any) * -1)) * 100) / 100;
-            newFarmInfo.apr_details.apy = Math.round(apy * 100) / 100;
+            (newFarmInfo as any).apr = Math.round((((apr as any) * 1) - ((apy as any) * -1)) * 100) / 100;
+            (newFarmInfo as any).apr_details.apy = Math.round(apy * 100) / 100;
           }
 
 
