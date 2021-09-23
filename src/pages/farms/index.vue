@@ -72,6 +72,18 @@
       @onCancel="cancelAddReward"
     />
 
+
+
+    <CoinModal
+      v-if="stakeModalOpeningLP"
+      title="Stake LP"
+      :coin="lp"
+      :farmInfo="farmInfo"
+      :loading="staking"
+      @onOk="stake"
+      @onCancel="cancelStakeLP"
+    />
+
     <div v-if="farm.initialized">
       <div class="card">
         <div class="card-body">
@@ -109,13 +121,13 @@
               :show-arrow="poolType"
             >
               <Row slot="header" class="farm-head" :class="isMobile ? 'is-mobile' : ''" :gutter="0">
+                  <div v-if="farm.labelized" class="labelized">LABELIZED</div>
                 <Col class="lp-icons" :span="isMobile ? 12 : 8">
 
                   <div v-if="currentTimestamp > farm.farmInfo.poolInfo.end_timestamp" class="label ended"> Ended </div>
                   <div v-if="currentTimestamp < farm.farmInfo.poolInfo.start_timestamp && currentTimestamp < farm.farmInfo.poolInfo.end_timestamp" class="label soon"> Soon </div>
 
 
-                  <div v-if="farm.labelized" class="labelized">LABELIZED</div>
                   <div class="icons">
                     <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
                     <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
@@ -129,7 +141,16 @@
                   <div v-else class="value">{{ !wallet.connected ? 0 : farm.userInfo.pendingReward.format() }}</div>
                 </Col>
                 <Col v-if="!isMobile" class="state" :span="4">
-                  <div class="title">Staked</div>
+                  <div class="title">Staked 
+                    <Tooltip placement="right" v-if="wallet && !(farm.farmInfo.poolInfo.start_timestamp > currentTimestamp || currentTimestamp > farm.farmInfo.poolInfo.end_timestamp) && farm.farmInfo.currentLPtokens > 0.001">
+                      <template slot="title">
+                        <div>
+                          You got {{farm.farmInfo.currentLPtokens}} unstaked
+                        </div>
+                      </template>
+                      <Icon type="question-circle" style="color:#f00" />
+                    </Tooltip>
+                    </div>
                   <div v-if="farm.farmInfo.poolInfo.start_timestamp > currentTimestamp" class="value"> - </div>
                   <div v-else class="value">
                     {{ !wallet.connected ? 0 : farm.userInfo.depositBalance.format() }}
@@ -231,6 +252,22 @@
                                       farm.farmInfo.poolInfo.end_timestamp < currentTimestamp ||
                                       farm.farmInfo.poolInfo.start_timestamp > currentTimestamp"
                           @click="openStakeModal(farm.farmInfo, farm.farmInfo.lp)">
+                          {{
+                            (!farm.farmInfo.poolInfo.is_allowed)?"Not Allowed":
+                            (currentTimestamp > farm.farmInfo.poolInfo.end_timestamp?"Ended":
+                            farm.farmInfo.poolInfo.start_timestamp > currentTimestamp?"Unstarted":"Stake")
+                          }}
+                        </Button>
+                      </div>
+
+                      <div class="btncontainer" v-if="currentTimestamp < farm.farmInfo.poolInfo.end_timestamp && farm.farmInfo.poolInfo.start_timestamp < currentTimestamp && farm.farmInfo.currentLPtokens > 0.001">
+                        <Button
+                          size="large" 
+                          ghost 
+                          :disabled="!farm.farmInfo.poolInfo.is_allowed || 
+                                      farm.farmInfo.poolInfo.end_timestamp < currentTimestamp ||
+                                      farm.farmInfo.poolInfo.start_timestamp > currentTimestamp"
+                          @click="openStakeModalLP(farm.farmInfo, farm.farmInfo.lp)">
                           {{
                             (!farm.farmInfo.poolInfo.is_allowed)?"Not Allowed":
                             (currentTimestamp > farm.farmInfo.poolInfo.end_timestamp?"Ended":
@@ -343,6 +380,7 @@ export default Vue.extend({
       farmInfo: null as any,
       harvesting: false,
       stakeModalOpening: false,
+      stakeModalOpeningLP: false,
       addRewardModalOpening: false,
       staking: false,
       adding: false,
@@ -493,6 +531,11 @@ export default Vue.extend({
     async updateFarms() {
       await this.updateLabelizedAmms();
       this.currentTimestamp = moment().unix();
+
+      const conn = this.$web3
+      const wallet = (this as any).$accessor.wallet
+      const liquidity = ((this as any).$accessor.liquidity);
+
       const farms: any = []
       const endedFarmsPoolId: string[] = []
       for (const [poolId, farmInfo] of Object.entries(this.farm.infos)) {
@@ -551,6 +594,20 @@ export default Vue.extend({
             newFarmInfo.apr_details.apy = Math.round(apy * 100) / 100;
           }
 
+          console.log(liquidityItem);
+
+          if(wallet){
+            let unstaked = get(wallet.tokenAccounts, `${liquidityItem.lp.mintAddress}.balance`)
+            //getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther());
+            if(unstaked){
+              newFarmInfo.currentLPtokens = getBigNumber((unstaked as TokenAmount).toEther());
+            } else {
+              newFarmInfo.currentLPtokens = 0;
+            }
+          } else {
+            newFarmInfo.currentLPtokens = 0;
+          }
+
 
           // @ts-ignore
           newFarmInfo.liquidityUsdValue = liquidityUsdValue
@@ -604,6 +661,9 @@ export default Vue.extend({
       }
 
       this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
+
+      console.log(this.farms);
+
       this.endedFarmsPoolId = endedFarmsPoolId
       this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly, this.currentPage);
     },
@@ -617,10 +677,11 @@ export default Vue.extend({
                                               (farm.farmInfo.poolInfo.owner.toBase58() === this.wallet.address &&
                                               farm.farmInfo.poolInfo.is_allowed === 0));
 
-      if(searchName != "" && this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase())){
+      if(searchName != "" && this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase()).length > 0){
         this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase());
       } else if(searchName != ""){
-        this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase().includes((searchName as string).toLowerCase()));
+      console.log('là', (searchName as string).toLowerCase());
+        this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.lp.symbol as string).toLowerCase().includes((searchName as string).toLowerCase()));
       }
 
       if(searchCertifiedFarm == 0){//labelized
@@ -682,6 +743,23 @@ export default Vue.extend({
       this.farmInfo.lp.pc.balance = pcBalance;
       this.stakeModalOpening = true
     },
+
+
+    openStakeModalLP(poolInfo: FarmInfo, lp: any) {
+      const coin = cloneDeep(lp)
+      const lpBalance = get(this.wallet.tokenAccounts, `${lp.mintAddress}.balance`)
+      coin.balance = lpBalance
+
+      this.lp = coin
+      this.farmInfo = cloneDeep(poolInfo)
+      const coinBalance = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.coin.mintAddress}.balance`)
+      const pcBalance = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.pc.mintAddress}.balance`)
+      this.farmInfo.lp.coin.balance = coinBalance;
+      this.farmInfo.lp.pc.balance = pcBalance;
+      this.stakeModalOpeningLP = true
+    },
+
+
     openAddRewardModal(farm:any){
       const rewardCoin = farm.farmInfo.reward;
       const coin = cloneDeep(rewardCoin)
@@ -823,6 +901,33 @@ export default Vue.extend({
           this.paying = false
         })
       }
+    },
+
+    stake(amount: string) {
+      this.staking = true
+
+      const conn = this.$web3
+      const wallet = (this as any).$wallet
+
+      const lpAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.lp.mintAddress}.tokenAccountAddress`)
+      const rewardAccount = get(this.wallet.tokenAccounts, `${this.farmInfo.reward.mintAddress}.tokenAccountAddress`)
+      const infoAccount = get(this.farm.stakeAccounts, `${this.farmInfo.poolId}.stakeAccountAddress`)
+
+
+      if(amount <= 0){
+        this.$notify.error({
+          key,
+          message: 'Add liquidity failed',
+          description: "Added LP token amount is 0"
+        })
+        console.log("added lp amount is 0")
+        return;
+      }
+
+      this.stakeLP(conn, wallet,this.farmInfo, lpAccount, rewardAccount, infoAccount, amount);
+
+      this.staking = false
+      this.stakeModalOpeningLP = false
     },
     supplyAndStake(fromCoinAmount: string,toCoinAmount: string,fixedCoin: string) {
       this.staking = true
@@ -1012,6 +1117,11 @@ export default Vue.extend({
       this.lp = null
       this.farmInfo = null
       this.stakeModalOpening = false
+    },
+    cancelStakeLP(){
+      this.lp = null
+      this.farmInfo = null
+      this.stakeModalOpeningLP = false
     },
     onNothing(){
       this.stakeLPError = false;
@@ -1325,6 +1435,9 @@ export default Vue.extend({
     align-items: center;
 
     .lp-icons {
+      width: 32%;
+      left: 6%;
+
       .icons {
         margin-right: 8px;
       }
@@ -1436,7 +1549,7 @@ export default Vue.extend({
     position: absolute;
     padding: 0 20px 0 20px;
     border-radius: 3px;
-    right: 60px;
+    right: 110px;
   }
 
   .label.ended{
@@ -1445,14 +1558,18 @@ export default Vue.extend({
     position: absolute;
     padding: 0 20px 0 20px;
     border-radius: 3px;
-    right: 60px;
+    right: 110px;
   }
 
-  .labelized{
-    color:#13d89d;
-    position: absolute;
-    padding: 0 0 0 48px;
-    bottom:20px;
+  .labelized {
+      background: #13d89d;
+      position: absolute;
+      padding: 3px 10px;
+      left: 0;
+      top: 0;
+      border-radius: 0 0 10px;
+      font-size: 10px;
+      font-weight: bold;
   }
 
 main{
