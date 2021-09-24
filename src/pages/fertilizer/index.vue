@@ -2,7 +2,7 @@
   <div class="farm container">
     <div class="page-head fs-container">
       <span class="title">Private Farms</span>
-        <NuxtLink to="/fertilizer/project/">
+        <NuxtLink to="/farms/create-farm/">
           <div class="btncontainer">
             <Button size="large" ghost>
               Create a PF
@@ -62,7 +62,7 @@
         </div>
         <div>
             <Row v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile' : ''" :gutter="0" >
-                <div @click="goToProject(farm)">
+                <div @click="goToProject(farm)" class="pf-record-content">
                     <Col class="lp-icons" :span="8">
                         <div class="icons">
                         <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
@@ -1222,9 +1222,12 @@ main{
 }
 .pf-record{
     background-color: #000;
-    padding: 36px 32px;
     border-bottom: 1px solid #d9d9d9;
     cursor: pointer;
     cursor: hand;
+
+    .pf-record-content{
+      padding: 36px 32px 56px 32px;
+    }
 }
 </style>
