@@ -903,7 +903,6 @@ export default Vue.extend({
         }
 
         let marketAddress = ''
-
         // serum
         for (const address of Object.keys(this.swap.markets)) {
           if (isOfficalMarket(address)) {
@@ -921,7 +920,7 @@ export default Vue.extend({
               (info.baseMint.toBase58() === toMint && info.quoteMint.toBase58() === fromMint)
             ) {
               // if (!info.baseDepositsTotal.isZero() && !info.quoteDepositsTotal.isZero()) {
-              marketAddress = address
+                marketAddress = address
               // }
             }
           }
@@ -977,6 +976,7 @@ export default Vue.extend({
       else{
         this.endpoint = ''
       }
+      this.updateAmounts()
     },
 
     getOrderBooks() {
@@ -1032,7 +1032,6 @@ export default Vue.extend({
         if(this.swaptype == 'single'){
           const poolInfo = findBestLP(this.$accessor.liquidity.infos, this.fromCoin.mintAddress, this.toCoin.mintAddress,this.fromCoinAmount)
           this.mainAmmId = poolInfo.ammId
-          
           const { amountOut, amountOutWithSlippage, priceImpact } = getSwapOutAmount(
             poolInfo,
             this.fromCoin.mintAddress,
@@ -1130,7 +1129,7 @@ export default Vue.extend({
               false
             ).fixed()
             impact = priceImpact
-            endpoint = 'serum DEX'
+            endpoint = 'Serum DEX'
           }
         }
       }
