@@ -226,7 +226,7 @@ export default class Pools extends Vue {
     },
 
     {
-      title: '',
+      title: 'Add / Remove',
       dataIndex: 'apu',
       scopedSlots: { customRender: 'apu' },
       key: 'apu'
@@ -671,7 +671,7 @@ section{
 
   }
 
-.pool {
+.pool.container {
   .card-body {
     overflow-x: scroll;
     scrollbar-width: none;
@@ -701,18 +701,16 @@ section{
   }
 
   .btncontainer{
-    background: #1b2028;
-    padding: 0;
-    border-radius:5px;
+    background: #1b2028 !important;
+    padding: 0 !important;
+    border-radius:5px !important;
     button{
-      background:transparent !important;
-      border:unset;
-      width: 41px;
-      height: 41px;
+      background: #1b2028 !important;
+      width: 41px !important;
+      height: 41px !important;
+      border-radius:5px !important;
     }
-    button.ant-btn-background-ghost[disabled]{
-      border-color:transparent;
-    }
+
     .ant-btn:hover, .ant-btn:focus{
       border-color: unset;
       border:unset;
