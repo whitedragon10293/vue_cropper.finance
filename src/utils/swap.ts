@@ -758,22 +758,47 @@ export async function place(
     )
   }
 
-  transaction.add(
-    market.makePlaceOrderInstruction(connection, {
-      owner,
-      payer: wrappedSolAccount ?? new PublicKey(fromTokenAccount),
-      // @ts-ignore
-      side: forecastConfig.side,
-      price: forecastConfig.worstPrice,
-      size:
-        forecastConfig.side === 'buy'
-          ? parseFloat(forecastConfig.amountOut.toFixed(6))
-          : parseFloat(forecastConfig.maxInAllow.toFixed(6)),
-      orderType: 'ioc',
-      openOrdersAddressKey: openOrdersAddress
-      // feeDiscountPubkey: useFeeDiscountPubkey
-    })
-  )
+  const params = {
+    owner,
+    payer: wrappedSolAccount ?? new PublicKey(fromTokenAccount),
+    side: forecastConfig.side as ("buy" | "sell"),
+    price: forecastConfig.worstPrice,
+    size: parseFloat((forecastConfig.side === 'buy' ? forecastConfig.amountOut: forecastConfig.maxInAllow).toFixed(6)),
+    orderType: 'limit' as ("ioc" | "limit" | "postOnly"),
+    openOrdersAddressKey: openOrdersAddress,
+    feeDiscountPubkey: null
+  }
+
+  let {
+    transaction: placeOrderTx,
+    signers: placeOrderSigners,
+  } = await market.makePlaceOrderTransaction(
+    connection,
+    params,
+    120_000,
+    120_000,
+  );
+  const matchOrderstransaction = market.makeMatchOrdersTransaction(5);
+  transaction.add(matchOrderstransaction);
+  transaction.add(placeOrderTx);
+  transaction.add(market.makeMatchOrdersTransaction(5));
+  signers.push(...placeOrderSigners);
+  // transaction.add(
+  //   market.makePlaceOrderInstruction(connection, {
+  //     owner,
+  //     payer: wrappedSolAccount ?? new PublicKey(fromTokenAccount),
+  //     // @ts-ignore
+  //     side: forecastConfig.side,
+  //     price: forecastConfig.worstPrice,
+  //     size:
+  //       forecastConfig.side === 'buy'
+  //         ? parseFloat(forecastConfig.amountOut.toFixed(6))
+  //         : parseFloat(forecastConfig.maxInAllow.toFixed(6)),
+  //     orderType: 'limit',
+  //     openOrdersAddressKey: openOrdersAddress
+  //     // feeDiscountPubkey: useFeeDiscountPubkey
+  //   })
+  // )
 
   if (wrappedSolAccount) {
     transaction.add(
@@ -784,6 +809,9 @@ export async function place(
       })
     )
   }
+  // return await sendTransaction(connection, wallet, mergeTransactions([transaction]), [
+  //   ...signers
+  // ])
 
   let fromMint = fromCoinMint
   let toMint = toCoinMint

@@ -237,6 +237,9 @@ export function findBestLP(pools:any, baseMint:string, quoteMint:string, amountI
 }
 
 export function isOfficalMarket(marketAddress: string) {
+  if(DEVNET_MODE){
+    return  true
+  }
   for (const market of SERUM_MARKETS) {
     if (market.address === marketAddress && !market.deprecated) {
       return true
