@@ -721,8 +721,7 @@ export async function place(
   const openOrdersAddress: PublicKey = await createProgramAccountIfNotExist(
     connection,
     // @ts-ignore
-    // openOrdersAccounts.length === 0 ? null : openOrdersAccounts[1].address.toBase58(),
-    null,
+    openOrdersAccounts.length === 0 ? null : openOrdersAccounts[0].address.toBase58(),
     owner,
     new PublicKey(SERUM_PROGRAM_ID_V3),
     null,
@@ -794,9 +793,12 @@ export async function place(
       })
     )
   }
-  // return await sendTransaction(connection, wallet, mergeTransactions([transaction]), [
-  //   ...signers
-  // ])
+  if(openOrdersAccounts.length == 0)
+  {
+    return await sendTransaction(connection, wallet, mergeTransactions([transaction]), [
+      ...signers
+    ])
+  }
 
   let fromMint = fromCoinMint
   let toMint = toCoinMint
@@ -814,7 +816,12 @@ export async function place(
     fromMint,
     transaction
   )
-  const newToTokenAccount = await createAssociatedTokenAccountIfNotExist(toTokenAccount, owner, toMint, transaction)
+  const newToTokenAccount = await createAssociatedTokenAccountIfNotExist(
+    toTokenAccount, 
+    owner, 
+    toMint, 
+    transaction
+  )
 
   const userAccounts = [newFromTokenAccount, newToTokenAccount]
   if (market.baseMintAddress.toBase58() === toMint && market.quoteMintAddress.toBase58() === fromMint) {
@@ -952,13 +959,11 @@ export async function checkUnsettledInfo(connection: Connection, wallet: any, ma
   const owner = wallet.publicKey
   if (!owner) return
   const openOrderss = await market?.findOpenOrdersAccountsForOwner(connection, owner, 1000)
-  console.log(openOrderss)
   if (!openOrderss?.length) return
-  let index = 1
-  const baseTotalAmount = market.baseSplSizeToNumber(openOrderss[index].baseTokenTotal)
-  const quoteTotalAmount = market.quoteSplSizeToNumber(openOrderss[index].quoteTokenTotal)
-  const baseUnsettledAmount = market.baseSplSizeToNumber(openOrderss[index].baseTokenFree)
-  const quoteUnsettledAmount = market.quoteSplSizeToNumber(openOrderss[index].quoteTokenFree)
+  const baseTotalAmount = market.baseSplSizeToNumber(openOrderss[0].baseTokenTotal)
+  const quoteTotalAmount = market.quoteSplSizeToNumber(openOrderss[0].quoteTokenTotal)
+  const baseUnsettledAmount = market.baseSplSizeToNumber(openOrderss[0].baseTokenFree)
+  const quoteUnsettledAmount = market.quoteSplSizeToNumber(openOrderss[0].quoteTokenFree)
   return {
     baseSymbol: getTokenByMintAddress(market.baseMintAddress.toString())?.symbol,
     quoteSymbol: getTokenByMintAddress(market.quoteMintAddress.toString())?.symbol,
@@ -966,7 +971,7 @@ export async function checkUnsettledInfo(connection: Connection, wallet: any, ma
     quoteTotalAmount,
     baseUnsettledAmount,
     quoteUnsettledAmount,
-    openOrders: openOrderss[index]
+    openOrders: openOrderss[0]
   }
 }
 
