@@ -318,6 +318,7 @@
             !fromCoin ||
             !fromCoinAmount ||
             !toCoin ||
+            !this.mainAmmId ||
             (!marketAddress && !lpMintAddress && !isWrap && !swaptype) ||
             !initialized ||
             loading ||

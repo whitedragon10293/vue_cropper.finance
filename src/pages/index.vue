@@ -82,9 +82,9 @@
                     </div>
                     <div class="grid-item-2">
                         <div class="item-2">
-                            <h3>Deflationary</h3>
-                            <p>A unique buy back and burn mechanism <br />
-                                to decrease the circulating supply of $CRP.</p>
+                            <h3>$CRP Token</h3>
+                            <p>Our platform will be fuelled by CRP,<br />
+                                it's native token.</p>
                         </div>
                     </div>
                     <div class="grid-item-3">
@@ -128,8 +128,8 @@ in a few clicks
                                 <img src="../assets/sun.png"/>A place conceived, designed,<br />
                                 and developed for farmers</h2>
                             <p>
-                                CropperFinance aim to provide bests 
-                                yiels in the the<br />ecosystem.
+                                CropperFinance aims to provide best
+                                yields in the <br />ecosystem.
                                 Made by farmers, for farmers.
                             </p>
                         </div>
@@ -271,38 +271,76 @@ Croppish. </p>
                         <div class="line-from-left">
                         </div>
                     </div>
+
+
                     <div class="grid-partenaires">
+                    
                         <div class="grid-item-p">
-                            <img src="../assets/logo-horizontal-gradient-dark.png"/>
+                            <img src="../assets/logo-horizontal-gradient-dark.png">
                         </div>
                         <div class="grid-item-p">
-                            <img src="../assets/Mask-Groupmask.png"/>
+                            <img src="../assets/Mask-Groupmask.png">
                         </div>
                         <div class="grid-item-p">
-                            <img src="../assets/Component164.png"/>
+                            <img src="../assets/Component164.png">
                         </div>
                         <div class="grid-item-p">
-                            <img src="../assets/Cropperbros_logo.png"/>
+                            <img src="../assets/Cropperbros_logo.png">
+                        </div>
                         
+                        <div class="grid-item-p">
+                            <img src="../assets/skyvision.jpg">
                         </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/zC_sQ9Oq_400x400.jpeg">
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/SolaniumVenturesWhiteWide.png">
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/ava_logo_transparent.png">
+                        </div>
+
                         
                         <div class="grid-item-p">
-                            <img src="../assets/skyvision.jpg"/>
+                            <img src="../assets/full-logo-normal-mexc.svg">
                         </div>
                         <div class="grid-item-p">
-                            <img src="../assets/zC_sQ9Oq_400x400.jpeg"/>
+                            <img src="../assets/client-logo-2.png">
                         </div>
                         <div class="grid-item-p">
-                            <img src="../assets/SolaniumVenturesWhiteWide.png"/>
+                            <img src="../assets/basics_capital.png">
                         </div>
                         <div class="grid-item-p">
-                            <img src="../assets/index_cap1.png"/>
+                            <img src="../assets/Newave-Capital-logo_white_180_60.png">
+                        </div>
+
+
+                        
+                        <div class="grid-item-p">
+                            <img src="../assets/22White_1.png"/>
+                        </div>
+                        <div class="grid-item-p">
+                            <img style="padding:20px" src="../assets/_Group_.png"/>
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/_logo_white.png"/>
+                        </div>
+                        <div class="grid-item-p">
+                            <img src="../assets/_white_1.png"/>
                         </div>
                     </div>
                 </div>
             </section>
 
-        <div class="footer">
+
+        <footer>
+            <div
+      style="
+        height: 1px;
+        background: linear-gradient(90deg, rgba(90, 196, 190, 0) 0%, #3772ff 50%, rgba(194, 0, 251, 0) 100%);
+      "
+    />
             <nav>
                 <ul>
                     <li>
@@ -314,7 +352,7 @@ Croppish. </p>
                     </li>
 
                     <li>
-                        <a href="https://dex.cropper.finance/">Launch App</a>
+                        <a href="/swap/">Launch App</a>
                     </li>
                 </ul>
             </nav>
@@ -353,7 +391,7 @@ Croppish. </p>
                 </div>
                 
             </div>
-        </div>
+        </footer>
     <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
     <script>
         function d(i){ var u=0; if(jQuery(i).hasClass("op")){ u=1 } jQuery(".op").removeClass("op"); if(!u){ jQuery(i).addClass("op"); jQuery("body").addClass("fs"); } else { jQuery("body").removeClass("fs"); } }

@@ -26,6 +26,7 @@
       <div class="card-body">
 
         <div class="page-head fs-container">
+        <!--
         <NuxtLink to="/pools/create-pool/">
           <div class="btncontainer">
             <Button size="large" ghost>
@@ -33,6 +34,7 @@
             </Button>
           </div>
         </NuxtLink>
+        -->
           <span class="title">Liquidity pools</span>
           <div class="buttons">
             <Tooltip placement="bottomRight">
@@ -88,7 +90,7 @@
 
 
             <div class="btncontainer">
-              <Button size="small" ghost :disabled="!wallet.connected || !pool.current"
+              <Button size="small" class="minus" ghost :disabled="!wallet.connected || !pool.current"
                   @click="openUnstakeModal(pool, pool.lp, 1)">
                 <Icon type="minus" />
               </Button>
@@ -224,7 +226,7 @@ export default class Pools extends Vue {
     },
 
     {
-      title: '',
+      title: 'Add / Remove',
       dataIndex: 'apu',
       scopedSlots: { customRender: 'apu' },
       key: 'apu'
@@ -648,15 +650,78 @@ section{
   display: none; /* Chrome Safari */
 }
 
-td{
-  background:#000 !important
-}
-.pool {
+  .btncontainer {
+    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    display: inline-block;
+    width: unset;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 2px;
+    border-radius: 30px;
+    max-height: 50px;
+
+    button{
+      background:#000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+    }
+
+  }
+
+.pool.container {
   .card-body {
     overflow-x: scroll;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
+
+  .ant-table-thead > tr > th{
+    border-bottom: unset !important;
+    border-spacing: 0;
+  }
+
+  td{
+    background:#000 !important;
+    border-bottom:unset !important
+  }
+
+  table{
+    border-collapse: separate;
+    border-spacing: 0 15px;
+  }
+
+  table tr > td:first-of-type{
+    border-radius: 13px 0 0 13px;
+  }
+  table tr > td:last-of-type{
+    border-radius: 0 13px 13px 0;
+  }
+
+  .btncontainer{
+    background: #1b2028 !important;
+    padding: 0 !important;
+    border-radius:5px !important;
+    button{
+      background: #1b2028 !important;
+      width: 41px !important;
+      height: 41px !important;
+      border-radius:5px !important;
+    }
+
+    .ant-btn:hover, .ant-btn:focus{
+      border-color: unset;
+      border:unset;
+    }
+
+    .minus.ant-btn:hover, .minus.ant-btn:focus{
+      color:#f00 !important
+    }
+  }
+
+
 }
 .ant-table-thead > tr > th.ant-table-column-sort {
   background: transparent;
@@ -688,24 +753,4 @@ td{
   height: 32.01px !important;
 }
 
-  .btncontainer {
-    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
-    display: inline-block;
-    width: unset;
-    text-align: center;
-    position: relative;
-    max-width: 400px;
-    margin: 10px auto;
-    padding: 2px;
-    border-radius: 30px;
-    max-height: 50px;
-
-    button{
-      background:#000 !important;
-      position: relative;
-      border-radius: 30px;
-      border-color: transparent;
-    }
-
-  }
 </style>

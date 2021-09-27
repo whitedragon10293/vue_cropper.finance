@@ -1,12 +1,10 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 
 .landing * {
     margin: 0;
-    z-index: 2;
+   /* z-index: 2;*/
 }
 
 body {
@@ -17,8 +15,13 @@ body {
     margin: 0;
     padding: 0;
     background-color: black;
-    z-index: 0;
+    z-index: -1;
     overflow-x:hidden
+}
+
+.landing .container{
+    width:auto;
+    max-width: unset;
 }
 
 body .landing{
@@ -26,72 +29,66 @@ body .landing{
     background-image:unset;
 }
 
-
 .landing button {
     border-style: none;
 }
 
-.landing .container{
-    max-width:unset;
-    padding:unset;
-}
-
-.landing .vecteur-1 {
+.vecteur-1 {
     position: absolute;
     width: 70%;
     min-width: 50%;
     height: auto;
     z-index: 0;
     top: -50px;
-    right: 0;
+    right: 0px;
 }
 
-.landing .vecteur-1 img{
+.vecteur-1 img{
     width: 100%;
     height: 100%;
 }
 
-.landing .vecteur-2 {
+.vecteur-2 {
     position: absolute;
     width: 50%;
     min-width: 20%;
     height: auto;
-    z-index: 0;
+    z-index: 1;
     top: 310vh;
-    right: 0;
+    right: 0px;
 }
 
-.landing .vecteur-2 img{
+.vecteur-2 img{
     width: 100%;
     height: 100%;
 }
 
-.landing .vecteur-3 {
+.vecteur-3 {
     position: absolute;
     width: 40%;
     min-width: 20%;
     height: auto;
-    z-index: 0;
+    z-index: 1;
     top: 450vh;
-    left: 0;
+    left: 0px;
 }
 
-.landing .vecteur-3 img{
+.vecteur-3 img{
     width: 100%;
     height: 100%;
 }
 
-.landing .vecteur-4 {
+.vecteur-4 {
     position: absolute;
     width: 40%;
     min-width: 20%;
     height: auto;
-    z-index: 0;
+    z-index: 1;
     bottom: 95px;
-    left: 0;
+    left: 0px;
 }
 
-.landing .vecteur-4 img{
+.vecteur-4 img{
     width: 100%;
     height: 100%;
 }
@@ -120,7 +117,7 @@ body .landing{
 
 /******************************************* HEADER *********************************************/
 
-.header {
+.landing header {
     width: 100%;
 }
 .space-btwn {
@@ -158,7 +155,17 @@ body .landing{
     margin-left: 10px;
 }
 
-#hamburger-menu {
+/*#connect {
+    display: flex;
+    margin-right: 44px;
+    margin-top: 32px;
+    background: linear-gradient(94.52deg, #C834F7 0%, #13ECAB 98.2%);
+    border-radius: 13px;
+    padding: 0;
+    cursor:pointer
+}*/
+
+.landing #hamburger-menu {
     display: flex;
     margin: auto;
     padding: 0;
@@ -186,7 +193,7 @@ body .landing{
 
 @media screen and (max-width: 800px) {
 
-    .header-left {
+    .landing .header-left {
         display: flex;
         justify-content: center;
         margin-left: 31px;
@@ -213,14 +220,14 @@ body .landing{
         text-align: center;
     }
     
-    #connect {
+    .landing #connect {
         visibility: hidden;
-        width: 0;
+        width: 0px;
     } 
 
-    #connect img{
+    .landing #connect img{
         visibility: hidden;
-        width: 0;
+        width: 0px;
     } 
 
     #mask-ham {
@@ -236,6 +243,146 @@ body .landing{
     }
 }
 
+/******************************************* SECTION 1 version initiale *********************************************/
+
+/*#section-1{
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding-top: 256px;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 0 auto 166px;
+    width: auto;
+    height: 100%;
+}
+
+
+h1 {
+    font-style: normal;
+    font-weight: 800;
+    font-size: 60px;
+    line-height: 66px;
+    margin-bottom: 14px;
+    max-width: 1000px;
+    min-width: 250px;
+}
+
+#section-1 .container h2{
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 35px;
+    line-height: 41px;
+    margin-bottom: 93px;
+}
+
+.main-btns {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 69px;
+}
+
+#btn-LA {
+    background: linear-gradient(273.22deg, #13ECAB 4.19%, #C834F7 95.92%);
+    padding: 3px;
+    width: 164px;
+    height: 47px;
+    border-radius: 6px;
+    margin-right: 26px;
+}
+#LaunchApp {
+    border-radius: 6px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    color: white;
+    font-family: "Turret Road";
+    font-style: normal;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 22px;
+    cursor:pointer;
+}
+
+#btn-RM {
+    background: linear-gradient(273.22deg, #C834F7 4.19%, #13ECAB 95.92%);
+    padding: 3px;
+    width: 164px;
+    height: 47px;
+    border-radius: 6px;
+}
+
+#ReadMore {
+    border-radius: 6px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    color: white;
+    font-family: Turret Road;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 22px;
+    cursor:pointer;
+}
+
+.grid-reseaux {
+    width: 316px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+}
+
+.float-left {
+    width: 100%;
+    justify-content: left;
+}
+
+.grid-reseaux .reseau img{
+    width: 40px;
+    height: 40px;
+}
+
+.Powered {
+    display: flex;
+    align-items: center;
+    margin-right: 152px;
+    margin-left: auto;
+    margin-top: 55px;
+}
+
+.Powered p {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-size: 25px;
+    line-height: 29px;
+    margin-right: -120px;
+}
+
+.Powered img{
+    width: 295px;
+    height: 52px;
+}
+*/
+
+/******************************************* SECTION 1 version modifié *********************************************/
+
 #section-1{
     position: relative;
     width: 100%;
@@ -246,7 +393,7 @@ body .landing{
 }
 
 
-#section-1 .container {
+.landing .container {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -267,7 +414,6 @@ body .landing{
     min-width: 250px;
     margin-left: 100px;
     margin-top: -140px;
-    font-family: 'Turret Road' !important;
 
 }
 
@@ -293,12 +439,19 @@ body .landing{
     padding: 3px;
     width: 164px;
     height: 47px;
-    border-radius: 6px;
+    border-radius:6px;
     margin-right: 26px;
     margin-left: 100px
 }
+
+#btn-LA.nomobile{
+        position: absolute;
+    right: 10px;
+    top: 28px;
+}
+
 #LaunchApp {
-    border-radius: 6px;
+    border-radius:6px;
     position: relative;
     width: 100%;
     height: 100%;
@@ -319,11 +472,11 @@ body .landing{
     padding: 3px;
     width: 164px;
     height: 47px;
-    border-radius: 6px;
+    border-radius:6px;
 }
 
 #ReadMore {
-    border-radius: 6px;
+    border-radius:6px;
     position: relative;
     width: 100%;
     height: 100%;
@@ -358,7 +511,7 @@ body .landing{
     height: 40px;
 }
 
-.Powered {
+.landing .Powered {
     display: flex;
     align-items: center;
     margin-right: 152px;
@@ -366,7 +519,7 @@ body .landing{
     margin-top: 18px;
 }
 
-.Powered p {
+.landing .Powered p {
     font-family: "Roboto";
     font-style: normal;
     font-weight: 300;
@@ -375,21 +528,21 @@ body .landing{
     margin-right: -333px;
 }
 
-.Powered img{
+.landing .Powered img{
     width: 195px;
     height: 32px;
     margin-left: 250px
 }
 
 @media screen and (max-width: 1300px) {
-    #section-1 .container {
+    .landing .container {
         margin: 0 auto 0 31px;
     }
 }
 
 @media screen and (max-width: 1200px) {
-    .Powered {
-        margin-top: 0;
+    .landing .Powered {
+        margin-top: 0px;
         margin-right: 28px;
         margin-left: auto;
     }
@@ -403,7 +556,7 @@ body .landing{
 }
 
 @media screen and (max-width: 1200px) {
-    .Powered {
+    .landing .Powered {
         margin-top: -10px;
         margin-right: 28px;
         margin-left: auto;
@@ -413,13 +566,13 @@ body .landing{
 @media screen and (max-width: 800px) {
     #section-1{
         width: 100%;
-        padding: 0;
+        padding: 0px;
     }
 
     .landing .container {
         width: auto;
         word-wrap: normal;
-        margin: 99px auto 0 31px;
+        margin: 79px auto 0 31px;
     }
 
     .landing h1 {
@@ -448,7 +601,7 @@ body .landing{
         padding: 2px;
         width: 130px;
         height: 43px;
-        border-radius: 5px;
+        border-radius:6px;
         margin-right: 17px;
     }
 
@@ -456,7 +609,7 @@ body .landing{
         padding: 2px;
         width: 130px;
         height: 43px;
-        border-radius: 5px;
+        border-radius:6px;
     }
 
     #LaunchApp {  
@@ -488,8 +641,8 @@ body .landing{
     }
 
     .float-left {
-        width: 0;
-        height: 0;
+        width: 0px;
+        height: 0px;
     }
     
 }
@@ -511,14 +664,14 @@ body .landing{
     max-width: 1400px;
     height: 121vh;
     margin: 180px auto 0 auto;
-    background-image: url(../assets/background1.png);
+    background-image: url(./background1.png);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
     background-position-x: 0%;
     background-position-y: 100%;
-    z-index: 0;
-    margin-bottom: -50px
+    z-index: 1;
+    margin-bottom: -50px; 
 
 }
 
@@ -527,7 +680,7 @@ body .landing{
     flex-direction: column;
     align-items: flex-start;
     justify-content: left;
-    margin: 100px 0 auto 70px;
+    margin: 100px 0px auto 70px;
     width: 100%;
     height: 100px;
     margin: 100px auto auto auto;
@@ -563,7 +716,7 @@ body .landing{
     width: 100%;
     height: 3px;
     background-color: rgba(200, 52, 247, 1);
-    margin: auto 0;
+    margin: auto 0px;
 }
 
 
@@ -588,7 +741,7 @@ body .landing{
     }
 
     .container-2 {
-        margin: 103px 0 auto 0;
+        margin: 103px 0px auto 0px;
         width: auto;
         height: 100%;
         position: relative;
@@ -606,7 +759,7 @@ body .landing{
     }
     
     .title-section-left .line-from-left {
-        width: 0;
+        width: 0px;
     }
 
     .line-from-right {
@@ -705,7 +858,7 @@ body .landing{
     flex-direction: row;
     margin-bottom: 10px;
     margin-top: -600px;
-    margin: 0 25px 10px 0;
+    margin: 0px 25px 10px 0;
 }
 
 .title-section-left img{
@@ -713,7 +866,7 @@ body .landing{
     height: 40px;
     margin-right: 17px;
     margin-left: 100px;
-    margin-top: 0;
+    margin-top: 0px;
 }
 
 .title-section-right h2{
@@ -741,14 +894,14 @@ body .landing{
     font-size: 20px;
     line-height: 35px;
     margin-right: 91px;
-    margin-top: 0;
+    margin-top: 0px;
     width: 100%;
 }
 
 
 @media screen and (max-width: 800px) {
     .container-3 {
-        margin-right: 0;
+        margin-right: 0px;
     }
 
     .title-section-right {
@@ -787,14 +940,14 @@ body .landing{
 
     
     .mr-60 {
-        margin-right: 0;
+        margin-right: 0px;
     }
 
 }
 
 @media screen and (max-width: 400px) {
     .container-3 {
-        margin-right: 0;
+        margin-right: 0px;
     }
 
     .title-section-right {
@@ -845,7 +998,7 @@ body .landing{
     display: flex;
     flex-direction: column;
     justify-content: center;
-    margin: auto 0 auto 209px;
+    margin: auto 0px auto 209px;
     width: auto;
 }
 
@@ -876,7 +1029,7 @@ body .landing{
     width: 100%;
     height: 3px;
     background-color: rgba(200, 52, 247, 1);
-    margin: auto 0 ;
+    margin: auto 0px ;
 }
 
 
@@ -895,7 +1048,7 @@ body .landing{
 @media screen and (max-width: 1200px) {
 
     .container-4 {
-        margin: auto 0 auto 150px;
+        margin: auto 0px auto 150px;
     }
     
     
@@ -907,7 +1060,7 @@ body .landing{
     }
 
     .container-4 {
-        margin: auto 0 auto 23px;
+        margin: auto 0px auto 23px;
     }
 
     .container-4 p{
@@ -1108,8 +1261,13 @@ body .landing{
     font-weight: bold;
     font-size: 20px;
     line-height: 12px;
-    padding-top: 27px;
+    padding-top: 22px;
     margin: 0 5px 10px 5px;
+}
+
+.item-3 h3{
+    padding-top: 22px;
+
 }
 
 .item-4 p{
@@ -1119,7 +1277,7 @@ body .landing{
     font-size: 15px;
     line-height: 28px;
     text-align: center;
-    margin: 0 5px;
+    margin: 0;
 }
 
 
@@ -1256,7 +1414,7 @@ body .landing{
     .grid-2-2 {
         width: auto;
         margin: auto;
-        column-gap: 0;
+        column-gap: 0px;
         row-gap: 23px;
         padding: 0 10px;
     }
@@ -1391,7 +1549,7 @@ body .landing{
 
     .line-left {
         visibility: hidden;
-        width: 0;
+        width: 0px;
     }
 
     .line-right {
@@ -1459,7 +1617,7 @@ body .landing{
         font-size: 14px;
         line-height: 12px;
         width: auto;
-        margin: 0 50px auto 60px;
+        margin: 0px 50px auto 60px;
     }
     
     
@@ -1476,7 +1634,7 @@ body .landing{
     }
 
     .storie p{
-        margin: 0 20px auto 60px;
+        margin: 0px 20px auto 60px;
     }
 
     .grid-storie {
@@ -1492,14 +1650,14 @@ body .landing{
     }
 
     .grid-storie p{
-        margin-left: 0;
+        margin-left: 0px;
     }
 
 
     .grid-item {
         min-width: 100px;
         margin-left: 45px;
-        margin-right: 0;
+        margin-right: 0px;
     }
 }
 
@@ -1528,7 +1686,7 @@ body .landing{
     display: flex;
     flex-direction: row;
     margin-bottom: 44px;
-    margin-right: 0;
+    margin-right: 0px;
     width: auto;
 }
 
@@ -1567,7 +1725,7 @@ body .landing{
     *#section-6 {
         position: relative;
         width: 100vw;
-        margin: 98px auto 0 auto;
+        margin: 98px auto 0px auto;
         align-items: center;
         justify-content: center;
     }
@@ -1611,7 +1769,7 @@ body .landing{
 
     .title-section-left-PA .line-from-left{
         visibility: hidden;
-        width: 0;
+        width: 0px;
     }
 }
 
@@ -1628,19 +1786,19 @@ body .landing{
 .grid-partenaires {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-template-rows: 0fr 0fr;
+    grid-template-rows: 0fr 0fr 0fr 0fr;
     justify-content: center;
     align-items: center;
     row-gap: 64px;
     column-gap: 61px;
     width: auto;
-    margin-right: 0;
+    margin-right: 0px;
     margin-left: 170px;
     margin-bottom: 30px;
 }
 
 .grid-item-p {
-    margin: 0 auto;
+    margin: 0;
     justify-content: center;
  }
 
@@ -1658,16 +1816,16 @@ body .landing{
         align-items: center;
         text-align: center;
         row-gap: 30px;
-        column-gap: 0;
+        column-gap: 0px;
         width: auto;
-        margin: 0 0 55px 0;
+        margin: 0px 0px 55px 0px;
         padding: 0;
     }
 
     .grid-item-p-un {
         visibility: hidden;
-        height: 0;
-        width: 0;
+        height: 0px;
+        width: 0px;
      }
 
      
@@ -1720,10 +1878,10 @@ body .landing{
 }
 
 
-.footer {
-    border-top: 3px solid rgba(126, 126, 216, 1);
+.landing footer {
     width: 100%;
     height: 95px;
+    margin-top:30px;
 }
 
 .footer-center{
@@ -1740,7 +1898,7 @@ body .landing{
     grid-template-rows: 1fr;
 }
 
-.footer p {
+.landing footer p {
     font-family: "Roboto";
     font-style: normal;
     font-weight: 300;
@@ -1761,10 +1919,10 @@ body .landing{
 }
 
 
-.footer nav{
+.landing footer nav{
     visibility: hidden;
-    width: 0;
-    height: 0;
+    width: 0px;
+    height: 0px;
 }
 
 .visible {
@@ -1778,7 +1936,7 @@ body .landing{
 
 @media screen and (max-width: 800px) {
     
-    .footer {
+    .landing footer {
         height: auto;
         z-index: 2;
         background-color: black;
@@ -1792,7 +1950,7 @@ body .landing{
     }
 
     
-    .footer nav{
+    .landing footer nav{
         visibility: visible;
         display: flex;
         align-items: center;
@@ -1802,16 +1960,16 @@ body .landing{
         height: auto;
     }
 
-    .footer nav ul{
+    .landing footer nav ul{
         list-style-type: none;
-        padding: 0;
+        padding: 0px;
     }
 
-    .footer nav ul li{
+    .landing footer nav ul li{
         margin-top: 28px;
     }
 
-    .footer nav ul li a{
+    .landing footer nav ul li a{
         text-decoration: none;
         color: white;
         font-family: "Roboto";
@@ -1841,7 +1999,7 @@ body .landing{
     }
 
     
-    .footer p {
+    .landing footer p {
         font-family: "Roboto";
         font-style: normal;
         font-weight: 300;
@@ -1863,7 +2021,7 @@ body .landing{
 
     .visible {
         visibility: hidden;
-        height: 0;
+        height: 0px;
     }
     
     .unvisible {
@@ -1877,7 +2035,7 @@ body .landing{
 
     .unvisible p{
         font-weight: 300;
-        font-size: 7px;
+        font-size: 7px !important;
         line-height: 8px;
         text-align: center;
         margin-bottom: 19px;
@@ -1887,7 +2045,7 @@ body .landing{
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-left: 0;
+        margin-left: 0px;
         margin-bottom: 22px;
         font-weight: 800;
         font-size: 11px;
@@ -1945,14 +2103,13 @@ body .landing{
     position: absolute;
     top: 50%;
     transform: translate(0, -50%);
-    font-family: 'Turret Road' !important;
-    font-size:16px
 }
 
 #section-5 .function img{
     width:30px;
     height:30px;
     position: relative;
+    top: -2px;
 }
 
 #section-5 .links a img{
@@ -1971,7 +2128,7 @@ body .landing{
     max-width: 1400px;
     min-height: 80vh;
     margin: 180px auto 0 auto;
-    z-index: 0;
+    z-index: 2;
     margin-bottom: -50px;
     display:block;
 
@@ -1982,7 +2139,7 @@ body .landing{
     flex-direction: column;
     align-items: flex-start;
     justify-content: left;
-    margin: 100px 0 auto 0;
+    margin: 100px 0px auto 0px;
     width: 100%;
     height: auto;
 }
@@ -2017,7 +2174,7 @@ body .landing{
     width: 100%;
     height: 3px;
     background-color: rgba(200, 52, 247, 1);
-    margin: auto 0;
+    margin: auto 0px;
 }
 
 
@@ -2055,7 +2212,7 @@ body .landing{
     }
 
     .container-2b {
-        margin: 103px 0 auto 0;
+        margin: 103px 0px auto 0px;
         width: auto;
         height: 100%;
         position: relative;
@@ -2073,7 +2230,7 @@ body .landing{
     }
     
     .title-section-left .line-from-left {
-        width: 0;
+        width: 0px;
     }
 
     .line-from-right {
@@ -2155,8 +2312,8 @@ body .landing{
 
 #section-3 .bg {
     height: 121vh;
-    margin: 0 auto 0 auto;
-    background-image: url(../assets/Group2.png);
+    margin: 0px auto 0 auto;
+    background-image: url(./Group2.png);
     background-position: center;
     width: 100vw;
     background-repeat: no-repeat;
@@ -2169,9 +2326,9 @@ body .landing{
 .container-3 .title-section-left img {
    width: 44px;
     height: 44px;
-    margin-right: 0;
+    margin-right: 0px;
     margin-left: -60px;
-    margin-top: 0;
+    margin-top: 0px;
     position: absolute;
 }
 
@@ -2200,7 +2357,7 @@ body .landing{
     #section-5 .team-mate{
         z-index:50
     }
-    section{
+    .landing section{
         max-width:100vw!important
     }
     .container-2b{
@@ -2215,11 +2372,16 @@ body .landing{
         display:none
     }
 
-    .landing .container{
+    .container{
         padding-left: 31px!important;
         padding-right: 31px!important;
         margin-left: 0;
         margin-right: 0
+    }
+
+    .landing .header{
+        z-index:2;
+        position:relative;
     }
         
     .landing section > div{
@@ -2279,7 +2441,7 @@ body .landing{
     float: right;
     position: absolute;
     left: 244px;
-    top: 0;
+    top: 0px;
     width: 24px;
     height: 24px;
 
@@ -2345,7 +2507,7 @@ body .landing{
         width:197px
     }
 
-    html{
+    html .landing {
 
     overflow-x: hidden;
     }
@@ -2387,7 +2549,7 @@ body .landing{
     .grid-item {
         min-width: 100px;
         margin-left: 20px;
-        margin-right: 0;
+        margin-right: 0px;
     }
 
     .container-2 .title-section-left h2 {
@@ -2401,7 +2563,7 @@ body .landing{
         
     }
     #section-5 .function {
-        right: 0;
+        right: 0px;
         position: absolute;
         margin-top: -3px;
         font-family: Roboto;
@@ -2423,12 +2585,12 @@ body .landing{
     }
 
     #section-6 {
-        margin: 500px auto 0 auto;
+        margin: 500px auto 0px auto;
         transition:200ms ease all;
     }
 
     .fs #section-6 {
-        margin: 750px auto 0 auto;
+        margin: 750px auto 0px auto;
     }
     .title-section-left-PA img{
         margin-left:40px
