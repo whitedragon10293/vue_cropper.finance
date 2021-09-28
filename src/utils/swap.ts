@@ -793,6 +793,7 @@ export async function place(
       })
     )
   }
+  //need to remove on mainnet
   if(openOrdersAccounts.length == 0)
   {
     return await sendTransaction(connection, wallet, mergeTransactions([transaction]), [
