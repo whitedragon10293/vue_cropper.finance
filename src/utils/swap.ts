@@ -783,22 +783,6 @@ export async function place(
   transaction.add(placeOrderTx);
   transaction.add(market.makeMatchOrdersTransaction(5));
   signers.push(...placeOrderSigners);
-  // transaction.add(
-  //   market.makePlaceOrderInstruction(connection, {
-  //     owner,
-  //     payer: wrappedSolAccount ?? new PublicKey(fromTokenAccount),
-  //     // @ts-ignore
-  //     side: forecastConfig.side,
-  //     price: forecastConfig.worstPrice,
-  //     size:
-  //       forecastConfig.side === 'buy'
-  //         ? parseFloat(forecastConfig.amountOut.toFixed(6))
-  //         : parseFloat(forecastConfig.maxInAllow.toFixed(6)),
-  //     orderType: 'limit',
-  //     openOrdersAddressKey: openOrdersAddress
-  //     // feeDiscountPubkey: useFeeDiscountPubkey
-  //   })
-  // )
 
   if (wrappedSolAccount) {
     transaction.add(
@@ -809,9 +793,12 @@ export async function place(
       })
     )
   }
-  // return await sendTransaction(connection, wallet, mergeTransactions([transaction]), [
-  //   ...signers
-  // ])
+  if(openOrdersAccounts.length == 0)
+  {
+    return await sendTransaction(connection, wallet, mergeTransactions([transaction]), [
+      ...signers
+    ])
+  }
 
   let fromMint = fromCoinMint
   let toMint = toCoinMint
@@ -829,7 +816,12 @@ export async function place(
     fromMint,
     transaction
   )
-  const newToTokenAccount = await createAssociatedTokenAccountIfNotExist(toTokenAccount, owner, toMint, transaction)
+  const newToTokenAccount = await createAssociatedTokenAccountIfNotExist(
+    toTokenAccount, 
+    owner, 
+    toMint, 
+    transaction
+  )
 
   const userAccounts = [newFromTokenAccount, newToTokenAccount]
   if (market.baseMintAddress.toBase58() === toMint && market.quoteMintAddress.toBase58() === fromMint) {

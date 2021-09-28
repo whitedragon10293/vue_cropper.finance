@@ -1234,7 +1234,7 @@ const TOKENSBASE_DEVNET: Tokens = {
     name: 'Wrapped Solana',
     mintAddress: 'So11111111111111111111111111111111111111112',
     decimals: 9,
-    referrer: 'HTcarLHe7WRxBQCWvhVB8AP56pnEtJUV2jDGvcpY3xo5',
+    // referrer: 'HTcarLHe7WRxBQCWvhVB8AP56pnEtJUV2jDGvcpY3xo5',
     tags:['cropper']
   },
   WUSDT: {
