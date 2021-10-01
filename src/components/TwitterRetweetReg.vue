@@ -1,27 +1,26 @@
 <template>
   <div>
     <Modal
-      :title="state.progress === 0?'Twitter':state.progress === 1?'Retweet':'Congrats !'"
+      :title="this.progression < 2 ? 'Twitter' : this.progression < 4 ? 'Telegram' : this.progression < 5 ? 'Retweet' : 'You won a ticket' "
       :visible="show"
       :footer="null"
       :mask-closable="false"
       :closable="false"
       @cancel="$emit('onClose')"
     >
-      <div v-if="state.progress === 0">
-        <div class="twitter-link">
-          <a href="#" :disabled="state.followCropperOnTwitter" @click="followCropper">Follow Cropper Finance on Twitter</a>
+      <div v-if="this.progression < 2">
+        <div class="twitter-link" :class="this.progression == 0 ? 'current' : ''">
+          <a href="https://twitter.com/CropperFinance" target="_blank" >Follow @CropperFinance on Twitter</a>
         </div>
-        <div class="twitter-link">
-          <a href="#" :disabled="state.followProjectOnTwitter" @click="followPrject">Follow Project A on Twitter</a>
+        <div class="twitter-link" :class="this.progression == 1 ? 'current' : ''">
+          <a :href="farm.labelized.links.twitter" target="_blank">Follow {{farm.labelized.name}} on Twitter</a>
         </div>
 
         <Row :gutter="32" class="actions">
           <Col :span="24" style="text-align: center">
             <Button
-              :disabled="!state.followCropperOnTwitter && !state.followProjectOnTwitter"
               ghost
-              @click="$emit('onGoToRetweet')"
+              @click="nextStep()"
             >
               Next
             </Button>
@@ -29,26 +28,55 @@
         </Row>
       </div>
 
-      <div v-else-if="state.progress === 1">
-        <div class="retweet">
-          <div class="retweet-image"></div>
-          <input v-model="keyword" placeholder="Input url here" />
+      <div v-else-if="this.progression < 4 && this.progression >= 2 ">
+        <div class="twitter-link" :class="this.progression == 2 ? 'current' : ''">
+          <a href="https://t.me/CropperFinance" target="_blank" >Follow @CropperFinance on Telegram</a>
+        </div>
+        <div class="twitter-link" :class="this.progression == 3 ? 'current' : ''">
+          <a :href="farm.labelized.links.telegram" target="_blank">Follow {{farm.labelized.name}} on Telegram</a>
         </div>
 
         <Row :gutter="32" class="actions">
           <Col :span="24" style="text-align: center">
             <Button
-              :disabled="state.retweetUrl === ''"
               ghost
-              @click="$emit('onConfirm')"
+              @click="nextStep()"
             >
-              Confirm
+              Next
             </Button>
           </Col>
         </Row>
       </div>
 
-      <div v-else-if="state.progress === 2">
+      <div v-else-if="this.progression < 5 && this.progression >= 4">
+
+        <blockquote class="twitter-tweet"><p lang="en" dir="ltr">👨🏻‍🌾 Dear Croppers,<br><br>📣 We’re excited to announce our Farm Launcher’s hero feature. <br><br>🎉 Introducing a feature that celebrates DeFi innovation while rewarding farmers. <br><br>🤝 Meet <a href="https://twitter.com/hashtag/Fertilizer?src=hash&amp;ref_src=twsrc%5Etfw">#Fertilizer</a>🧪<a href="https://t.co/BeuvL2aUbz">https://t.co/BeuvL2aUbz</a></p>&mdash; CropperFinance (@CropperFinance) <a href="https://twitter.com/CropperFinance/status/1443533161913372672?ref_src=twsrc%5Etfw">September 30, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+        <div class="twitter-link">
+
+          Retweet this tweet and input retweet url :
+
+          <input type="text" class="link" placeholder="Paste url here"
+
+          @input="nurl($event.target.value)"
+
+           />
+        </div>
+
+        <Row :gutter="32" class="actions">
+          <Col :span="24" style="text-align: center">
+            <Button
+              ghost
+              @click="checkUrl()"
+            >
+              Next
+            </Button>
+          </Col>
+        </Row>
+      </div>
+
+
+      <div v-else-if="this.progression <= 5">
         <div class="congrats">
             You have been successfully registered !
         </div>
@@ -59,7 +87,7 @@
               ghost
               @click="$emit('onCongrats')"
             >
-              OK
+              Close
             </Button>
           </Col>
         </Row>
@@ -74,14 +102,6 @@ import { Modal, Button, Row, Col } from 'ant-design-vue'
 
 Vue.use(Modal)
 
-const defaultState = {
-  followCropperOnTwitter: false,
-  followCropperURL: "",
-  followProjectOnTwitter: false,
-  followProjectURL: "",
-  retweetUrl:"",
-  progress: 0
-}
 
 export default Vue.extend({
   components: {
@@ -97,22 +117,60 @@ export default Vue.extend({
     },
     farm: {
       type: Object,
-      default: null
-    },
-    state: {
-      type: Object,
-      default: defaultState
+      required: true
     }
   },
   data() {
-    return {}
+    return {
+      progression: 0,
+      url : false as any
+    }
   },
   methods: {
-    followCropper(){
+    nextStep(){
+      if(this.progression < 1){ 
+        this.progression = 0;
+      }
+      this.progression++;
+      console.log(this.farm);
 
     },
-    followProject(){
+    nurl(url: string) {
+        this.url = url
+    },
+    checkUrl(){
+      let url;
+
+
       
+      try {
+        url = new URL(this.url);
+      } catch (_) {
+        return false;  
+      }
+
+
+      const recipeUrl = 'https://api.croppppp.com/pfo/register/';
+      const postBody = {
+          spl: this.$accessor.wallet.address,
+          farmId: 10
+      };
+      const requestMetadata = {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postBody)
+      };
+
+      fetch(recipeUrl, requestMetadata)
+          .then(res => res.json())
+          .then(recipes => {
+          
+          });
+
+
+      return url.protocol === "http:" || url.protocol === "https:";
     }
   }
 })
@@ -121,12 +179,27 @@ export default Vue.extend({
 <style lang="less" scoped>
 @import '../styles/variables';
 
+input.link{
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 5px;
+}
+
 .twitter-link {
   text-align: center;
   margin-top: 15px;
   margin-bottom: 15px;
+  color: gray;
+  a{
+    color:gray
+  }
   a[disabled] {
     color: gray;
+  }
+  &.current a{
+    color:#fff;
+    font-weight:bold
   }
 }
 .retweet {

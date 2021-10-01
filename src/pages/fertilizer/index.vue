@@ -1,87 +1,39 @@
 <template>
-  <div class="farm container">
+  <div class="fertilizer cont">
     <div class="page-head fs-container">
-      <span class="title">Private Farms</span>
-        <NuxtLink to="/farms/create-farm/">
-          <div class="btncontainer">
-            <Button size="large" ghost>
-              Create a PF
-            </Button>
-          </div>
-        </NuxtLink>
-      <div class="buttons">
-        <Tooltip v-if="farm.initialized" placement="bottomRight">
-          <template slot="title">
-            <span>
-              Displayed data will auto-refresh after
-              {{ farm.autoRefreshTime - farm.countdown }} seconds. Click this circle to update manually.
-            </span>
-          </template>
-          <Progress
-            type="circle"
-            :width="20"
-            :stroke-width="10"
-            :percent="(100 / farm.autoRefreshTime) * farm.countdown"
-            :show-info="false"
-            :class="farm.loading ? 'disabled' : ''"
-            @click="
-              () => {
-                $accessor.farm.requestInfos()
-                $accessor.wallet.getTokenAccounts()
-              }
-            "
-          />
-        </Tooltip>
-      </div>
+      <span class="title">Fertilizer</span>
     </div>
 
-    <div v-if="farm.initialized">
-      <div class="card">
-        <div class="card-body">
-          <div style="text-align: center; width: 100%">
-            <div style="width: 30%; display: inline-block">
-              <Input v-model="searchName" size="large" class="input-search" placeholder="search by name">
-                <Icon slot="prefix" type="search" />
-              </Input>
-            </div>
-            <div style="width: 5%; display: inline-block"></div>
-            <div style="width: 15%; display: inline-block">
-              
-            </div>
-            <div style="width: 5%; display: inline-block"></div>
-            <div style="width: 15%; display: inline-block">
-              
-            </div>
-            <div style="width: 5%; display: inline-block"></div>
-            <div style="width: 15%; display: inline-block">
-              
-            </div>
-            <div style="width: 5%; display: inline-block"></div>
-            <div style="width: 5%; display: inline-block"></div>
-            
-        </div>
-        <div>
-            <Row v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile' : ''" :gutter="0" >
+    <div class="list" v-if="farm.initialized">
+
+            <div v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile singleFarm' : ' singleFarm'" :gutter="0" >
                 <div @click="goToProject(farm)" class="pf-record-content">
-                    <Col class="lp-icons" :span="8">
+                  <img class="small" :src="importIcon(`/coins/${farm.farmInfo.lp.coin.symbol}.png`)" alt="" />
+                  <div class="banner"><img :src="farm.labelized.links.banner" class="large" alt="" /></div>
+
+                    <div class="title">{{farm.labelized.name}}</div>
+
+
+                    <div class="info">Mettre date et status</div>
+
+
+                    <Col class="followerscount" :span="16">
+                        XXX Followers
+                    </Col>
+
+                    <Col class="state pf-arrow" :span="8">
+                        
                         <div class="icons">
                         <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
                         <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
                         </div>
-                        {{ isMobile ? farm.farmInfo.lp.symbol : farm.farmInfo.lp.name }}
-                    </Col>
-                    <Col class="state" :span="8">
-                        <div class="title">Project 1</div>
-                    </Col>
-                    <Col class="state pf-arrow" :span="8">
-                        >
                     </Col>
                 </div>
-            </Row>
-        </div>
-        </div>
-      </div>
+            </div>
+
     </div>
+
+
 
     <div v-else class="fc-container">
       <Spin :spinning="true">
@@ -94,7 +46,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import { Tooltip, Progress, Collapse, Spin, Icon, Row, Col, Button, Radio, Input, Select, Switch as Toggle, Pagination } from 'ant-design-vue'
+import importIcon from '@/utils/import-icon'
+import { Collapse, Spin, Icon, Col, Radio, Select, Switch as Toggle, Pagination } from 'ant-design-vue'
 import { get, cloneDeep } from 'lodash-es'
 import { TokenAmount } from '@/utils/safe-math'
 import { FarmInfo } from '@/utils/farms'
@@ -107,7 +60,7 @@ import { TOKEN_PROGRAM_ID, u64 } from '@solana/spl-token'
 import { PAY_FARM_FEE, YieldFarm } from '@/utils/farm'
 import { PublicKey } from '@solana/web3.js'
 import { DEVNET_MODE, FARM_PROGRAM_ID } from '@/utils/ids'
-import { TOKENS } from '@/utils/tokens'
+import { TOKENS, NATIVE_SOL } from '@/utils/tokens'
 import { addLiquidity, removeLiquidity } from '@/utils/liquidity'
 const CollapsePanel = Collapse.Panel
 const RadioGroup = Radio.Group
@@ -115,17 +68,12 @@ const RadioButton = Radio.Button
 
 export default Vue.extend({
   components: {
-    Tooltip,
     //Toggle,
-    Input,
-    Progress,
     //Collapse,
     //CollapsePanel,
     Spin,
     Icon,
-    Row,
     Col,
-    Button,
     //Select,
     //Pagination
   },
@@ -141,6 +89,7 @@ export default Vue.extend({
       farms: [] as any[],
       showFarms:[] as any[],
       searchName:"",
+      coinPicUrl : '',
 
       lp: null,
       rewardCoin: null,
@@ -168,6 +117,8 @@ export default Vue.extend({
       totalCount:110,
       pageSize:10,
       currentPage:1,
+      coinName : '',
+      mintAddress : ''
     }
   },
 
@@ -235,12 +186,29 @@ export default Vue.extend({
   },
 
   methods: {
+    importIcon,
+    getCoinPicUrl() {
+      let token
+      if (this.mintAddress == NATIVE_SOL.mintAddress) {
+        token = NATIVE_SOL
+      } else {
+        token = Object.values(TOKENS).find((item) => item.mintAddress === this.mintAddress)
+      }
+      if (token) {
+        this.coinName = token.symbol.toLowerCase()
+        if (token.picUrl) {
+          this.coinPicUrl = token.picUrl
+        } else {
+          this.coinPicUrl = ''
+        }
+      }
+    },
     TokenAmount,
     goToProject(farm:any){
         this.$router.push({
            path: '/fertilizer/project/',
            query: {
-            //farmId: this.farm.farmInfo.poolId
+             // farmId: this.farm.farmInfo.poolId
            }
        })
     },
@@ -259,7 +227,7 @@ export default Vue.extend({
       }
       finally{
         responseData.forEach((element:any) => {
-          this.labelizedAmms[element.ammID] = element.labelized;
+          this.labelizedAmms[element.ammID] = element;
         });
       }
     },
@@ -278,11 +246,17 @@ export default Vue.extend({
         // @ts-ignore
         const { reward, lp } = farmInfo
 
+
+
         let newFarmInfo:any = cloneDeep(farmInfo)
+
+        let isPFO = false;
 
         if (reward && lp) {
           const rewardPerTimestampAmount = new TokenAmount(getBigNumber(reward_per_timestamp), reward.decimals)
           const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
+
+
         
           const rewardPerTimestampAmountTotalValue =
             getBigNumber(rewardPerTimestampAmount.toEther()) *
@@ -344,26 +318,73 @@ export default Vue.extend({
             pendingReward: new TokenAmount(0, farmInfo.reward.decimals)
           }
         }
+
         if((newFarmInfo as any).poolInfo.is_allowed > 0 || 
           (newFarmInfo as any).poolInfo.owner.toBase58() === this.wallet.address){
           let labelized = false;
           if(lp){
             const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
             if(this.labelizedAmms[liquidityItem.ammId]){
-              labelized = true;
+              labelized = this.labelizedAmms[liquidityItem.ammId];
+              if(labelized){
+                if(this.labelizedAmms[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmms[liquidityItem.ammId].pfarmID){
+                  isPFO = true;
+                }
+              }
             }
           }
 
           newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
 
-          farms.push({
-            labelized,
-            userInfo,
-            farmInfo: newFarmInfo
-          })
+          if(isPFO){
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+            console.log(farms);
+          }
         }
         
       }
+
+
+
 
       this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
       this.endedFarmsPoolId = endedFarmsPoolId
@@ -951,151 +972,89 @@ export default Vue.extend({
   padding: 0;
   margin: 0;
 }
-.farm.container {
-  max-width: 1200px;
-  background: #1B2028;
-  margin-top:20px;
-  margin-bottom:20px;
-
-
-  .page-head a{
-    z-index: 2;
-    padding-left: 15px;
-    background: #1b2028;
-    position: absolute;
-    right: 0;
-
-    .btncontainer{
-      display:inline-block
-    }
-  }
-
-  .card {
-    .card-body {
-      padding: 0;
-      overflow-x: scroll;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-
-      .ant-collapse {
-        border: 0;
-        background-color: rgba(0, 0, 0, 0.9471);
-
-        .ant-collapse-item {
-          border-bottom: 0;
-        }
-
-        .ant-collapse-item:not(:last-child) {
-          border-bottom: 1px solid #d9d9d9;
-        }
-
-      }
-
-      .start .btncontainer{
-        display: inline-block;
-      }
-    }
-  }
-
-  .harvest {
-    .reward {
-      .token {
-        font-weight: 600;
-        font-size: 20px;
-      }
-
-      .value {
-        font-size: 12px;
-      }
-    }
-
-    button {
-      padding: 0 30px;
-    }
-  }
-
-  .start {
-    .unstarted {
-      .token {
-        font-weight: 600;
-        font-size: 20px;
-      }
-
-      .value {
-        font-size: 12px;
-      }
-    }
-    
-    .unstake {
-      margin-right: 10px;
-    }
-
-    button {
-      width: 100%;
-    }
-  }
-
-  .harvest,
-  .start {
-    padding: 16px;
-    border: 2px solid #1c274f;
-    border-radius: 4px;
-
-    .title {
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-  }
-
-  .farm-head {
-    display: flex;
-    align-items: center;
-
-    .lp-icons {
-      .icons {
-        margin-right: 8px;
-      }
-    }
-
-    .state {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-
-      .title {
-        font-size: 12px;
-        text-transform: uppercase;
-      }
-
-      .value {
-        font-size: 16px;
-        line-height: 24px;
-      }
-    }
-  }
-
-  .farm-head.is-mobile {
-    padding: 24px 16px !important;
-  }
-
-  .is-mobile {
-    .harvest,
-    .start {
-      margin-top: 16px;
-    }
-  }
-
-  p {
-    margin-bottom: 0;
-  }
-}
 .radioButtonStyle {
   width: 50%;
   text-align: center;
 }
+
+.fertilizer .list{
+  text-align:center;
+  width:1300px;
+  max-width:calc(100% - 50px);
+  margin-left:auto;
+  margin-right:auto;
+
+  .pf-record .pf-record-content{
+    padding:0;
+  }
+
+  .singleFarm{
+    width:calc(33.33333333% - 20px);
+    display:inline-block;
+    vertical-align:top;
+    border-bottom:none !important;
+    position:relative;
+    margin:0 10px 20px 10px;
+    background:#1B2028;
+
+    .banner{
+      height:100px;
+      position:relative;
+      overflow:hidden;
+
+      .large{
+        background:#f00;
+        height:100px;
+        min-width:100%;
+        left:50%;
+        top:50%;
+        position:absolute;
+        object-fit: cover;
+        transform:translate(-50%,-50%)
+      }
+    }
+
+    .info{
+      margin-bottom:20px
+    }
+
+    .followerscount{
+      text-align: left;
+      font-weight: bold;
+      font-size: 17px;
+    }
+
+    .ant-col{
+      padding:0 10px 5px 10px;
+    }
+
+    .small{
+      width: 70px;
+      border: 4px solid #000;
+      border-radius:50%;
+      top:100px;
+      z-index:2;
+      left:50%;
+      position:absolute;
+      background:#000;
+      transform:translate(-50%,-50%)
+    }
+
+    .title{
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 5px;
+    }
+
+    .icons img{
+      max-height:24px;
+    }
+  } 
+}
+
+
+
+
 </style>
 
 <style lang="less">
