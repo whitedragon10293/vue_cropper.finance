@@ -18,7 +18,7 @@
 
 
                     <Col class="followerscount" :span="16">
-                        XXX Followers
+                        {{farm.followers}} Followers
                     </Col>
 
                     <Col class="state pf-arrow" :span="8">
@@ -206,10 +206,7 @@ export default Vue.extend({
     TokenAmount,
     goToProject(farm:any){
         this.$router.push({
-           path: '/fertilizer/project/',
-           query: {
-             // farmId: this.farm.farmInfo.poolId
-           }
+           path: '/fertilizer/project/?f=' + farm.labelized.slug
        })
     },
     async updateLabelizedAmms()
@@ -337,46 +334,34 @@ export default Vue.extend({
           newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
 
           if(isPFO){
+
+
+            let responseData
+            try{
+              responseData = await fetch(
+                'https://api.cropper.finance/pfo/?farmId= '+ labelized.pfarmID + '&t='+ Math.round(moment().unix()/60)
+              ).then(res => res.json());
+            }
+            catch{
+            }
+            finally{
+              if(responseData[this.wallet.address]){
+                this.isRegistered = true;
+                this.registeredDatas = responseData[this.wallet.address];
+                this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?r=" + this.wallet.address;
+              }
+             
             farms.push({
+              followers : Object.keys(responseData).length,
               labelized,
               userInfo,
               farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
-            farms.push({
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            })
+            }) 
+
+            }
+
+
+
             console.log(farms);
           }
         }
@@ -1119,30 +1104,6 @@ export default Vue.extend({
   }
 
 
-  .label.soon{
-      border: 1px solid #13d89d;
-      color:#13d89d;
-    position: absolute;
-    padding: 0 20px 0 20px;
-    border-radius: 3px;
-    right: 60px;
-  }
-
-  .label.ended{
-      border: 1px solid #f00;
-      color:#f00;
-    position: absolute;
-    padding: 0 20px 0 20px;
-    border-radius: 3px;
-    right: 60px;
-  }
-
-  .labelized{
-    color:#13d89d;
-    position: absolute;
-    padding: 0 0 0 48px;
-    bottom:20px;
-  }
 
 main{
   background-color:#000;

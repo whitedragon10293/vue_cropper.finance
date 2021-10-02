@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div :class="this.progression">
     <Modal
       :title="this.progression < 2 ? 'Twitter' : this.progression < 4 ? 'Telegram' : this.progression < 5 ? 'Retweet' : 'You won a ticket' "
       :visible="show"
       :footer="null"
-      :mask-closable="false"
-      :closable="false"
+      :mask-closable="true"
+      :closable="true"
       @cancel="$emit('onClose')"
     >
       <div v-if="this.progression < 2">
@@ -48,9 +48,31 @@
         </Row>
       </div>
 
+      <div v-else-if="this.progression == 10">
+        <div class="congrats">
+          <div>You have been successfully registered !</div>
+
+          Share your Referral link and earn more tickets
+          <input type="text" class="link" :value="walletAddress" />
+        </div>
+
+        <Row :gutter="32" class="actions">
+          <Col :span="24" style="text-align: center">
+            <Button
+              ghost
+              @click="$emit('onClose')"
+            >
+              Close
+            </Button>
+          </Col>
+        </Row>
+      </div>
+
       <div v-else-if="this.progression < 5 && this.progression >= 4">
 
-        <blockquote class="twitter-tweet"><p lang="en" dir="ltr">👨🏻‍🌾 Dear Croppers,<br><br>📣 We’re excited to announce our Farm Launcher’s hero feature. <br><br>🎉 Introducing a feature that celebrates DeFi innovation while rewarding farmers. <br><br>🤝 Meet <a href="https://twitter.com/hashtag/Fertilizer?src=hash&amp;ref_src=twsrc%5Etfw">#Fertilizer</a>🧪<a href="https://t.co/BeuvL2aUbz">https://t.co/BeuvL2aUbz</a></p>&mdash; CropperFinance (@CropperFinance) <a href="https://twitter.com/CropperFinance/status/1443533161913372672?ref_src=twsrc%5Etfw">September 30, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        <div>
+        <blockquote class="twitter-tweet"><p lang="en" dir="ltr">👨🏻‍🌾 Dear Croppers,<br><br>📣 We’re excited to announce our Farm Launcher’s hero feature. <br><br>🎉 Introducing a feature that celebrates DeFi innovation while rewarding farmers. <br><br>🤝 Meet <a href="https://twitter.com/hashtag/Fertilizer?src=hash&amp;ref_src=twsrc%5Etfw">#Fertilizer</a>🧪<a href="https://t.co/BeuvL2aUbz">https://t.co/BeuvL2aUbz</a></p>&mdash; CropperFinance (@CropperFinance) <a href="https://twitter.com/CropperFinance/status/1443533161913372672?ref_src=twsrc%5Etfw">September 30, 2021</a></blockquote> <script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
 
         <div class="twitter-link">
 
@@ -61,6 +83,10 @@
           @input="nurl($event.target.value)"
 
            />
+        </div>
+
+        <div v-if="registerError != ''" class="error">
+            {{registerError}}
         </div>
 
         <Row :gutter="32" class="actions">
@@ -76,22 +102,6 @@
       </div>
 
 
-      <div v-else-if="this.progression <= 5">
-        <div class="congrats">
-            You have been successfully registered !
-        </div>
-
-        <Row :gutter="32" class="actions">
-          <Col :span="24" style="text-align: center">
-            <Button
-              ghost
-              @click="$emit('onCongrats')"
-            >
-              Close
-            </Button>
-          </Col>
-        </Row>
-      </div>
     </Modal>
   </div>
 </template>
@@ -123,7 +133,9 @@ export default Vue.extend({
   data() {
     return {
       progression: 0,
-      url : false as any
+      url : false as any,
+      registerError : "",
+      walletAddress: false as any
     }
   },
   methods: {
@@ -132,13 +144,12 @@ export default Vue.extend({
         this.progression = 0;
       }
       this.progression++;
-      console.log(this.farm);
-
+      this.walletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.farm.labelized.slug + "&r=" + this.$accessor.wallet.address;
     },
     nurl(url: string) {
         this.url = url
     },
-    checkUrl(){
+    async checkUrl(){
       let url;
 
 
@@ -150,24 +161,34 @@ export default Vue.extend({
       }
 
 
-      const recipeUrl = 'https://api.croppppp.com/pfo/register/';
-      const postBody = {
-          spl: this.$accessor.wallet.address,
-          farmId: 10
-      };
-      const requestMetadata = {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(postBody)
-      };
+      let registerUrl = 'https://api.croppppp.com/pfo/register/?spl=' + this.$accessor.wallet.address + '&farmId= '+ this.farm.labelized.pfarmID;
 
-      fetch(recipeUrl, requestMetadata)
-          .then(res => res.json())
-          .then(recipes => {
-          
-          });
+
+      const query = new URLSearchParams(window.location.search);
+      if(query.get('r')){
+        registerUrl += '&referer=' + query.get('r');
+      }
+
+
+      this.registerError = "";
+      let responseData
+      try{
+        responseData = await fetch(
+          registerUrl
+        ).then(res => res.json());
+      }
+      catch{
+        console.log(responseData);
+        this.registerError = "An error occured"
+      }
+      finally{
+        if(responseData.status == false){
+          this.registerError = responseData.message
+        } else {
+          this.progression = 10;
+        }
+      }
+
 
 
       return url.protocol === "http:" || url.protocol === "https:";
@@ -217,12 +238,13 @@ input.link{
   }
 
   input {
-    padding: 5px;
-    border: 1px solid @primary-color;
-    border-radius: 4px;
-    background-color: transparent;
-    font-size: 15px;
-    color: @text-color;
+    color: #000;
+    padding: 5px 20px;
+    display: inline-block;
+    width: 90%;
+    border-radius: 5px;
+    border: none;
+    margin-top: 13px;
 
     &:active,
     &:focus,
@@ -231,6 +253,14 @@ input.link{
     }
   }
 }
+
+.error{
+  color: red;
+    padding: 0 0 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
 .congrats{
   font-size: 18px;
   text-align: center;

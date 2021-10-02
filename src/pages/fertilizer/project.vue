@@ -8,7 +8,10 @@
      <TwitterRetweetReg
       :farm="farm"
       :show="registerTwitterRetweet"
-      @onClose="() => ((registerTwitterRetweet = false))"
+      @onClose="() => {
+        registerTwitterRetweet = false;
+        updateFarms();
+        }"
     />
 
      <div class="card-body" style="grid-row-gap: 0; row-gap: 0; padding-bottom: 15px">
@@ -38,7 +41,7 @@
 
             <div class="desc"></div>
 
-            <div class="followerscount">XX followers</div>
+            <div class="followerscount">{{followerCount}} followers</div>
 
             <div class="rewardAmount">Airdrop allocated : <b>{{farm.labelized.airdrop.amount}} {{farm.labelized.airdrop.symbol}}</b></div>
 
@@ -57,6 +60,14 @@
                   >
                     Connect wallet
                   </Button>
+                </div>
+
+                <div v-else-if="farm.labelized.pla_end_ts > currentTimestamp && isRegistered">
+                  <div class="info">You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}} !</div>
+                  <div class="share">
+                  Share your Referral link and earn more tickets
+                  <input type="text" class="link" :value="shareWalletAddress" />
+                  </div>
                 </div>
 
                 <div v-else-if="farm.labelized.pla_end_ts > currentTimestamp" class="btncontainer">
@@ -134,7 +145,7 @@
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import importIcon from '@/utils/import-icon'
-import { Collapse, Col, Radio, Select, Switch as Toggle, Pagination } from 'ant-design-vue'
+import { Collapse, Col, Radio, Select, Row, Switch as Toggle, Pagination } from 'ant-design-vue'
 import { get, cloneDeep } from 'lodash-es'
 import { TokenAmount } from '@/utils/safe-math'
 import { FarmInfo } from '@/utils/farms'
@@ -162,6 +173,7 @@ export default Vue.extend({
     //Spin,
    // Icon,
     Col,
+    Row,
     //Select,
     //Pagination
   },
@@ -177,9 +189,13 @@ export default Vue.extend({
       farms: [] as any[],
       showFarms:[] as any[],
       searchName:"",
+      followerCount: 0,
       registeringProcess: false,
       coinPicUrl : '',
       lp: null,
+      isRegistered: false,
+      registeredDatas: false,
+      shareWalletAddress: '',
       rewardCoin: null,
       farmInfo: null as any,
       harvesting: false,
@@ -207,13 +223,15 @@ export default Vue.extend({
       totalCount:110,
       pageSize:10,
       currentPage:1,
+      current: 0,
       registerTwitterRetweet : false
     }
   },
 
   head: {
-    title: 'CropperFinance Farm'
+    title: 'CropperFinance x ... '
   },
+
 
   computed: {
     ...mapState(['app', 'wallet', 'farm', 'url', 'price', 'liquidity'])
@@ -298,14 +316,6 @@ export default Vue.extend({
         this.updateFarms();
     },
     TokenAmount,
-    goToProject(farm:any){
-        this.$router.push({
-           path: '/fertilizer/project/',
-           query: {
-             // farmId: this.farm.farmInfo.poolId
-           }
-       })
-    },
     async updateLabelizedAmms()
     {
       this.labelizedAmms = {};
@@ -324,6 +334,7 @@ export default Vue.extend({
           this.labelizedAmms[element.ammID] = element;
         });
       }
+
     },
 
     async updateFarms() {
@@ -421,8 +432,11 @@ export default Vue.extend({
             if(this.labelizedAmms[liquidityItem.ammId]){
               labelized = this.labelizedAmms[liquidityItem.ammId];
               if(labelized){
-                if(this.labelizedAmms[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmms[liquidityItem.ammId].pfarmID){
-                  isPFO = true;
+                if(this.labelizedAmms[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmms[liquidityItem.ammId].pfarmID){       
+                  const query = new URLSearchParams(window.location.search);
+                  if(query.get('f') && this.labelizedAmms[liquidityItem.ammId].slug == query.get('f')){
+                    isPFO = true;
+                  }
                 }
               }
             }
@@ -436,7 +450,29 @@ export default Vue.extend({
               userInfo,
               farmInfo: newFarmInfo
             })
-            console.log(farms);
+
+
+            document.title = 'Fertilizez - CropperFinance x ' + labelized.name ;
+
+            let responseData
+            try{
+              responseData = await fetch(
+                'https://api.cropper.finance/pfo/?farmId= '+ labelized.pfarmID + '&t='+ Math.round(moment().unix()/60)
+              ).then(res => res.json());
+            }
+            catch{
+            }
+            finally{
+              if(responseData[this.wallet.address]){
+                this.isRegistered = true;
+                this.registeredDatas = responseData[this.wallet.address];
+                this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + labelized.slug + "&r=" + this.wallet.address;
+              }
+
+              this.followerCount = Object.keys(responseData).length;
+            }
+
+
           }
         }
         
@@ -448,6 +484,14 @@ export default Vue.extend({
       this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
       this.endedFarmsPoolId = endedFarmsPoolId
       this.filterFarms(this.searchName);
+
+/*
+      if(Object.keys(this.farms).length < 1 && Object.keys(this.labelizedAmms).length > 0){
+        this.$router.push({
+           path: '/fertilizer/'
+       })
+      }
+*/
     },
     filterFarms(searchName:string){
       this.showFarms = this.farms;
@@ -1030,6 +1074,10 @@ export default Vue.extend({
 .card-body {
   padding: 0;
   margin: 0;
+  border:none
+}
+.pf-record{
+  border-bottom:none !important
 }
 .radioButtonStyle {
   width: 50%;
@@ -1136,6 +1184,21 @@ export default Vue.extend({
   h1{
       margin:20px;
       font-size:30px;
+  }
+
+  .info{
+    font-weight: bold;
+    padding: 20px;
+  }
+
+  input.link{
+    color: #000;
+    padding: 5px 20px;
+    display: inline-block;
+    width: 90%;
+    border-radius: 5px;
+    border: none;
+    margin-top: 5px;
   }
 
   .steps > div{

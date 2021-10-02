@@ -27,3 +27,5 @@ export interface NuxtApiInstance {
   getPrices: () => Promise<PricesData>
   getEpochInfo: (rpc: string) => Promise<EpochInfo>
 }
+
+declare module 'cors';
