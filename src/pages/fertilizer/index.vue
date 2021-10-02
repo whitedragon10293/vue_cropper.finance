@@ -98,6 +98,9 @@ export default Vue.extend({
       stakeModalOpening: false,
       addRewardModalOpening: false,
       staking: false,
+      isRegistered: false,
+      shareWalletAddress: "",
+      registeredDatas: false,
       adding: false,
       paying: false,
       unstakeModalOpening: false,
@@ -326,43 +329,43 @@ export default Vue.extend({
               if(labelized){
                 if(this.labelizedAmms[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmms[liquidityItem.ammId].pfarmID){
                   isPFO = true;
-                }
-              }
-            }
-          }
+
 
           newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
 
-          if(isPFO){
+                  let responseData
+                  try{
+                    responseData = await fetch(
+                      'https://api.cropper.finance/pfo/?farmId= '+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
+                    ).then(res => res.json());
+                  }
+                  catch{
+                  }
+                  finally{
+                    if(responseData[this.wallet.address]){
+                      this.isRegistered = true;
+                      this.registeredDatas = responseData[this.wallet.address];
+                      this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?r=" + this.wallet.address;
+                    }
+                   
+                  farms.push({
+                    followers : Object.keys(responseData).length,
+                    labelized,
+                    userInfo,
+                    farmInfo: newFarmInfo
+                  }) 
+
+                  }
 
 
-            let responseData
-            try{
-              responseData = await fetch(
-                'https://api.cropper.finance/pfo/?farmId= '+ labelized.pfarmID + '&t='+ Math.round(moment().unix()/60)
-              ).then(res => res.json());
-            }
-            catch{
-            }
-            finally{
-              if(responseData[this.wallet.address]){
-                this.isRegistered = true;
-                this.registeredDatas = responseData[this.wallet.address];
-                this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?r=" + this.wallet.address;
+
+                  console.log(farms);
+                
+
+
+                }
               }
-             
-            farms.push({
-              followers : Object.keys(responseData).length,
-              labelized,
-              userInfo,
-              farmInfo: newFarmInfo
-            }) 
-
             }
-
-
-
-            console.log(farms);
           }
         }
         
