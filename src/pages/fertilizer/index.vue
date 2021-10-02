@@ -1,5 +1,7 @@
 <template>
   <div class="fertilizer cont">
+  <div class="card">
+   <div class="card-body">
     <div class="page-head fs-container">
       <span class="title">Fertilizer</span>
     </div>
@@ -7,27 +9,36 @@
     <div class="list" v-if="farm.initialized">
 
             <div v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile singleFarm' : ' singleFarm'" :gutter="0" >
-                <div @click="goToProject(farm)" class="pf-record-content">
+                <div class="pf-record-content">
+                  <div class="labelaner">Mettre date et status</div>
                   <img class="small" :src="importIcon(`/coins/${farm.farmInfo.lp.coin.symbol}.png`)" alt="" />
                   <div class="banner"><img :src="farm.labelized.links.banner" class="large" alt="" /></div>
 
-                    <div class="title">{{farm.labelized.name}}</div>
+                     
 
 
-                    <div class="info">Mettre date et status</div>
-
-
-                    <Col class="followerscount" :span="16">
-                        {{farm.followers}} Followers
-                    </Col>
-
-                    <Col class="state pf-arrow" :span="8">
+                    <div class="addPadding">
+                    <Col class="state pf-arrow" :span="14">
+                        <div class="title">{{farm.labelized.name}}</div>
+                        <div class="desc">{{farm.labelized.desc}}</div>
                         
-                        <div class="icons">
-                        <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
-                        <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
-                        </div>
                     </Col>
+
+                    <Col class="followerscount" :span="10">
+                        Followers<br />
+                        <span>{{farm.followers}}</span>
+                    </Col>
+
+                    <Col :span="24">
+                      <div class="btncontainer"  @click="goToProject(farm)">
+                        <Button size="large" ghost>
+                          Read more
+                        </Button>
+                      </div>
+                    </Col>
+                    </div>
+
+
                 </div>
             </div>
 
@@ -39,6 +50,8 @@
       <Spin :spinning="true">
         <Icon slot="indicator" type="loading" style="font-size: 24px" spin />
       </Spin>
+    </div>
+    </div>
     </div>
   </div>
 </template>
@@ -336,7 +349,7 @@ export default Vue.extend({
                   let responseData
                   try{
                     responseData = await fetch(
-                      'https://api.cropper.finance/pfo/?farmId= '+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
+                      'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
                     ).then(res => res.json());
                   }
                   catch{
@@ -344,16 +357,14 @@ export default Vue.extend({
                   finally{
                     if(responseData[this.wallet.address]){
                       this.isRegistered = true;
-                      this.registeredDatas = responseData[this.wallet.address];
-                      this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?r=" + this.wallet.address;
                     }
-                   
-                  farms.push({
-                    followers : Object.keys(responseData).length,
-                    labelized,
-                    userInfo,
-                    farmInfo: newFarmInfo
-                  }) 
+                     
+                    farms.push({
+                      followers : Object.keys(responseData).length,
+                      labelized,
+                      userInfo,
+                      farmInfo: newFarmInfo
+                    }) 
 
                   }
 
@@ -965,12 +976,31 @@ export default Vue.extend({
   text-align: center;
 }
 
+.btncontainer {
+  background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+  display: inline-block;
+  width: unset;
+  text-align: center;
+  position: relative;
+  max-width: 400px;
+  margin: 10px auto;
+  padding: 2px;
+  border-radius: 30px;
+  max-height: 50px;
+
+  button{
+    background:#000 !important;
+    position: relative;
+    border-radius: 30px;
+    border-color: transparent;
+  }
+
+}
+
+
+
 .fertilizer .list{
   text-align:center;
-  width:1300px;
-  max-width:calc(100% - 50px);
-  margin-left:auto;
-  margin-right:auto;
 
   .pf-record .pf-record-content{
     padding:0;
@@ -983,16 +1013,58 @@ export default Vue.extend({
     border-bottom:none !important;
     position:relative;
     margin:0 10px 20px 10px;
-    background:#1B2028;
+    background:#000;
+    border-radius:25px;
+
+    .labelaner{
+        background:#16edac;
+        background:linear-gradient(180deg, #16edac 0%, #14bb89 100%);
+        color:#fff;
+        padding:10px 0;
+        border-radius: 25px 25px 0 0;
+    }
+
+    .addPadding{
+      padding: 0 10px 20px
+    }
+
+
+    .btncontainer {
+      background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+      display: inline-block;
+      width: unset;
+      text-align: center;
+      position: relative;
+      max-width: 400px;
+      margin: 10px auto;
+      padding: 2px;
+      border-radius: 30px;
+      max-height: 50px;
+      font-size:16px;
+      cursor: pointer;
+      cursor: hand;
+
+      button{
+        background:#000 !important;
+        position: relative;
+        border-radius: 30px;
+        padding:5px 10px;
+        border-color: transparent;
+        cursor: pointer;
+        cursor: hand;
+      }
+
+    }
+
 
     .banner{
-      height:100px;
+      height:140px;
       position:relative;
       overflow:hidden;
 
       .large{
         background:#f00;
-        height:100px;
+        height:140px;
         min-width:100%;
         left:50%;
         top:50%;
@@ -1002,14 +1074,28 @@ export default Vue.extend({
       }
     }
 
-    .info{
-      margin-bottom:20px
+    .followerscount{
+      text-align: right;
+      font-weight: normal;
+      font-size: 17px;
+      color:#fff;
+      margin-top:40px;
+
+      span{
+        color:#16edac
+      }
     }
 
-    .followerscount{
-      text-align: left;
-      font-weight: bold;
+    .title{
+      text-align:left;
+      font-weight: normal;
       font-size: 17px;
+      margin-top:40px;
+    }
+
+    .desc{
+      font-size: 14px;
+      text-align:left;
     }
 
     .ant-col{
@@ -1020,7 +1106,7 @@ export default Vue.extend({
       width: 70px;
       border: 4px solid #000;
       border-radius:50%;
-      top:100px;
+      top:181px;
       z-index:2;
       left:50%;
       position:absolute;
@@ -1028,10 +1114,8 @@ export default Vue.extend({
       transform:translate(-50%,-50%)
     }
 
-    .title{
-      font-size: 20px;
-      margin-top: 40px;
-      margin-bottom: 5px;
+    .info{
+      color:#fff
     }
 
     .icons img{
@@ -1046,6 +1130,8 @@ export default Vue.extend({
 </style>
 
 <style lang="less">
+
+
 .farm {
 
   .page-head .title{
@@ -1085,28 +1171,38 @@ export default Vue.extend({
 }
 
 
-  .btncontainer {
-    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
-    display: inline-block;
-    width: unset;
-    text-align: center;
-    position: relative;
-    max-width: 400px;
-    margin: 10px auto;
-    padding: 2px;
-    border-radius: 30px;
-    max-height: 50px;
 
-    button{
-      background:#000 !important;
-      position: relative;
-      border-radius: 30px;
-      border-color: transparent;
+.fertilizer.cont {
+  max-width: 1200px;
+  background: #1B2028;
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:20px;
+  margin-bottom:20px;
+  padding:15px;
+
+  .page-head .title{
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    &::after{
+      content: 'βETA';
+      position: absolute;
+      left: 100%;
+      top: -9px;
+      font-style: italic;
+      color: #ccc;
+      font-weight: normal;
+      font-size: 11px;
     }
-
   }
 
+  .farm-head {
+    padding: 24px 32px !important;
+  }
 
+}
 
 main{
   background-color:#000;
@@ -1146,8 +1242,6 @@ main{
 .pf-record{
     background-color: #000;
     border-bottom: 1px solid #d9d9d9;
-    cursor: pointer;
-    cursor: hand;
 
     .pf-record-content{
       padding: 36px 32px 56px 32px;

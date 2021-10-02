@@ -161,7 +161,7 @@ export default Vue.extend({
       }
 
 
-      let registerUrl = 'https://api.croppppp.com/pfo/register/?spl=' + this.$accessor.wallet.address + '&farmId= '+ this.farm.labelized.pfarmID;
+      let registerUrl = 'https://api.croppppp.com/pfo/register/?spl=' + this.$accessor.wallet.address + '&farmId='+ this.farm.labelized.pfarmID;
 
 
       const query = new URLSearchParams(window.location.search);

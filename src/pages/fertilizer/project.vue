@@ -62,6 +62,32 @@
                     </Button>
                   </div>
 
+                  <div v-else-if="farm.labelized.pla_ts > currentTimestamp && !followed">
+                    <div class="info">The registration hasn't started yet</div>
+                    <div class="share">
+                        <div class="btncontainer">
+                          <Button
+                            size="large"
+                            ghost
+                            class="button_div"
+                            style="z-index: 999; width: 100%"
+                            @click="startFollow('https://api.cropper.finance/pfo/follow/?spl='+ $accessor.wallet.address +'&farmId='+ farm.labelized.pfarmID)"
+                          >
+                            Follow
+                          </Button>
+                        </div>
+
+                    </div>
+                  </div>
+                  <div v-else-if="farm.labelized.pla_ts > currentTimestamp && followed">
+                    <div class="info">The registration hasn't started yet</div>
+                    <div class="share">
+
+                      You are following this project
+
+                    </div>
+                  </div>
+
                   <div v-else-if="farm.labelized.pla_end_ts > currentTimestamp && isRegistered">
                     <div class="info">You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}} !</div>
                     <div class="share">
@@ -81,21 +107,22 @@
                       Register to whitelist
                     </Button>
                   </div>
+                  <div v-else-if="farm.labelized.pla_end_ts < currentTimestamp && !isRegistered">
+                    You did not participate, please wait for the public opening
+                  </div>
                   <div v-else-if="farm.labelized.pla_end_ts < currentTimestamp">
-                    <h1>
-                      <span v-if="farm.labelized.airdrop.status == 'lottery'" >
-                        You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}}<br/>
-                        Lottery in progress...
-                      </span>
-                      <span v-else-if="farm.labelized.airdrop.status == 'in progress'" >
-                        You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
-                        Airdrop in progress...
-                      </span>
-                      <span v-else-if="farm.labelized.airdrop.status == 'done'" >
-                        You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
-                        Airdrop done
-                      </span>
-                    </h1>
+                    <span v-if="farm.labelized.airdrop.status == 'lottery'" >
+                      You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}}<br/>
+                      Lottery in progress...
+                    </span>
+                    <span v-else-if="farm.labelized.airdrop.status == 'in progress'" >
+                      You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
+                      Airdrop in progress...
+                    </span>
+                    <span v-else-if="farm.labelized.airdrop.status == 'done'" >
+                      You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
+                      Airdrop done
+                    </span>
                   </div>
                   <div v-else-if="farm.labelized.pfrom_ts < currentTimestamp">
                     <h1>
@@ -392,6 +419,7 @@ export default Vue.extend({
       searchName:"",
       followerCount: 0,
       registeringProcess: false,
+      followed: false,
       coinPicUrl : '',
       lp: null,
       isRegistered: false,
@@ -515,6 +543,20 @@ export default Vue.extend({
     startRegistering(){
         this.registerTwitterRetweet = true;
         this.updateFarms();
+    },
+    async startFollow(u: any){
+        let responseData
+        try{
+          responseData = await fetch(u).then(res => res.json());
+        }
+        catch{
+          // dummy data
+          responseData = [{"ammID":"ADjGcPYAu5VZWdKwhqU3cLCgX733tEaGTYaXS2TsB2hF","labelized":true},{"ammID":"8j7uY3UiVkJprJnczC7x5c1S6kPYQnpxVUiPD7NBnKAo","labelized":true}]
+        }
+        finally{
+          this.followed = true;
+          this.updateFarms();
+        }
     },
     TokenAmount,
     async updateLabelizedAmms()
@@ -647,22 +689,26 @@ export default Vue.extend({
                       farmInfo: newFarmInfo
                     })
 
-
                     document.title = 'Fertilizez - CropperFinance x ' + this.labelizedAmms[liquidityItem.ammId].name ;
 
                     let responseData
                     try{
                       responseData = await fetch(
-                        'https://api.cropper.finance/pfo/?farmId= '+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
+                        'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
                       ).then(res => res.json());
                     }
                     catch{
                     }
                     finally{
                       if(responseData[this.wallet.address]){
-                        this.isRegistered = true;
-                        this.registeredDatas = responseData[this.wallet.address];
-                        this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[liquidityItem.ammId].slug + "&r=" + this.wallet.address;
+                        if(responseData[this.wallet.address].submit > 0){
+                          this.isRegistered = true;
+                          this.registeredDatas = responseData[this.wallet.address];
+                          this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[liquidityItem.ammId].slug + "&r=" + this.wallet.address;
+                        }
+
+                        this.followed = true;
+                        
                       }
 
                       this.followerCount = Object.keys(responseData).length;
