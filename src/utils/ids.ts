@@ -26,7 +26,6 @@ export const LIQUIDITY_POOL_PROGRAM_ID_V5 = '7ZZJNL4xD8db6yrT46SeMFZXcVr9MLepGpE
 export const FARM_PROGRAM_ID = '7zrY3kkCvnQfgXRj87UVgpG3ymyZWiqDBi9d5dsPAaeR'//@Hongbo
 export const SITE_ALLOWED_CREATOR = "4GJ3z4skEHJADz3MVeNYBg4YV8H27rBQey2YYdiPC8PA";
 
-
 export const STAKE_PROGRAM_ID = 'EhhTKczWMGQt46ynNeRX1WfeagwwJd7ufHvCDjRxjo5Q'
 export const STAKE_PROGRAM_ID_V4 = 'CBuCnLe26faBpcBP2fktp4rp8abpcAnTWft6ZrP5Q4T'
 export const STAKE_PROGRAM_ID_V5 = '9KEPoZmtHUrBbhWN1v1KWLMkkvwY6WLtAVUCPRtRjP4z'
