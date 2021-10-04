@@ -182,27 +182,6 @@ declare const window: any;
     }
   },
 
-  watch: {
-
-    currentPage:{
-      handler(newPage:number) {
-        this.showPool(this.searchName, this.stakedOnly, newPage);
-      },
-      deep: true
-    },
-    searchName:{
-      handler(newSearchName:string) {
-        this.showPool(newSearchName, this.stakedOnly);
-      },
-      deep: true
-    },
-    stakedOnly:{
-      handler(newStakedOnly:any) {
-        this.showPool(this.searchName, newStakedOnly);
-      },
-      deep: true
-    },
-  },
   components: {
     Table,
     RadioGroup,
@@ -319,6 +298,9 @@ export default class Pools extends Vue {
   stakedOnly: boolean = false
   searchButton = true
   searchName = ''
+  totalCount = 110
+  pageSize = 10
+  currentPage = 1
 
   get liquidity() {
     this.$accessor.wallet.getTokenAccounts()
@@ -335,10 +317,30 @@ export default class Pools extends Vue {
   }
 
 
-  showPool(searchName:any = '', stakedOnly: bool = false, pageNum: any = 1) {
+  @Watch('currentPage', { immediate: true, deep: true })
+  async onpageChange(newPage:number) {
+    this.showPool(this.searchName, this.stakedOnly, newPage);
+  }
+
+
+
+  @Watch('stakedOnly', { immediate: true, deep: true })
+  async onStckChange(newStakedOnly:any) {
+    this.showPool(this.searchName, newStakedOnly);
+  }
+
+
+
+  @Watch('searchName', { immediate: true, deep: true })
+  async onSearchChange(newSearchName:string) {
+      this.showPool(newSearchName, this.stakedOnly);
+  }
+
+
+  showPool(searchName:any = '', stakedOnly: boolean = false, pageNum: any = 1) {
     const pool = []
     for (const item of this.pools) {
-          pool.push(item)
+      pool.push(item)
     }
     this.poolsShow = pool
 
