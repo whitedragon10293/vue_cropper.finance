@@ -464,6 +464,8 @@ export class YieldFarm {
       }),
     );
 
+    //check if fee owner has reward token account. if not, create new
+
     const instruction = YieldFarm.createInitFarmInstruction(
       farmAccount,
       authority, 
@@ -699,8 +701,9 @@ export class YieldFarm {
       farmId,
       programId
     )
-    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
-    console.log("rewareFeeATA",rewardFeeATA.toBase58())
+    // const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
+    
+    //console.log("rewareFeeATA",rewardFeeATA.toBase58())
     const instruction = YieldFarm.createDepositInstruction(
       farmId,
       authority,
@@ -711,7 +714,7 @@ export class YieldFarm {
       new PublicKey(farmInfo.poolLpTokenAccount),
       new PublicKey(farmInfo.poolRewardTokenAccount),
       new PublicKey(farmInfo.lp.mintAddress),
-      rewardFeeATA,
+      fetchFarm.feeOwner,
       TOKEN_PROGRAM_ID,
       programId,
       value,
@@ -779,7 +782,7 @@ export class YieldFarm {
       farmId,
       programId
     )
-    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
+    // const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
     
     const instruction = YieldFarm.createWithdrawInstruction(
       farmId,
@@ -791,7 +794,7 @@ export class YieldFarm {
       new PublicKey(farmInfo.poolLpTokenAccount),
       new PublicKey(farmInfo.poolRewardTokenAccount),
       new PublicKey(farmInfo.lp.mintAddress),
-      rewardFeeATA,
+      fetchFarm.feeOwner,
       TOKEN_PROGRAM_ID,
       programId,
       value,

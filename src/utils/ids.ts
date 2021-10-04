@@ -23,7 +23,7 @@ export const LIQUIDITY_POOL_PROGRAM_ID_V4 = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24
 
 export const LIQUIDITY_POOL_PROGRAM_ID_V5 = '7ZZJNL4xD8db6yrT46SeMFZXcVr9MLepGpEtnKW2k6sW'//@zhaohui
 
-export const FARM_PROGRAM_ID = '7zrY3kkCvnQfgXRj87UVgpG3ymyZWiqDBi9d5dsPAaeR'//@Hongbo
+export const FARM_PROGRAM_ID = '8cWgU2JinvsgYH4AdKMEKENgowhuRoyfoAqeQjDBEECL'//@Hongbo
 export const SITE_ALLOWED_CREATOR = "4GJ3z4skEHJADz3MVeNYBg4YV8H27rBQey2YYdiPC8PA";
 
 export const STAKE_PROGRAM_ID = 'EhhTKczWMGQt46ynNeRX1WfeagwwJd7ufHvCDjRxjo5Q'
