@@ -444,6 +444,7 @@ export default Vue.extend({
       tempInfo:null as any,
       stakeLPError : false,
       labelizedAmms:{} as any,
+      nbFarmsLoaded: 0,
       certifiedOptions:[{value:0,label:"Labelized"},{value:1,label:"Permissionless"},{value:2,label:"All"}],
       lifeOptions:[{value:0,label:"Opened"},{value:1,label:"Future"},{value:2,label:"Ended"},{value:3,label:"All"}],
       searchCertifiedFarm:0,
