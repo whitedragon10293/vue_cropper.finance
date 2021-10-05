@@ -19,7 +19,7 @@ import { nu64, blob } from 'buffer-layout'
 export const LIQUIDITY_TOKEN_PRECISION = 8
 export const DEFAULT_DENOMINATOR = 10000
 
-export const fee_options = {
+const FEE_OPTIONS = {
   curveType: 0,
   fixedFeeNumerator: 20,
   returnFeeNumerator: 10,
@@ -106,10 +106,6 @@ export const createLiquidityPool = (
   dexProgramId: PublicKey,
   marketId:PublicKey,
   nonce: number,
-  curveType: number,
-  returnFeeNumerator: number,
-  fixedFeeNumerator: number,
-  feeDenominator: number,
 ): TransactionInstruction => {
   const keys = [
     { pubkey: tokenSwapAccount.publicKey, isSigner: false, isWritable: true },
@@ -121,10 +117,11 @@ export const createLiquidityPool = (
     { pubkey: feeAccountA, isSigner: false, isWritable: false },
     { pubkey: feeAccountB, isSigner: false, isWritable: false },
     { pubkey: tokenAccountPool, isSigner: false, isWritable: true },
-    { pubkey: tokenProgramId, isSigner: false, isWritable: false },
-    
-    { pubkey: dexProgramId, isSigner: false, isWritable: true },
+
     { pubkey: marketId, isSigner: false, isWritable: false },
+
+    { pubkey: tokenProgramId, isSigner: false, isWritable: false },
+    { pubkey: dexProgramId, isSigner: false, isWritable: false },
   ];
 
   const commandDataLayout = struct([
@@ -142,10 +139,10 @@ export const createLiquidityPool = (
       {
         instruction: 0, // InitializeSwap instruction
         nonce,
-        returnFeeNumerator,
-        fixedFeeNumerator,
-        feeDenominator,
-        curveType,
+        returnFeeNumerator: FEE_OPTIONS.returnFeeNumerator,
+        fixedFeeNumerator: FEE_OPTIONS.fixedFeeNumerator,
+        feeDenominator: FEE_OPTIONS.feeDenominator,
+        curveType: FEE_OPTIONS.curveType,
       },
       data
     );

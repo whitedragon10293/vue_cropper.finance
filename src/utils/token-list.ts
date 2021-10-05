@@ -624,8 +624,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-WUSDT': {
     symbol: 'RAY-WUSDT',
     name: 'RAY-WUSDT V2 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.WUSDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.WUSDT },
 
     mintAddress: 'CzPDyvotTcxNqtPne32yUiEVQ6jk42HZi1Y3hUu7qf7f',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -633,7 +633,7 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-SOL': {
     symbol: 'RAY-SOL',
     name: 'RAY-SOL LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
     pc: { ...NATIVE_SOL },
 
     mintAddress: '134Cct3CSdRCbYgq5SkwmHgfwjJ7EM5cG9PzqffWqECx',
@@ -642,8 +642,8 @@ export const LP_TOKENSBASE: Tokens = {
   'LINK-WUSDT': {
     symbol: 'LINK-WUSDT',
     name: 'LINK-WUSDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.LINK },
-    pc: { ...TOKENSBASE_MAINNET_BETA.WUSDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.LINK },
+    pc: {...TOKENSBASE_MAINNET_BETA.WUSDT },
 
     mintAddress: 'EVDmwajM5U73PD34bYPugwiA4Eqqbrej4mLXXv15Z5qR',
     decimals: TOKENSBASE_MAINNET_BETA.LINK.decimals
@@ -651,8 +651,8 @@ export const LP_TOKENSBASE: Tokens = {
   'ETH-WUSDT': {
     symbol: 'ETH-WUSDT',
     name: 'ETH-WUSDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.ETH },
-    pc: { ...TOKENSBASE_MAINNET_BETA.WUSDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.ETH },
+    pc: {...TOKENSBASE_MAINNET_BETA.WUSDT },
 
     mintAddress: 'KY4XvwHy7JPzbWYAbk23jQvEb4qWJ8aCqYWREmk1Q7K',
     decimals: TOKENSBASE_MAINNET_BETA.ETH.decimals
@@ -660,8 +660,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-USDC': {
     symbol: 'RAY-USDC',
     name: 'RAY-USDC V2 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'FgmBnsF5Qrnv8X9bomQfEtQTQjNNiBCWRKGpzPnE5BDg',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -669,8 +669,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-SRM': {
     symbol: 'RAY-SRM',
     name: 'RAY-SRM V2 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: '5QXBMXuCL7zfAk39jEVVEvcrz1AvBGgT9wAhLLHLyyUJ',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -679,8 +679,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-WUSDT-V3': {
     symbol: 'RAY-WUSDT',
     name: 'RAY-WUSDT V3 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.WUSDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.WUSDT },
 
     mintAddress: 'FdhKXYjCou2jQfgKWcNY7jb8F2DPLU1teTTTRfLBD2v1',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -688,8 +688,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-USDC-V3': {
     symbol: 'RAY-USDC',
     name: 'RAY-USDC V3 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'BZFGfXMrjG2sS7QT2eiCDEevPFnkYYF7kzJpWfYxPbcx',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -697,8 +697,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-SRM-V3': {
     symbol: 'RAY-SRM',
     name: 'RAY-SRM V3 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: 'DSX5E21RE9FB9hM8Nh8xcXQfPK6SzRaJiywemHBSsfup',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -706,7 +706,7 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-SOL-V3': {
     symbol: 'RAY-SOL',
     name: 'RAY-SOL V3 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
     pc: { ...NATIVE_SOL },
 
     mintAddress: 'F5PPQHGcznZ2FxD9JaxJMXaf7XkaFFJ6zzTBcW8osQjw',
@@ -715,8 +715,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-ETH-V3': {
     symbol: 'RAY-ETH',
     name: 'RAY-ETH V3 LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.ETH },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.ETH },
 
     mintAddress: '8Q6MKy5Yxb9vG1mWzppMtMb2nrhNuCRNUkJTeiE3fuwD',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -725,8 +725,8 @@ export const LP_TOKENSBASE: Tokens = {
   'FIDA-RAY-V4': {
     symbol: 'FIDA-RAY',
     name: 'FIDA-RAY LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.FIDA },
-    pc: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.FIDA },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
 
     mintAddress: 'DsBuznXRTmzvEdb36Dx3aVLVo1XmH7r1PRZUFugLPTFv',
     decimals: TOKENSBASE_MAINNET_BETA.FIDA.decimals
@@ -734,8 +734,8 @@ export const LP_TOKENSBASE: Tokens = {
   'OXY-RAY-V4': {
     symbol: 'OXY-RAY',
     name: 'OXY-RAY LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.OXY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.OXY },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
 
     mintAddress: 'FwaX9W7iThTZH5MFeasxdLpxTVxRcM7ZHieTCnYog8Yb',
     decimals: TOKENSBASE_MAINNET_BETA.OXY.decimals
@@ -743,8 +743,8 @@ export const LP_TOKENSBASE: Tokens = {
   'MAPS-RAY-V4': {
     symbol: 'MAPS-RAY',
     name: 'MAPS-RAY LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.MAPS },
-    pc: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.MAPS },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
 
     mintAddress: 'CcKK8srfVdTSsFGV3VLBb2YDbzF4T4NM2C3UEjC39RLP',
     decimals: TOKENSBASE_MAINNET_BETA.MAPS.decimals
@@ -752,8 +752,8 @@ export const LP_TOKENSBASE: Tokens = {
   'KIN-RAY-V4': {
     symbol: 'KIN-RAY',
     name: 'KIN-RAY LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.KIN },
-    pc: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.KIN },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
 
     mintAddress: 'CHT8sft3h3gpLYbCcZ9o27mT5s3Z6VifBVbUiDvprHPW',
     decimals: 6
@@ -761,8 +761,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-USDT-V4': {
     symbol: 'RAY-USDT',
     name: 'RAY-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'C3sT1R3nsw4AVdepvLTLKr5Gvszr7jufyBWUCvy4TUvT',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -771,7 +771,7 @@ export const LP_TOKENSBASE: Tokens = {
     symbol: 'SOL-USDC',
     name: 'SOL-USDC LP',
     coin: { ...NATIVE_SOL },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '8HoQnePLqPj4M7PUDzfw8e3Ymdwgc7NLGnaTUapubyvu',
     decimals: NATIVE_SOL.decimals
@@ -779,8 +779,8 @@ export const LP_TOKENSBASE: Tokens = {
   'YFI-USDC-V4': {
     symbol: 'YFI-USDC',
     name: 'YFI-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.YFI },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.YFI },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '865j7iMmRRycSYUXzJ33ZcvLiX9JHvaLidasCyUyKaRE',
     decimals: TOKENSBASE_MAINNET_BETA.YFI.decimals
@@ -788,8 +788,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SRM-USDC-V4': {
     symbol: 'SRM-USDC',
     name: 'SRM-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SRM },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.SRM },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '9XnZd82j34KxNLgQfz29jGbYdxsYznTWRpvZE3SRE7JG',
     decimals: TOKENSBASE_MAINNET_BETA.SRM.decimals
@@ -797,8 +797,8 @@ export const LP_TOKENSBASE: Tokens = {
   'FTT-USDC-V4': {
     symbol: 'FTT-USDC',
     name: 'FTT-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.FTT },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.FTT },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '75dCoKfUHLUuZ4qEh46ovsxfgWhB4icc3SintzWRedT9',
     decimals: TOKENSBASE_MAINNET_BETA.FTT.decimals
@@ -806,8 +806,8 @@ export const LP_TOKENSBASE: Tokens = {
   'BTC-USDC-V4': {
     symbol: 'BTC-USDC',
     name: 'BTC-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.BTC },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.BTC },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '2hMdRdVWZqetQsaHG8kQjdZinEMBz75vsoWTCob1ijXu',
     decimals: TOKENSBASE_MAINNET_BETA.BTC.decimals
@@ -815,8 +815,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SUSHI-USDC-V4': {
     symbol: 'SUSHI-USDC',
     name: 'SUSHI-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SUSHI },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.SUSHI },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '2QVjeR9d2PbSf8em8NE8zWd8RYHjFtucDUdDgdbDD2h2',
     decimals: TOKENSBASE_MAINNET_BETA.SUSHI.decimals
@@ -824,8 +824,8 @@ export const LP_TOKENSBASE: Tokens = {
   'TOMO-USDC-V4': {
     symbol: 'TOMO-USDC',
     name: 'TOMO-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.TOMO },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.TOMO },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'CHyUpQFeW456zcr5XEh4RZiibH8Dzocs6Wbgz9aWpXnQ',
     decimals: TOKENSBASE_MAINNET_BETA.TOMO.decimals
@@ -833,8 +833,8 @@ export const LP_TOKENSBASE: Tokens = {
   'LINK-USDC-V4': {
     symbol: 'LINK-USDC',
     name: 'LINK-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.LINK },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.LINK },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'BqjoYjqKrXtfBKXeaWeAT5sYCy7wsAYf3XjgDWsHSBRs',
     decimals: TOKENSBASE_MAINNET_BETA.LINK.decimals
@@ -842,8 +842,8 @@ export const LP_TOKENSBASE: Tokens = {
   'ETH-USDC-V4': {
     symbol: 'ETH-USDC',
     name: 'ETH-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.ETH },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.ETH },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '13PoKid6cZop4sj2GfoBeujnGfthUbTERdE5tpLCDLEY',
     decimals: TOKENSBASE_MAINNET_BETA.ETH.decimals
@@ -851,8 +851,8 @@ export const LP_TOKENSBASE: Tokens = {
   'xCOPE-USDC-V4': {
     symbol: 'xCOPE-USDC',
     name: 'xCOPE-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.xCOPE },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.xCOPE },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '2Vyyeuyd15Gp8aH6uKE72c4hxc8TVSLibxDP9vzspQWG',
     decimals: TOKENSBASE_MAINNET_BETA.xCOPE.decimals
@@ -861,7 +861,7 @@ export const LP_TOKENSBASE: Tokens = {
     symbol: 'SOL-USDT',
     name: 'SOL-USDT LP',
     coin: { ...NATIVE_SOL },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'Epm4KfTj4DMrvqn6Bwg2Tr2N8vhQuNbuK8bESFp4k33K',
     decimals: NATIVE_SOL.decimals
@@ -869,8 +869,8 @@ export const LP_TOKENSBASE: Tokens = {
   'YFI-USDT-V4': {
     symbol: 'YFI-USDT',
     name: 'YFI-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.YFI },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.YFI },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'FA1i7fej1pAbQbnY8NbyYUsTrWcasTyipKreDgy1Mgku',
     decimals: TOKENSBASE_MAINNET_BETA.YFI.decimals
@@ -878,8 +878,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SRM-USDT-V4': {
     symbol: 'SRM-USDT',
     name: 'SRM-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SRM },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.SRM },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'HYSAu42BFejBS77jZAZdNAWa3iVcbSRJSzp3wtqCbWwv',
     decimals: TOKENSBASE_MAINNET_BETA.SRM.decimals
@@ -887,8 +887,8 @@ export const LP_TOKENSBASE: Tokens = {
   'FTT-USDT-V4': {
     symbol: 'FTT-USDT',
     name: 'FTT-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.FTT },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.FTT },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: '2cTCiUnect5Lap2sk19xLby7aajNDYseFhC9Pigou11z',
     decimals: TOKENSBASE_MAINNET_BETA.FTT.decimals
@@ -896,8 +896,8 @@ export const LP_TOKENSBASE: Tokens = {
   'BTC-USDT-V4': {
     symbol: 'BTC-USDT',
     name: 'BTC-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.BTC },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.BTC },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'DgGuvR9GSHimopo3Gc7gfkbKamLKrdyzWkq5yqA6LqYS',
     decimals: TOKENSBASE_MAINNET_BETA.BTC.decimals
@@ -905,8 +905,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SUSHI-USDT-V4': {
     symbol: 'SUSHI-USDT',
     name: 'SUSHI-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SUSHI },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.SUSHI },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'Ba26poEYDy6P2o95AJUsewXgZ8DM9BCsmnU9hmC9i4Ki',
     decimals: TOKENSBASE_MAINNET_BETA.SUSHI.decimals
@@ -914,8 +914,8 @@ export const LP_TOKENSBASE: Tokens = {
   'TOMO-USDT-V4': {
     symbol: 'TOMO-USDT',
     name: 'TOMO-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.TOMO },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.TOMO },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'D3iGro1vn6PWJXo9QAPj3dfta6dKkHHnmiiym2EfsAmi',
     decimals: TOKENSBASE_MAINNET_BETA.TOMO.decimals
@@ -923,8 +923,8 @@ export const LP_TOKENSBASE: Tokens = {
   'LINK-USDT-V4': {
     symbol: 'LINK-USDT',
     name: 'LINK-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.LINK },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.LINK },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'Dr12Sgt9gkY8WU5tRkgZf1TkVWJbvjYuPAhR3aDCwiiX',
     decimals: TOKENSBASE_MAINNET_BETA.LINK.decimals
@@ -932,8 +932,8 @@ export const LP_TOKENSBASE: Tokens = {
   'ETH-USDT-V4': {
     symbol: 'ETH-USDT',
     name: 'ETH-USDT LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.ETH },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDT },
+    coin: {...TOKENSBASE_MAINNET_BETA.ETH },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDT },
 
     mintAddress: 'nPrB78ETY8661fUgohpuVusNCZnedYCgghzRJzxWnVb',
     decimals: TOKENSBASE_MAINNET_BETA.ETH.decimals
@@ -941,8 +941,8 @@ export const LP_TOKENSBASE: Tokens = {
   'YFI-SRM-V4': {
     symbol: 'YFI-SRM',
     name: 'YFI-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.YFI },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.YFI },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: 'EGJht91R7dKpCj8wzALkjmNdUUUcQgodqWCYweyKcRcV',
     decimals: TOKENSBASE_MAINNET_BETA.YFI.decimals
@@ -950,8 +950,8 @@ export const LP_TOKENSBASE: Tokens = {
   'FTT-SRM-V4': {
     symbol: 'FTT-SRM',
     name: 'FTT-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.FTT },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.FTT },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: 'AsDuPg9MgPtt3jfoyctUCUgsvwqAN6RZPftqoeiPDefM',
     decimals: TOKENSBASE_MAINNET_BETA.FTT.decimals
@@ -959,8 +959,8 @@ export const LP_TOKENSBASE: Tokens = {
   'BTC-SRM-V4': {
     symbol: 'BTC-SRM',
     name: 'BTC-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.BTC },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.BTC },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: 'AGHQxXb3GSzeiLTcLtXMS2D5GGDZxsB2fZYZxSB5weqB',
     decimals: TOKENSBASE_MAINNET_BETA.BTC.decimals
@@ -968,8 +968,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SUSHI-SRM-V4': {
     symbol: 'SUSHI-SRM',
     name: 'SUSHI-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SUSHI },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.SUSHI },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: '3HYhUnUdV67j1vn8fu7ExuVGy5dJozHEyWvqEstDbWwE',
     decimals: TOKENSBASE_MAINNET_BETA.SUSHI.decimals
@@ -977,8 +977,8 @@ export const LP_TOKENSBASE: Tokens = {
   'TOMO-SRM-V4': {
     symbol: 'TOMO-SRM',
     name: 'TOMO-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.TOMO },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.TOMO },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: 'GgH9RnKrQpaMQeqmdbMvs5oo1A24hERQ9wuY2pSkeG7x',
     decimals: TOKENSBASE_MAINNET_BETA.TOMO.decimals
@@ -986,8 +986,8 @@ export const LP_TOKENSBASE: Tokens = {
   'LINK-SRM-V4': {
     symbol: 'LINK-SRM',
     name: 'LINK-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.LINK },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.LINK },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: 'GXN6yJv12o18skTmJXaeFXZVY1iqR18CHsmCT8VVCmDD',
     decimals: TOKENSBASE_MAINNET_BETA.LINK.decimals
@@ -995,8 +995,8 @@ export const LP_TOKENSBASE: Tokens = {
   'ETH-SRM-V4': {
     symbol: 'ETH-SRM',
     name: 'ETH-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.ETH },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.ETH },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: '9VoY3VERETuc2FoadMSYYizF26mJinY514ZpEzkHMtwG',
     decimals: TOKENSBASE_MAINNET_BETA.ETH.decimals
@@ -1004,7 +1004,7 @@ export const LP_TOKENSBASE: Tokens = {
   'SRM-SOL-V4': {
     symbol: 'SRM-SOL',
     name: 'SRM-SOL LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.SRM },
     pc: { ...NATIVE_SOL },
 
     mintAddress: 'AKJHspCwDhABucCxNLXUSfEzb7Ny62RqFtC9uNjJi4fq',
@@ -1013,8 +1013,8 @@ export const LP_TOKENSBASE: Tokens = {
   'STEP-USDC-V4': {
     symbol: 'STEP-USDC',
     name: 'STEP-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.STEP },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.STEP },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '3k8BDobgihmk72jVmXYLE168bxxQUhqqyESW4dQVktqC',
     decimals: TOKENSBASE_MAINNET_BETA.STEP.decimals
@@ -1022,8 +1022,8 @@ export const LP_TOKENSBASE: Tokens = {
   'MEDIA-USDC-V4': {
     symbol: 'MEDIA-USDC',
     name: 'MEDIA-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.MEDIA },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.MEDIA },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'A5zanvgtioZGiJMdEyaKN4XQmJsp1p7uVxaq2696REvQ',
     decimals: TOKENSBASE_MAINNET_BETA.MEDIA.decimals
@@ -1031,8 +1031,8 @@ export const LP_TOKENSBASE: Tokens = {
   'ROPE-USDC-V4': {
     symbol: 'ROPE-USDC',
     name: 'ROPE-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.ROPE },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.ROPE },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'Cq4HyW5xia37tKejPF2XfZeXQoPYW6KfbPvxvw5eRoUE',
     decimals: TOKENSBASE_MAINNET_BETA.ROPE.decimals
@@ -1040,8 +1040,8 @@ export const LP_TOKENSBASE: Tokens = {
   'MER-USDC-V4': {
     symbol: 'MER-USDC',
     name: 'MER-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.MER },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.MER },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '3H9NxvaZoxMZZDZcbBDdWMKbrfNj7PCF5sbRwDr7SdDW',
     decimals: TOKENSBASE_MAINNET_BETA.MER.decimals
@@ -1049,8 +1049,8 @@ export const LP_TOKENSBASE: Tokens = {
   'COPE-USDC-V4': {
     symbol: 'COPE-USDC',
     name: 'COPE-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.COPE },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.COPE },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'Cz1kUvHw98imKkrqqu95GQB9h1frY8RikxPojMwWKGXf',
     decimals: TOKENSBASE_MAINNET_BETA.COPE.decimals
@@ -1058,8 +1058,8 @@ export const LP_TOKENSBASE: Tokens = {
   'ALEPH-USDC-V4': {
     symbol: 'ALEPH-USDC',
     name: 'ALEPH-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.ALEPH },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.ALEPH },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'iUDasAP2nXm5wvTukAHEKSdSXn8vQkRtaiShs9ceGB7',
     decimals: TOKENSBASE_MAINNET_BETA.ALEPH.decimals
@@ -1067,8 +1067,8 @@ export const LP_TOKENSBASE: Tokens = {
   'TULIP-USDC-V4': {
     symbol: 'TULIP-USDC',
     name: 'TULIP-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.TULIP },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.TULIP },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '2doeZGLJyACtaG9DCUyqMLtswesfje1hjNA11hMdj6YU',
     decimals: TOKENSBASE_MAINNET_BETA.TULIP.decimals
@@ -1076,8 +1076,8 @@ export const LP_TOKENSBASE: Tokens = {
   'WOO-USDC-V4': {
     symbol: 'WOO-USDC',
     name: 'WOO-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.WOO },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.WOO },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '7cu42ao8Jgrd5A3y3bNQsCxq5poyGZNmTydkGfJYQfzh',
     decimals: TOKENSBASE_MAINNET_BETA.WOO.decimals
@@ -1085,8 +1085,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SNY-USDC-V4': {
     symbol: 'SNY-USDC',
     name: 'SNY-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SNY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.SNY },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'G8qcfeFqxwbCqpxv5LpLWxUCd1PyMB5nWb5e5YyxLMKg',
     decimals: TOKENSBASE_MAINNET_BETA.SNY.decimals
@@ -1094,8 +1094,8 @@ export const LP_TOKENSBASE: Tokens = {
   'BOP-RAY-V4': {
     symbol: 'BOP-RAY',
     name: 'BOP-RAY LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.BOP },
-    pc: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.BOP },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
 
     mintAddress: '9nQPYJvysyfnXhQ6nkK5V7sZG26hmDgusfdNQijRk5LD',
     decimals: TOKENSBASE_MAINNET_BETA.BOP.decimals
@@ -1103,8 +1103,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SLRS-USDC-V4': {
     symbol: 'SLRS-USDC',
     name: 'SLRS-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SLRS },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.SLRS },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: '2Xxbm1hdv5wPeen5ponDSMT3VqhGMTQ7mH9stNXm9shU',
     decimals: TOKENSBASE_MAINNET_BETA.SLRS.decimals
@@ -1112,8 +1112,8 @@ export const LP_TOKENSBASE: Tokens = {
   'SAMO-RAY-V4': {
     symbol: 'SAMO-RAY',
     name: 'SAMO-RAY LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.SAMO },
-    pc: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.SAMO },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
 
     mintAddress: 'HwzkXyX8B45LsaHXwY8su92NoRBS5GQC32HzjQRDqPnr',
     decimals: TOKENSBASE_MAINNET_BETA.SAMO.decimals
@@ -1121,8 +1121,8 @@ export const LP_TOKENSBASE: Tokens = {
   'renBTC-USDC-V4': {
     symbol: 'renBTC-USDC',
     name: 'renBTC-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.renBTC },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.renBTC },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'CTEpsih91ZLo5gunvryLpJ3pzMjmt5jbS6AnSQrzYw7V',
     decimals: TOKENSBASE_MAINNET_BETA.renBTC.decimals
@@ -1130,8 +1130,8 @@ export const LP_TOKENSBASE: Tokens = {
   'renDOGE-USDC-V4': {
     symbol: 'renDOGE-USDC',
     name: 'renDOGE-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.renDOGE },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.renDOGE },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'Hb8KnZNKvRxu7pgMRWJgoMSMcepfvNiBFFDDrdf9o3wA',
     decimals: TOKENSBASE_MAINNET_BETA.renDOGE.decimals
@@ -1139,8 +1139,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-USDC-V4': {
     symbol: 'RAY-USDC',
     name: 'RAY-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
     mintAddress: 'FbC6K13MzHvN42bXrtGaWsvZY9fxrackRSZcBGfjPc7m',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -1148,8 +1148,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-SRM-V4': {
     symbol: 'RAY-SRM',
     name: 'RAY-SRM LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.SRM },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.SRM },
 
     mintAddress: '7P5Thr9Egi2rvMmEuQkLn8x8e8Qro7u2U7yLD2tU2Hbe',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -1157,8 +1157,8 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-ETH-V4': {
     symbol: 'RAY-ETH',
     name: 'RAY-ETH LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
-    pc: { ...TOKENSBASE_MAINNET_BETA.ETH },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
+    pc: {...TOKENSBASE_MAINNET_BETA.ETH },
 
     mintAddress: 'mjQH33MqZv5aKAbKHi8dG3g3qXeRQqq1GFcXceZkNSr',
     decimals: TOKENSBASE_MAINNET_BETA.RAY.decimals
@@ -1166,7 +1166,7 @@ export const LP_TOKENSBASE: Tokens = {
   'RAY-SOL-V4': {
     symbol: 'RAY-SOL',
     name: 'RAY-SOL LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.RAY },
+    coin: {...TOKENSBASE_MAINNET_BETA.RAY },
     pc: { ...NATIVE_SOL },
 
     mintAddress: '89ZKE4aoyfLBe2RuV6jM3JGNhaV18Nxh8eNtjRcndBip',
@@ -1175,11 +1175,173 @@ export const LP_TOKENSBASE: Tokens = {
   'DXL-USDC-V4': {
     symbol: 'DXL-USDC',
     name: 'DXL-USDC LP',
-    coin: { ...TOKENSBASE_MAINNET_BETA.DXL },
-    pc: { ...TOKENSBASE_MAINNET_BETA.USDC },
+    coin: {...TOKENSBASE_MAINNET_BETA.DXL },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
 
-    mintAddress: '765hrUSZNusSQgXuc77kwg611fdtkUxpqN2zQatpeZMq',
+    mintAddress: '4HFaSvfgskipvrzT1exoVKsUZ174JyExEsA8bDfsAdY5',
     decimals: TOKENSBASE_MAINNET_BETA.DXL.decimals
+  },
+  'LIKE-USDC-V4': {
+    symbol: 'LIKE-USDC',
+    name: 'LIKE-USDC LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.LIKE },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
+
+    mintAddress: 'cjZmbt8sJgaoyWYUttomAu5LJYU44ZrcKTbzTSEPDVw',
+    decimals: TOKENSBASE_MAINNET_BETA.LIKE.decimals
+  },
+  'mSOL-USDC-V4': {
+    symbol: 'mSOL-USDC',
+    name: 'mSOL-USDC LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.mSOL },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
+
+    mintAddress: '4xTpJ4p76bAeggXoYywpCCNKfJspbuRzZ79R7pRhbqSf',
+    decimals: TOKENSBASE_MAINNET_BETA.mSOL.decimals
+  },
+  'mSOL-SOL-V4': {
+    symbol: 'mSOL-SOL',
+    name: 'mSOL-SOL LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.mSOL },
+    pc: { ...NATIVE_SOL },
+
+    mintAddress: '5ijRoAHVgd5T5CNtK5KDRUBZ7Bffb69nktMj5n6ks6m4',
+    decimals: TOKENSBASE_MAINNET_BETA.mSOL.decimals
+  },
+  'MER-PAI-V4': {
+    symbol: 'MER-PAI',
+    name: 'MER-PAI LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.MER },
+    pc: {...TOKENSBASE_MAINNET_BETA.PAI },
+
+    mintAddress: 'DU5RT2D9EviaSmX6Ta8MZwMm85HwSEqGMRdqUiuCGfmD',
+    decimals: TOKENSBASE_MAINNET_BETA.MER.decimals
+  },
+  'PORT-USDC-V4': {
+    symbol: 'PORT-USDC',
+    name: 'PORT-USDC LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.PORT },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
+
+    mintAddress: '9tmNtbUCrLS15qC4tEfr5NNeqcqpZ4uiGgi2vS5CLQBS',
+    decimals: TOKENSBASE_MAINNET_BETA.PORT.decimals
+  },
+  'MNGO-USDC-V4': {
+    symbol: 'MNGO-USDC',
+    name: 'MNGO-USDC LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.MNGO },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
+
+    mintAddress: 'DkiqCQ792n743xjWQVCbBUaVtkdiuvQeYndM53ReWnCC',
+    decimals: TOKENSBASE_MAINNET_BETA.MNGO.decimals
+  },
+  'ATLAS-USDC-V4': {
+    symbol: 'ATLAS-USDC',
+    name: 'ATLAS-USDC LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.ATLAS },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
+
+    mintAddress: '9shGU9f1EsxAbiR567MYZ78WUiS6ZNCYbHe53WUULQ7n',
+    decimals: TOKENSBASE_MAINNET_BETA.ATLAS.decimals
+  },
+  'POLIS-USDC-V4': {
+    symbol: 'POLIS-USDC',
+    name: 'POLIS-USDC LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.POLIS },
+    pc: {...TOKENSBASE_MAINNET_BETA.USDC },
+
+    mintAddress: '8MbKSBpyXs8fVneKgt71jfHrn5SWtX8n4wMLpiVfF9So',
+    decimals: TOKENSBASE_MAINNET_BETA.POLIS.decimals
+  },
+  'ATLAS-RAY-V4': {
+    symbol: 'ATLAS-RAY',
+    name: 'ATLAS-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.ATLAS },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '418MFhkaYQtbn529wmjLLqL6uKxDz7j4eZBaV1cobkyd',
+    decimals: TOKENSBASE_MAINNET_BETA.ATLAS.decimals
+  },
+  'POLIS-RAY-V4': {
+    symbol: 'POLIS-RAY',
+    name: 'POLIS-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.POLIS },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '9ysGKUH6WqzjQEUT4dxqYCUaFNVK9QFEa24pGzjFq8xg',
+    decimals: TOKENSBASE_MAINNET_BETA.POLIS.decimals
+  },
+  'ALEPH-RAY-V4': {
+    symbol: 'ALEPH-RAY',
+    name: 'ALEPH-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.ALEPH },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: 'n76skjqv4LirhdLok2zJELXNLdRpYDgVJQuQFbamscy',
+    decimals: TOKENSBASE_MAINNET_BETA.ALEPH.decimals
+  },
+  'TULIP-RAY-V4': {
+    symbol: 'TULIP-RAY',
+    name: 'TULIP-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.TULIP },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '3AZTviji5qduMG2s4FfWGR3SSQmNUCyx8ao6UKCPg3oJ',
+    decimals: TOKENSBASE_MAINNET_BETA.TULIP.decimals
+  },
+  'SLRS-RAY-V4': {
+    symbol: 'SLRS-RAY',
+    name: 'SLRS-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.SLRS },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '2pk78vsKT3jfJAcN2zbpMUnrR57SZrxHqaZYyFgp92mM',
+    decimals: TOKENSBASE_MAINNET_BETA.SLRS.decimals
+  },
+  'MER-RAY-V4': {
+    symbol: 'MER-RAY',
+    name: 'MER-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.MER },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '214hxy3AbKoaEKgqcg2aC1cP5R67cGGAyDEg5GDwC7Ub',
+    decimals: TOKENSBASE_MAINNET_BETA.MER.decimals
+  },
+  'MEDIA-RAY-V4': {
+    symbol: 'MEDIA-RAY',
+    name: 'MEDIA-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.MEDIA },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '9Aseg5A1JD1yCiFFdDaNNxCiJ7XzrpZFmcEmLjXFdPaH',
+    decimals: TOKENSBASE_MAINNET_BETA.MEDIA.decimals
+  },
+  'SNY-RAY-V4': {
+    symbol: 'SNY-RAY',
+    name: 'SNY-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.SNY },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '2k4quTuuLUxrSEhFH99qcoZzvgvVEc3b5sz3xz3qstfS',
+    decimals: TOKENSBASE_MAINNET_BETA.SNY.decimals
+  },
+  'LIKE-RAY-V4': {
+    symbol: 'LIKE-RAY',
+    name: 'LIKE-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.LIKE },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: '7xqDycbFSCpUpzkYapFeyPJWPwEpV7zdWbYf2MVHTNjv',
+    decimals: TOKENSBASE_MAINNET_BETA.LIKE.decimals
+  },
+  'COPE-RAY-V4': {
+    symbol: 'COPE-RAY',
+    name: 'COPE-RAY LP',
+    coin: {...TOKENSBASE_MAINNET_BETA.COPE },
+    pc: {...TOKENSBASE_MAINNET_BETA.RAY },
+
+    mintAddress: 'A7GCVHA8NSsbdFscHdoNU41tL1TRKNmCH4K94CgcLK9F',
+    decimals: TOKENSBASE_MAINNET_BETA.COPE.decimals
   }
 }
 

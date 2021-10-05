@@ -47,8 +47,10 @@ const web3Plugin: Plugin = async (ctx, inject) => {
   endpoint = getWeightEndpoint(rpcs)
   
   if(DEVNET_MODE)
-    endpoint = 'https://api.devnet.solana.com'; logger(`config from: ${endpoint}`) // Force dev mode - TO REMOVE
-
+    endpoint = 'https://api.devnet.solana.com'; 
+  else
+   endpoint = 'https://solana-api.projectserum.com';
+  
   const web3 = createWeb3Instance(endpoint)
 
   ctx.$web3 = web3

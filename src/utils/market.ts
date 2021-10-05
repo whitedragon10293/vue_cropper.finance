@@ -18,8 +18,7 @@ import {
   createSplAccount,
   AMM_INFO_LAYOUT_V5,
   createLiquidityPool,
-  LIQUIDITY_TOKEN_PRECISION,
-  fee_options
+  LIQUIDITY_TOKEN_PRECISION
 } from "@/utils/new_fcn"
 
 
@@ -360,13 +359,9 @@ export async function createAmm(
       depositorAccount,
       TOKEN_PROGRAM_ID,
       new PublicKey(LIQUIDITY_POOL_PROGRAM_ID_V5),
-      market.address,
       new PublicKey(SERUM_PROGRAM_ID_V3),
-      nonce,
-      fee_options.curveType,
-      fee_options.returnFeeNumerator,
-      fee_options.fixedFeeNumerator,
-      fee_options.feeDenominator,
+      market.address,
+      nonce
     )
   );
 
