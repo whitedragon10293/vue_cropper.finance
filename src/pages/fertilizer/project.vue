@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <div  class="fertilizeruniq cont">
+    <div  class="fertilizeruniq cont" v-if="initialized">
 
       <div v-for="farm in labelizedAmms" :key="farm.ammId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile card' : ' card'" :gutter="0">
        
@@ -443,6 +443,7 @@ export default Vue.extend({
       currentTimestamp: 0,
       tempInfo:null as any,
       stakeLPError : false,
+      initialized : false,
       labelizedAmms:{} as any,
       nbFarmsLoaded: 0,
       certifiedOptions:[{value:0,label:"Labelized"},{value:1,label:"Permissionless"},{value:2,label:"All"}],
