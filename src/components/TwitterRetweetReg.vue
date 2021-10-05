@@ -13,7 +13,7 @@
           <a href="https://twitter.com/CropperFinance" target="_blank" >Follow @CropperFinance on Twitter</a>
         </div>
         <div class="twitter-link" :class="this.progression == 1 ? 'current' : ''">
-          <a :href="farm.labelized.links.twitter" target="_blank">Follow {{farm.labelized.name}} on Twitter</a>
+          <a :href="farm.links.twitter" target="_blank">Follow {{farm.name}} on Twitter</a>
         </div>
 
         <Row :gutter="32" class="actions">
@@ -33,7 +33,7 @@
           <a href="https://t.me/CropperFinance" target="_blank" >Follow @CropperFinance on Telegram</a>
         </div>
         <div class="twitter-link" :class="this.progression == 3 ? 'current' : ''">
-          <a :href="farm.labelized.links.telegram" target="_blank">Follow {{farm.labelized.name}} on Telegram</a>
+          <a :href="farm.links.telegram" target="_blank">Follow {{farm.name}} on Telegram</a>
         </div>
 
         <Row :gutter="32" class="actions">
@@ -144,7 +144,7 @@ export default Vue.extend({
         this.progression = 0;
       }
       this.progression++;
-      this.walletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.farm.labelized.slug + "&r=" + this.$accessor.wallet.address;
+      this.walletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.farm.slug + "&r=" + this.$accessor.wallet.address;
     },
     nurl(url: string) {
         this.url = url
@@ -161,7 +161,7 @@ export default Vue.extend({
       }
 
 
-      let registerUrl = 'https://api.croppppp.com/pfo/register/?spl=' + this.$accessor.wallet.address + '&farmId='+ this.farm.labelized.pfarmID;
+      let registerUrl = 'https://api.croppppp.com/pfo/register/?spl=' + this.$accessor.wallet.address + '&farmId='+ this.farm.pfarmID;
 
 
       const query = new URLSearchParams(window.location.search);
