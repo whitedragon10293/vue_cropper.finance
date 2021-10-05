@@ -3,7 +3,7 @@
 
     <div  class="fertilizeruniq cont">
 
-      <div v-for="farm in showFarms" :key="farm.farmInfo.poolId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile card' : ' card'" :gutter="0">
+      <div v-for="farm in labelizedAmms" :key="farm.ammId" slot="header" class="pf-record" :class="isMobile ? 'is-mobile card' : ' card'" :gutter="0">
        
        <TwitterRetweetReg
         :farm="farm"
@@ -19,7 +19,7 @@
           <Row class="full-border">
             <Col :span="24" class="">
               <div>
-                <img width="100%" :src="farm.labelized.links.banner" />
+                <img width="100%" :src="farm.links.banner" />
               </div>
             </Col>
           </Row>
@@ -27,10 +27,10 @@
           <Row class="full-border ">
             <Col :span="24" class="">
               <div class="text-center">
-                  <h1>{{farm.labelized.name}} 
+                  <h1>{{farm.name}} 
                   <span class="icons">
-                    <CoinIcon :mint-address="farm.farmInfo.lp.coin.mintAddress" />
-                    <CoinIcon :mint-address="farm.farmInfo.lp.pc.mintAddress" />
+                    <CoinIcon :mint-address="farm.tokenA.mint" />
+                    <CoinIcon :mint-address="farm.tokenB.mint" />
                   </span></h1>
               </div>
             </Col>
@@ -43,9 +43,9 @@
 
               <div class="followerscount">{{followerCount}} followers</div>
 
-              <div class="rewardAmount">Total Airdrop allocated : <b>{{farm.labelized.airdrop.amount}} {{farm.labelized.airdrop.symbol}}</b></div>
+              <div class="rewardAmount">Total Airdrop allocated : <b>{{farm.airdrop.amount}} {{farm.airdrop.symbol}}</b></div>
 
-              <div class="airdropInfo">{{farm.labelized.airdrop.info}}</div>
+              <div class="airdropInfo">{{farm.airdrop.info}}</div>
 
 
               <div class="text-center largepdding">
@@ -62,7 +62,7 @@
                     </Button>
                   </div>
 
-                  <div v-else-if="farm.labelized.pla_ts > currentTimestamp && !followed">
+                  <div v-else-if="farm.pla_ts > currentTimestamp && !followed">
                     <div class="info">The registration hasn't started yet</div>
                     <div class="share">
                         <div class="btncontainer">
@@ -71,7 +71,7 @@
                             ghost
                             class="button_div"
                             style="z-index: 999; width: 100%"
-                            @click="startFollow('https://api.cropper.finance/pfo/follow/?spl='+ $accessor.wallet.address +'&farmId='+ farm.labelized.pfarmID)"
+                            @click="startFollow('https://api.cropper.finance/pfo/follow/?spl='+ $accessor.wallet.address +'&farmId='+ farm.pfarmID)"
                           >
                             Follow
                           </Button>
@@ -79,7 +79,7 @@
 
                     </div>
                   </div>
-                  <div v-else-if="farm.labelized.pla_ts > currentTimestamp && followed">
+                  <div v-else-if="farm.pla_ts > currentTimestamp && followed">
                     <div class="info">The registration hasn't started yet</div>
                     <div class="share">
 
@@ -88,7 +88,7 @@
                     </div>
                   </div>
 
-                  <div v-else-if="farm.labelized.pla_end_ts > currentTimestamp && isRegistered">
+                  <div v-else-if="farm.pla_end_ts > currentTimestamp && isRegistered">
                     <div class="info">You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}} !</div>
                     <div class="share">
                     Share your Referral link and earn more tickets
@@ -96,7 +96,7 @@
                     </div>
                   </div>
 
-                  <div v-else-if="farm.labelized.pla_end_ts > currentTimestamp" class="btncontainer">
+                  <div v-else-if="farm.pla_end_ts > currentTimestamp" class="btncontainer">
                     <Button
                       size="large"
                       ghost
@@ -107,24 +107,24 @@
                       Register to whitelist
                     </Button>
                   </div>
-                  <div v-else-if="farm.labelized.pla_end_ts < currentTimestamp && !isRegistered">
+                  <div v-else-if="farm.pla_end_ts < currentTimestamp && !isRegistered">
                     You did not participate, please wait for the public opening
                   </div>
-                  <div v-else-if="farm.labelized.pla_end_ts < currentTimestamp">
-                    <span v-if="farm.labelized.airdrop.status == 'lottery'" >
+                  <div v-else-if="farm.pla_end_ts < currentTimestamp">
+                    <span v-if="farm.airdrop.status == 'lottery'" >
                       You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}}<br/>
                       Lottery in progress...
                     </span>
-                    <span v-else-if="farm.labelized.airdrop.status == 'in progress'" >
+                    <span v-else-if="farm.airdrop.status == 'in progress'" >
                       You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
                       Airdrop in progress...
                     </span>
-                    <span v-else-if="farm.labelized.airdrop.status == 'done'" >
+                    <span v-else-if="farm.airdrop.status == 'done'" >
                       You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
                       Airdrop done
                     </span>
                   </div>
-                  <div v-else-if="farm.labelized.pfrom_ts < currentTimestamp">
+                  <div v-else-if="farm.pfrom_ts < currentTimestamp">
                     <h1>
                       You can use below farm now.
                     </h1>
@@ -134,21 +134,21 @@
 
             </Col>
             <Col :span="isMobile ? 24 : 12" :class="isMobile ? ' steps' : 'steps'">
-                <div :class="farm.labelized.pla_ts < currentTimestamp ? 'done' : 'notdone' " >
+                <div :class="farm.pla_ts < currentTimestamp ? 'done' : 'notdone' " >
                     Whitelist - You can register to the whitelist and earn lottery tickets.<br />
-                    <div class="date">{{farm.labelized.pla}}</div>
+                    <div class="date">{{farm.pla}}</div>
                 </div>
-                <div :class="farm.labelized.pla_end_ts < currentTimestamp ? 'done' : 'notdone' ">
+                <div :class="farm.pla_end_ts < currentTimestamp ? 'done' : 'notdone' ">
                     Airdrop Lottery - See if you have any winning lottery tickets.<br/>
-                    <div class="date">{{farm.labelized.pla_end}}</div>
+                    <div class="date">{{farm.pla_end}}</div>
                 </div>
-                <div :class="farm.labelized.pfrom_ts < currentTimestamp ? 'done' : 'notdone' ">
-                    Private Farm opened - You can now use Farm {{farm.farmInfo.lp.coin.symbol}}-{{farm.farmInfo.lp.pc.symbol}}.<br/>
-                    <div class="date">{{farm.labelized.pfrom}}</div>
+                <div :class="farm.pfrom_ts < currentTimestamp ? 'done' : 'notdone' ">
+                    Private Farm opened - You can now use Farm {{farm.tokenA.symbol}}-{{farm.tokenB.symbol}}.<br/>
+                    <div class="date">{{farm.pfrom}}</div>
                 </div>
-                <div :class="farm.labelized.pto_ts < currentTimestamp ? 'done' : 'notdone' ">
+                <div :class="farm.pto_ts < currentTimestamp ? 'done' : 'notdone' ">
                     The farm goes public<br/>
-                    <div class="date">{{farm.labelized.pto}}</div>
+                    <div class="date">{{farm.pto}}</div>
                 </div>
             </Col>
           </Row>
@@ -515,10 +515,14 @@ export default Vue.extend({
       this.searchName = query.get('s') as string;
     }
 
-    if(this.searchName){
-      this.searchCertifiedFarm = 2;
-      this.searchLifeFarm = 3;
-    }
+    let timer = setInterval(async () => {
+      if (this.nbFarmsLoaded == Object.keys(this.labelizedAmms).length) {
+        this.initialized = true
+      }
+
+    }, 1000)
+
+
   },
 
   methods: {
@@ -559,9 +563,12 @@ export default Vue.extend({
         }
     },
     TokenAmount,
+
     async updateLabelizedAmms()
     {
+      const query = new URLSearchParams(window.location.search);
       this.labelizedAmms = {};
+      let responseData2 = {};
       let responseData
       try{
         responseData = await fetch(
@@ -573,11 +580,30 @@ export default Vue.extend({
         responseData = [{"ammID":"ADjGcPYAu5VZWdKwhqU3cLCgX733tEaGTYaXS2TsB2hF","labelized":true},{"ammID":"8j7uY3UiVkJprJnczC7x5c1S6kPYQnpxVUiPD7NBnKAo","labelized":true}]
       }
       finally{
-        responseData.forEach((element:any) => {
-          this.labelizedAmms[element.ammID] = element;
+        responseData.forEach(async (element:any) => {
+
+          if(element.pfo == true){
+
+            if(query.get('f') && element.slug == query.get('f')){
+              element.calculateNextStep = 'Bla bla bla'
+
+              this.labelizedAmms[element.ammID] = element;
+              try{
+                responseData2 = await fetch(
+                  'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[element.ammID].pfarmID + '&t='+ Math.round(moment().unix()/60)
+                ).then(res => res.json());
+              }
+              catch{
+              }
+              finally{
+                this.labelizedAmms[element.ammID]['followers'] = Object.keys(responseData2).length;
+                this.nbFarmsLoaded++;
+              }
+            }
+          }
+
         });
       }
-
     },
 
     async updateFarms() {
@@ -710,19 +736,14 @@ export default Vue.extend({
                         this.followed = true;
                         
                       }
-
                       this.followerCount = Object.keys(responseData).length;
                     }
-
-
                   }
                 }
               }
             }
           }
-
-        }
-        
+        } 
       }
 
 
