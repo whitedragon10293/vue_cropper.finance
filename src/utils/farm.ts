@@ -155,7 +155,6 @@ export class YieldFarm {
     poolMintAddress: PublicKey,
     rewardMintAddress: PublicKey,
     ammPubkey: PublicKey,
-    tokenProgramId: PublicKey,
     nonce: number,
     farmProgramId: PublicKey,
     startTimestamp: number,
@@ -170,9 +169,8 @@ export class YieldFarm {
       {pubkey: poolMintAddress, isSigner: false, isWritable: false},
       {pubkey: rewardMintAddress, isSigner: false, isWritable: false},
       {pubkey: ammPubkey, isSigner: false, isWritable: false},
-      {pubkey: tokenProgramId, isSigner: false, isWritable: false},
-      
     ];
+    
     const commandDataLayout = struct([
       u8('instruction'),
       u8('nonce'),
@@ -466,6 +464,8 @@ export class YieldFarm {
       }),
     );
 
+    //check if fee owner has reward token account. if not, create new
+
     const instruction = YieldFarm.createInitFarmInstruction(
       farmAccount,
       authority, 
@@ -475,7 +475,6 @@ export class YieldFarm {
       lpTokenPoolMint, 
       rewardTokenPoolMint, 
       ammPubkey, 
-      tokenProgramId,
       nonce, 
       farmProgramId,
       startTimestamp,
@@ -524,7 +523,6 @@ export class YieldFarm {
       this.farmId,
       this.authority,
       owner,
-      owner.publicKey,
       userRewardTokenAccount,
       this.poolRewardTokenAccount,
       this.lpTokenPoolMint,
@@ -539,23 +537,11 @@ export class YieldFarm {
       
     ]);
     return tx;
-    //check transation
-
-    /*
-    await sendAndConfirmTransaction(
-      'deposit',
-      this.connection,
-      transaction,
-      owner,
-      owner
-    );
-    */
   }
   static createAddRewardInstruction(
     farmId: PublicKey, // farm account 
     authority: PublicKey, //farm authority
     depositor: Account,
-    userTransferAuthority: PublicKey,
     userRewardTokenAccount: PublicKey,
     poolRewardTokenAccount: PublicKey,
     poolMint: PublicKey,
@@ -567,7 +553,6 @@ export class YieldFarm {
       {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: depositor.publicKey, isSigner: false, isWritable: false},
-      {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolRewardTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolMint, isSigner: false, isWritable: true},
@@ -606,7 +591,6 @@ export class YieldFarm {
       this.farmId,
       this.authority,
       owner,
-      owner.publicKey,
       userUSDCTokenAccount,
       this.feeOwner,
       this.tokenProgramId,
@@ -626,7 +610,6 @@ export class YieldFarm {
     farmId: PublicKey, // farm account 
     authority: PublicKey, //farm authority
     depositor: Account,
-    userTransferAuthority: PublicKey,
     userUSDCTokenAccount: PublicKey,
     ownerFeeAccount: PublicKey,
     tokenProgramId: PublicKey,
@@ -637,7 +620,6 @@ export class YieldFarm {
       {pubkey: farmId, isSigner: false, isWritable: true},
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: depositor.publicKey, isSigner: false, isWritable: false},
-      {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
       {pubkey: userUSDCTokenAccount, isSigner: false, isWritable: true},
       {pubkey: ownerFeeAccount, isSigner: false, isWritable: true},
       {pubkey: tokenProgramId, isSigner: false, isWritable: false},
@@ -719,20 +701,20 @@ export class YieldFarm {
       farmId,
       programId
     )
-    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
-    console.log("rewareFeeATA",rewardFeeATA.toBase58())
+    // const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
+    
+    //console.log("rewareFeeATA",rewardFeeATA.toBase58())
     const instruction = YieldFarm.createDepositInstruction(
       farmId,
       authority,
       owner,
       userInfoAccount,
-      owner,
       userLpAccount,
       userRewardTokenAccount,
       new PublicKey(farmInfo.poolLpTokenAccount),
       new PublicKey(farmInfo.poolRewardTokenAccount),
       new PublicKey(farmInfo.lp.mintAddress),
-      rewardFeeATA,
+      fetchFarm.feeOwner,
       TOKEN_PROGRAM_ID,
       programId,
       value,
@@ -800,20 +782,19 @@ export class YieldFarm {
       farmId,
       programId
     )
-    const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
+    // const rewardFeeATA = await findAssociatedTokenAddress(fetchFarm.feeOwner, new PublicKey(farmInfo.reward.mintAddress))
     
     const instruction = YieldFarm.createWithdrawInstruction(
       farmId,
       authority,
       owner,
       userInfoAccount,
-      authority,
       userLpAccount,
       userRewardTokenAccount,
       new PublicKey(farmInfo.poolLpTokenAccount),
       new PublicKey(farmInfo.poolRewardTokenAccount),
       new PublicKey(farmInfo.lp.mintAddress),
-      rewardFeeATA,
+      fetchFarm.feeOwner,
       TOKEN_PROGRAM_ID,
       programId,
       value,
@@ -826,7 +807,6 @@ export class YieldFarm {
     authority: PublicKey, //farm authority
     depositor: PublicKey,
     userInfoAccount:PublicKey,
-    userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
     userRewardTokenAccount: PublicKey,
     poolLpTokenAccount: PublicKey,
@@ -842,7 +822,6 @@ export class YieldFarm {
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: depositor, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
-      {pubkey: userTransferAuthority, isSigner: true, isWritable: false},
       {pubkey: userLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},
@@ -878,7 +857,6 @@ export class YieldFarm {
     authority: PublicKey, //farm authority
     owner: PublicKey,
     userInfoAccount: PublicKey,
-    userTransferAuthority: PublicKey,
     userLpTokenAccount: PublicKey,
     userRewardTokenAccount: PublicKey,
     poolLpTokenAccount: PublicKey,
@@ -894,7 +872,6 @@ export class YieldFarm {
       {pubkey: authority, isSigner: false, isWritable: false},
       {pubkey: owner, isSigner: true, isWritable: false},
       {pubkey: userInfoAccount, isSigner: false, isWritable: true},
-      {pubkey: userTransferAuthority, isSigner: false, isWritable: false},
       {pubkey: userLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: poolLpTokenAccount, isSigner: false, isWritable: true},
       {pubkey: userRewardTokenAccount, isSigner: false, isWritable: true},

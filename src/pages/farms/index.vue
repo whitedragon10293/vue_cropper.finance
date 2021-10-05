@@ -394,6 +394,7 @@ export default Vue.extend({
       tempInfo:null as any,
       stakeLPError : false,
       labelizedAmms:{} as any,
+      labelizedAmmsExtended:{} as any,
       poolsDatas:{} as any,
       certifiedOptions:[{value:0,label:"Labelized"},{value:1,label:"Permissionless"},{value:2,label:"All"}],
       lifeOptions:[{value:0,label:"Opened"},{value:1,label:"Future"},{value:2,label:"Ended"},{value:3,label:"All"}],
@@ -499,6 +500,7 @@ export default Vue.extend({
     async updateLabelizedAmms()
     {
       this.labelizedAmms = {};
+      this.labelizedAmmsExtended = {};
       let responseData
       try{
         responseData = await fetch(
@@ -512,6 +514,7 @@ export default Vue.extend({
       finally{
         responseData.forEach((element:any) => {
           this.labelizedAmms[element.ammID] = element.labelized;
+          this.labelizedAmmsExtended[element.ammID] = element;
         });
       }
 
@@ -540,6 +543,7 @@ export default Vue.extend({
       const endedFarmsPoolId: string[] = []
       for (const [poolId, farmInfo] of Object.entries(this.farm.infos)) {
         let userInfo = get(this.farm.stakeAccounts, poolId)
+        let isPFO = false;
 
         // @ts-ignore
         const { reward_per_share_net, reward_per_timestamp, last_timestamp } = farmInfo.poolInfo
@@ -594,7 +598,6 @@ export default Vue.extend({
             newFarmInfo.apr_details.apy = Math.round(apy * 100) / 100;
           }
 
-          console.log(liquidityItem);
 
           if(wallet){
             let unstaked = get(wallet.tokenAccounts, `${liquidityItem.lp.mintAddress}.balance`)
@@ -646,26 +649,34 @@ export default Vue.extend({
             const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
             if(this.labelizedAmms[liquidityItem.ammId]){
               labelized = true;
+                if(this.labelizedAmmsExtended[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmmsExtended[liquidityItem.ammId].pfarmID){   
+                    isPFO = true;
+                }
+              
             }
           }
 
+
           (newFarmInfo as any).twitterShare = `http://twitter.com/share?text=Earn ${(newFarmInfo as any).reward.name} with our new farm on @CropperFinance&url=https://cropper.finance/farms/?s=${(newFarmInfo as any).poolId} &hashtags=${(newFarmInfo as any).lp.coin.symbol},${(newFarmInfo as any).lp.pc.symbol},yieldfarming,Solana`
 
-          farms.push({
-            labelized,
-            userInfo,
-            farmInfo: newFarmInfo
-          })
+
+          if(!isPFO){
+
+            farms.push({
+              labelized,
+              userInfo,
+              farmInfo: newFarmInfo
+            })
+          }
+
         }
         
       }
 
       this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
-
-      console.log(this.farms);
-
       this.endedFarmsPoolId = endedFarmsPoolId
       this.filterFarms(this.searchName, this.searchCertifiedFarm, this.searchLifeFarm, this.stakedOnly, this.currentPage);
+
     },
     filterFarms(searchName:string, searchCertifiedFarm:number, searchLifeFarm:number, stakedOnly:boolean, pageNum:number = 1){
       this.currentPage = pageNum;
@@ -680,7 +691,6 @@ export default Vue.extend({
       if(searchName != "" && this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase()).length > 0){
         this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.poolId as string).toLowerCase() == (searchName as string).toLowerCase());
       } else if(searchName != ""){
-      console.log('là', (searchName as string).toLowerCase());
         this.showFarms = this.farms.filter((farm:any)=>(farm.farmInfo.lp.symbol as string).toLowerCase().includes((searchName as string).toLowerCase()));
       }
 

@@ -1,27 +1,26 @@
 <template>
-  <div>
+  <div :class="this.progression">
     <Modal
-      :title="state.progress === 0?'Twitter':state.progress === 1?'Retweet':'Congrats !'"
+      :title="this.progression < 2 ? 'Twitter' : this.progression < 4 ? 'Telegram' : this.progression < 5 ? 'Retweet' : 'You won a ticket' "
       :visible="show"
       :footer="null"
-      :mask-closable="false"
-      :closable="false"
+      :mask-closable="true"
+      :closable="true"
       @cancel="$emit('onClose')"
     >
-      <div v-if="state.progress === 0">
-        <div class="twitter-link">
-          <a href="#" :disabled="state.followCropperOnTwitter" @click="followCropper">Follow Cropper Finance on Twitter</a>
+      <div v-if="this.progression < 2">
+        <div class="twitter-link" :class="this.progression == 0 ? 'current' : ''">
+          <a href="https://twitter.com/CropperFinance" target="_blank" >Follow @CropperFinance on Twitter</a>
         </div>
-        <div class="twitter-link">
-          <a href="#" :disabled="state.followProjectOnTwitter" @click="followPrject">Follow Project A on Twitter</a>
+        <div class="twitter-link" :class="this.progression == 1 ? 'current' : ''">
+          <a :href="farm.links.twitter" target="_blank">Follow {{farm.name}} on Twitter</a>
         </div>
 
         <Row :gutter="32" class="actions">
           <Col :span="24" style="text-align: center">
             <Button
-              :disabled="!state.followCropperOnTwitter && !state.followProjectOnTwitter"
               ghost
-              @click="$emit('onGoToRetweet')"
+              @click="nextStep()"
             >
               Next
             </Button>
@@ -29,41 +28,80 @@
         </Row>
       </div>
 
-      <div v-else-if="state.progress === 1">
-        <div class="retweet">
-          <div class="retweet-image"></div>
-          <input v-model="keyword" placeholder="Input url here" />
+      <div v-else-if="this.progression < 4 && this.progression >= 2 ">
+        <div class="twitter-link" :class="this.progression == 2 ? 'current' : ''">
+          <a href="https://t.me/CropperFinance" target="_blank" >Follow @CropperFinance on Telegram</a>
+        </div>
+        <div class="twitter-link" :class="this.progression == 3 ? 'current' : ''">
+          <a :href="farm.links.telegram" target="_blank">Follow {{farm.name}} on Telegram</a>
         </div>
 
         <Row :gutter="32" class="actions">
           <Col :span="24" style="text-align: center">
             <Button
-              :disabled="state.retweetUrl === ''"
               ghost
-              @click="$emit('onConfirm')"
+              @click="nextStep()"
             >
-              Confirm
+              Next
             </Button>
           </Col>
         </Row>
       </div>
 
-      <div v-else-if="state.progress === 2">
+      <div v-else-if="this.progression == 10">
         <div class="congrats">
-            You have been successfully registered !
+          <div>You have been successfully registered !</div>
+
+          Share your Referral link and earn more tickets
+          <input type="text" class="link" :value="walletAddress" />
         </div>
 
         <Row :gutter="32" class="actions">
           <Col :span="24" style="text-align: center">
             <Button
               ghost
-              @click="$emit('onCongrats')"
+              @click="$emit('onClose')"
             >
-              OK
+              Close
             </Button>
           </Col>
         </Row>
       </div>
+
+      <div v-else-if="this.progression < 5 && this.progression >= 4">
+
+        <div>
+        <blockquote class="twitter-tweet"><p lang="en" dir="ltr">👨🏻‍🌾 Dear Croppers,<br><br>📣 We’re excited to announce our Farm Launcher’s hero feature. <br><br>🎉 Introducing a feature that celebrates DeFi innovation while rewarding farmers. <br><br>🤝 Meet <a href="https://twitter.com/hashtag/Fertilizer?src=hash&amp;ref_src=twsrc%5Etfw">#Fertilizer</a>🧪<a href="https://t.co/BeuvL2aUbz">https://t.co/BeuvL2aUbz</a></p>&mdash; CropperFinance (@CropperFinance) <a href="https://twitter.com/CropperFinance/status/1443533161913372672?ref_src=twsrc%5Etfw">September 30, 2021</a></blockquote> <script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
+
+        <div class="twitter-link">
+
+          Retweet this tweet and input retweet url :
+
+          <input type="text" class="link" placeholder="Paste url here"
+
+          @input="nurl($event.target.value)"
+
+           />
+        </div>
+
+        <div v-if="registerError != ''" class="error">
+            {{registerError}}
+        </div>
+
+        <Row :gutter="32" class="actions">
+          <Col :span="24" style="text-align: center">
+            <Button
+              ghost
+              @click="checkUrl()"
+            >
+              Next
+            </Button>
+          </Col>
+        </Row>
+      </div>
+
+
     </Modal>
   </div>
 </template>
@@ -74,14 +112,6 @@ import { Modal, Button, Row, Col } from 'ant-design-vue'
 
 Vue.use(Modal)
 
-const defaultState = {
-  followCropperOnTwitter: false,
-  followCropperURL: "",
-  followProjectOnTwitter: false,
-  followProjectURL: "",
-  retweetUrl:"",
-  progress: 0
-}
 
 export default Vue.extend({
   components: {
@@ -97,22 +127,71 @@ export default Vue.extend({
     },
     farm: {
       type: Object,
-      default: null
-    },
-    state: {
-      type: Object,
-      default: defaultState
+      required: true
     }
   },
   data() {
-    return {}
+    return {
+      progression: 0,
+      url : false as any,
+      registerError : "",
+      walletAddress: false as any
+    }
   },
   methods: {
-    followCropper(){
-
+    nextStep(){
+      if(this.progression < 1){ 
+        this.progression = 0;
+      }
+      this.progression++;
+      this.walletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.farm.slug + "&r=" + this.$accessor.wallet.address;
     },
-    followProject(){
+    nurl(url: string) {
+        this.url = url
+    },
+    async checkUrl(){
+      let url;
+
+
       
+      try {
+        url = new URL(this.url);
+      } catch (_) {
+        return false;  
+      }
+
+
+      let registerUrl = 'https://api.croppppp.com/pfo/register/?spl=' + this.$accessor.wallet.address + '&farmId='+ this.farm.pfarmID;
+
+
+      const query = new URLSearchParams(window.location.search);
+      if(query.get('r')){
+        registerUrl += '&referer=' + query.get('r');
+      }
+
+
+      this.registerError = "";
+      let responseData
+      try{
+        responseData = await fetch(
+          registerUrl
+        ).then(res => res.json());
+      }
+      catch{
+        console.log(responseData);
+        this.registerError = "An error occured"
+      }
+      finally{
+        if(responseData.status == false){
+          this.registerError = responseData.message
+        } else {
+          this.progression = 10;
+        }
+      }
+
+
+
+      return url.protocol === "http:" || url.protocol === "https:";
     }
   }
 })
@@ -121,12 +200,27 @@ export default Vue.extend({
 <style lang="less" scoped>
 @import '../styles/variables';
 
+input.link{
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 5px;
+}
+
 .twitter-link {
   text-align: center;
   margin-top: 15px;
   margin-bottom: 15px;
+  color: gray;
+  a{
+    color:gray
+  }
   a[disabled] {
     color: gray;
+  }
+  &.current a{
+    color:#fff;
+    font-weight:bold
   }
 }
 .retweet {
@@ -144,12 +238,13 @@ export default Vue.extend({
   }
 
   input {
-    padding: 5px;
-    border: 1px solid @primary-color;
-    border-radius: 4px;
-    background-color: transparent;
-    font-size: 15px;
-    color: @text-color;
+    color: #000;
+    padding: 5px 20px;
+    display: inline-block;
+    width: 90%;
+    border-radius: 5px;
+    border: none;
+    margin-top: 13px;
 
     &:active,
     &:focus,
@@ -158,6 +253,14 @@ export default Vue.extend({
     }
   }
 }
+
+.error{
+  color: red;
+    padding: 0 0 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
 .congrats{
   font-size: 18px;
   text-align: center;

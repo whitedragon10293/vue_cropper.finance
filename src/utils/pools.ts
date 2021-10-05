@@ -186,7 +186,6 @@ export function getPoolByLpMintAddress(lpMintAddress: string): LiquidityPoolInfo
   if (pool) {
     return cloneDeep(pool)
   }
-  console.log(pool)
   return pool
 }
 
@@ -271,10 +270,10 @@ export function getAllPools() {
         pc : cloneDeep(value.pc),
         mintAddress : cloneDeep(value.lp.mintAddress)
       },
-      'ammId' : value.ammId
+      'ammId' : value.ammId,
+      'serumMarket' : value.serumMarket
 
     };
-
     polo.push(item);
   });
   return polo

@@ -101,12 +101,12 @@
                 size="large"
                 ghost
                 class="button_div"
-                :disabled="!wallet.connected"
-                style=" z-index: 999; width: 100%"
+                :disabled="!wallet.connected || alreadyExists"
+                style=" z-index: 999"
                 :loading="getMarketLoading"
                 @click="marketInputFlag ? getMarketMsg() : rewriteMarket()"
               >
-                {{ !wallet.connected ? 'Connect' : getMarketLoading ? '' : marketInputFlag ? 'Confirm' : 'Cancel' }}
+                {{ !wallet.connected ? 'Connect' : getMarketLoading ? '' : marketInputFlag ? (alreadyExists ? 'This market already exists' : 'Confirm') : 'Cancel' }}
               </Button>
             </div>
           </Col>
@@ -197,7 +197,7 @@
                 <Col span="24" style="text-align: center; margin-top: 10px"
                   ><br /><br /><strong>Pool has been successfully created!</strong></Col
                 >
-                <!-- <Col
+                <Col
                   style="margin-top: 10px"
                   :span="isMobile ? 24 : 6"
                   :class="isMobile ? 'item-title-mobile' : 'item-title'"
@@ -205,7 +205,7 @@
                 >
                 <Col style="margin-top: 10px" :span="isMobile ? 24 : 18">
                   {{ userCreateAmmId }}
-                </Col> -->
+                </Col>
                 <Col span="24" style="word-break: break-word; line-height: 20px;text-align:center">
 
         <NuxtLink to="/pools/">
@@ -356,6 +356,7 @@ import { Steps, Row, Col, Button, Tooltip, Icon, DatePicker } from 'ant-design-v
 import { getMarket, createAmm, clearLocal } from '@/utils/market'
 import BigNumber from '@/../node_modules/bignumber.js/bignumber'
 import { NATIVE_SOL, TokenInfo, TOKENS } from '@/utils/tokens'
+import { TokenAmount } from '@/utils/safe-math'
 import { createAssociatedId } from '@/utils/web3'
 import { PublicKey } from '@solana/web3.js'
 import { AMM_ASSOCIATED_SEED, FARM_PROGRAM_ID, LIQUIDITY_POOL_PROGRAM_ID_V4, SITE_ALLOWED_CREATOR } from '@/utils/ids'
@@ -363,8 +364,9 @@ import { getBigNumber } from '@/utils/layouts'
 import { cloneDeep, get } from 'lodash-es'
 import moment from 'moment'
 import {YieldFarm} from '@/utils/farm'
-import { getPoolListByTokenMintAddresses, LIQUIDITY_POOLS,LiquidityPoolInfo } from '@/utils/pools'
+import { getPoolListByTokenMintAddresses, getPoolByLpMintAddress, getAllPools, LIQUIDITY_POOLS, LiquidityPoolInfo } from '@/utils/pools'
 const Step = Steps.Step
+declare const window: any;
 
 @Component({
   head: {
@@ -403,7 +405,7 @@ export default class CreatePool extends Vue {
   
   marketInputFlag: boolean = true
   marketFlag: boolean = false
-  inputMarket: string = 'HPU7v2yCGM6sRujWEMaTPiiiX2qMb6fun3eWjTzSgSw1'//3iCYi5bQxXN5X4omCxME1jj9D91vNpYYqzbiSw9u7tcG
+  inputMarket: string = '' //'HPU7v2yCGM6sRujWEMaTPiiiX2qMb6fun3eWjTzSgSw1'//3iCYi5bQxXN5X4omCxME1jj9D91vNpYYqzbiSw9u7tcG
   isAmountValid:boolean = false
   inputQuoteValue: number | null = null
   inputBaseValue: number | null = null
@@ -416,6 +418,8 @@ export default class CreatePool extends Vue {
   marketPrice: number | null = null
   baseMintDecimals: number | null = null
   quoteMintDecimals: number | null = null
+  pools: any = []
+  alreadyExists: boolean = false
 
   createAmmFlag: boolean = false
 
@@ -537,9 +541,98 @@ export default class CreatePool extends Vue {
     }
   }
 
+  poolsFormated(){
+
+    const conn = this.$web3
+    const wallet = (this as any).$accessor.wallet
+    const liquidity = ((this as any).$accessor.liquidity);
+    const price = ((this as any).$accessor.price);
+
+
+    const polo:any = []
+
+    getAllPools().forEach(function (value : any) {
+
+
+      const liquidityItem = get(liquidity.infos, value.lp_mint)
+      let lp = getPoolByLpMintAddress(value.lp_mint); 
+
+
+      const liquidityCoinValue =
+        getBigNumber((liquidityItem?.coin.balance as TokenAmount).toEther()) *
+        price.prices[liquidityItem?.coin.symbol as string]
+      const liquidityPcValue =
+        getBigNumber((liquidityItem?.pc.balance as TokenAmount).toEther()) *
+        price.prices[liquidityItem?.pc.symbol as string]
+      const liquidityTotalValue = liquidityPcValue + liquidityCoinValue
+
+      const liquidityTotalSupply = getBigNumber((liquidityItem?.lp.totalSupply as TokenAmount).toEther())
+      const liquidityItemValue = liquidityTotalValue / liquidityTotalSupply
+      
+
+
+      value.liquidity = liquidityTotalValue;
+
+      if(!window.poolsDatas){
+        window.poolsDatas = {}
+      }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['1day']){
+          value.volume_24h = window.poolsDatas[value.ammId]['1day'];
+        } else {
+          value.volume_24h = 0;
+        }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['7day']){
+          value.volume_7d = window.poolsDatas[value.ammId]['7day'];
+        } else {
+          value.volume_7d = 0;
+        }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
+          value.fee_24h = window.poolsDatas[value.ammId]['fees'];
+        } else {
+          value.fee_24h = 0;
+        }
+
+        if(window.poolsDatas[value.ammId] && window.poolsDatas[value.ammId]['fees']){
+          value.apy = window.poolsDatas[value.ammId]['fees'] * 365 * 100 / liquidityTotalValue;
+        } else {
+          value.apy = 0;
+        }
+
+      value.current = 0;
+    
+
+      if(liquidityPcValue != 0 && liquidityCoinValue != 0){
+
+
+        if(wallet){
+            value.current = get(wallet.tokenAccounts, `${value.lp_mint}.balance`)
+            if(value.current){
+              value.current = (value.current.wei.toNumber() / Math.pow(10,value.current.decimals)) * liquidityItemValue;
+            } else {
+              value.current = 0;
+            }
+        } else {
+          value.current = 0;
+        }
+
+      }
+
+        polo.push(value);
+    });
+    
+    return polo
+  }
+
   @Watch('inputMarket')
   onInputMarketChanged(val: string) {
+    this.alreadyExists = false;
     this.inputMarket = val.replace(/(^\s*)|(\s*$)/g, '')
+    if (this.pools.filter((pool:any)=>(pool.serumMarket as string).toLowerCase() == (this.inputMarket as string).toLowerCase()).length > 0) {
+      this.alreadyExists = true;
+    }
   }
 
   mounted() {
@@ -551,6 +644,15 @@ export default class CreatePool extends Vue {
       clearLocal()
     }
     this.updateLocalData()
+
+    let timer = setInterval(async () => {
+      this.pools = this.poolsFormated()
+      if (this.pools.length > 0) {
+        clearInterval(timer);
+      }
+
+    }, 1000)
+
   }
   async confirmFarmInfo(){
     //EgaHTGJeDbytze85LqMStxgTJgq22yjTvYSfqoiZevSK

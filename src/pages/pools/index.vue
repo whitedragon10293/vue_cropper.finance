@@ -26,15 +26,15 @@
       <div class="card-body">
 
         <div class="page-head fs-container">
-        <!--
+        
         <NuxtLink to="/pools/create-pool/">
-          <div class="btncontainer">
+          <div class="create">
             <Button size="large" ghost>
               Create a pool
             </Button>
           </div>
         </NuxtLink>
-        -->
+        
           <span class="title">Liquidity pools</span>
           <div class="buttons">
             <Tooltip placement="bottomRight">
@@ -62,6 +62,28 @@
           </div>
         </div>
 
+          <div style="text-align: center; width: 100%">
+            <div style="width: 30%; display: inline-block">
+              <Input v-model="searchName" size="large" class="input-search" placeholder="search by name">
+                <Icon slot="prefix" type="search" />
+              </Input>
+            </div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 15%; display: inline-block"></div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 15%; display: inline-block"></div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 15%; display: inline-block">
+              <div class="toggle">
+                <label class="label">Staked Only</label>
+                <Toggle v-model="stakedOnly" :disabled="!wallet.connected" />
+              </div>
+            </div>
+            <div style="width: 5%; display: inline-block"></div>
+            <div style="width: 5%; display: inline-block"></div>
+          </div>
+
+      <div v-if="poolLoaded">
         <Table :columns="columns" :data-source="poolsShow" :pagination="false" row-key="lp_mint">
           <span slot="name" slot-scope="text" class="lp-icons">
             {{ void (pool = getPoolByLpMintAddress(text)) }}
@@ -98,6 +120,21 @@
 
           </span>
         </Table>
+          
+          <div style="text-align: center; width: 100%">
+            <div style="width: 80%; display: inline-block">
+              <Pagination :total="totalCount" :showTotal="(total, range) => `${range[0]}-${range[1]} of ${total} items`" :pageSize="pageSize" :defaultCurrent="1" v-model="currentPage">
+              </Pagination>
+            </div>
+          </div>
+
+        </div>
+        <div v-else class="fc-container">
+          <Spin :spinning="true">
+            <Icon slot="indicator" type="loading" style="font-size: 24px" spin />
+          </Spin>
+        </div>
+
       </div>
     </div>
   </div>
@@ -108,7 +145,7 @@
 import { get, cloneDeep } from 'lodash-es'
 import { Vue, Component, Watch } from 'nuxt-property-decorator'
 import { mapState } from 'vuex'
-import { Table, Radio, Progress, Tooltip, Button, Input, Icon } from 'ant-design-vue'
+import { Table, Radio, Progress, Tooltip, Button, Input, Icon, Pagination, Switch as Toggle } from 'ant-design-vue'
 import { getPoolByLpMintAddress, getAllPools } from '@/utils/pools'
 import { TokenAmount } from '@/utils/safe-math'
 import { getBigNumber } from '@/utils/layouts'
@@ -138,18 +175,24 @@ declare const window: any;
       fromCoin : false,
       lpMintAddress : false,
       toCoin : false,
-      poolAdd : false
+      poolAdd : false,
+      totalCount:110,
+      pageSize:10,
+      currentPage:1,
     }
   },
+
   components: {
     Table,
     RadioGroup,
     RadioButton,
+    Toggle,
     Progress,
     Tooltip,
     Button,
     Input,
-    Icon
+    Icon,
+    Pagination
   },
   async asyncData({ $api }) {
 
@@ -157,7 +200,7 @@ declare const window: any;
 
     try{
       window.poolsDatas = await fetch(
-        DEVNET_MODE ? 'https://api.croppppp.com/' : 'https://api.cropper.finance/pools/'
+        'https://api.cropper.finance/pools/'
       ).then(res => res.json());
     }
     catch{
@@ -247,12 +290,17 @@ export default class Pools extends Vue {
   poolAdd: any = false
   poolInf: any = false
   lptoken: any = false
+  poolLoaded: any = false
   autoRefreshTime: number = 60
   countdown: number = 0
   timer: any = null
   loading: boolean = false
+  stakedOnly: boolean = false
   searchButton = true
   searchName = ''
+  totalCount = 110
+  pageSize = 10
+  currentPage = 1
 
   get liquidity() {
     this.$accessor.wallet.getTokenAccounts()
@@ -260,27 +308,65 @@ export default class Pools extends Vue {
   }
   @Watch('$accessor.liquidity.initialized', { immediate: true, deep: true })
   refreshThePage() {
-    this.showPool()
+    this.showPool(this.searchName, this.stakedOnly, this.currentPage)
   }
   @Watch('$accessor.liquidity.info', { immediate: true, deep: true })
   async onLiquidityChanged() {
     this.pools = this.poolsFormated()
-    this.showPool()
+    this.showPool(this.searchName, this.stakedOnly, this.currentPage)
   }
-  @Watch('poolType')
-  onPoolTypeChanged() {
-    this.showPool()
+
+
+  @Watch('currentPage', { immediate: true, deep: true })
+  async onpageChange(newPage:number) {
+    this.showPool(this.searchName, this.stakedOnly, newPage);
   }
-  @Watch('searchName')
-  onSearchNameChanged() {
-    this.showPool()
+
+
+
+  @Watch('stakedOnly', { immediate: true, deep: true })
+  async onStckChange(newStakedOnly:any) {
+    this.showPool(this.searchName, newStakedOnly);
   }
-  showPool() {
+
+
+
+  @Watch('searchName', { immediate: true, deep: true })
+  async onSearchChange(newSearchName:string) {
+      this.showPool(newSearchName, this.stakedOnly);
+  }
+
+
+  showPool(searchName:any = '', stakedOnly: boolean = false, pageNum: any = 1) {
     const pool = []
     for (const item of this.pools) {
-          pool.push(item)
+      pool.push(item)
     }
     this.poolsShow = pool
+
+
+    if(searchName != "" && this.poolsShow.filter((pool:any)=>(pool.ammId as string).toLowerCase() == (searchName as string).toLowerCase()).length > 0){
+      this.poolsShow = this.poolsShow.filter((pool:any)=>(pool.ammId as string).toLowerCase() == (searchName as string).toLowerCase());
+    } else if(searchName != ""){
+      this.poolsShow = this.poolsShow.filter((pool:any)=>(pool.name as string).toLowerCase().includes((searchName as string).toLowerCase()));
+    }
+
+
+      if(stakedOnly){
+        this.poolsShow = this.poolsShow.filter((pool:any)=>pool.current > 0.01);
+      }
+
+
+
+    this.currentPage = pageNum;
+
+    this.totalCount = this.poolsShow.length;
+
+    let max = this.poolsShow.length;
+    let start = (this.currentPage-1) * this.pageSize;
+    let end = this.currentPage * this.pageSize < max ? this.currentPage * this.pageSize : max;
+    this.poolsShow = this.poolsShow.slice(start, end);
+
 
 
   }
@@ -555,8 +641,28 @@ export default class Pools extends Vue {
   }
 
   mounted() {
-    this.setTimer()
+
+    this.timer = setInterval(async () => {
+      await this.flush();
+      if (this.pools.length > 0) {
+        var hash = window.location.hash;
+        if (hash) {
+          hash = hash.substring(1);
+          this.searchName = hash;
+        } else {
+          const query = new URLSearchParams(window.location.search);
+          if(query.get('s'))
+          this.searchName = query.get('s') as string;
+        }
+        clearInterval(this.timer);
+        this.poolLoaded = true
+        this.setTimer()
+      }
+
+    }, 1000)
+
   }
+
   setTimer() {
     this.timer = setInterval(async () => {
       if (!this.loading) {
@@ -573,7 +679,7 @@ export default class Pools extends Vue {
 
     this.loading = true
     this.pools = this.poolsFormated()
-    this.showPool()
+    this.showPool(this.searchName, this.stakedOnly, this.currentPage)
     this.loading = false
     this.countdown = 0
   }
@@ -586,7 +692,7 @@ export default class Pools extends Vue {
 </script>
 
 <style lang="less" scoped>
-
+.ant-layout,
 .ant-layout-content{
   background:#000 !important;  
 }
@@ -650,26 +756,6 @@ section{
   display: none; /* Chrome Safari */
 }
 
-  .btncontainer {
-    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
-    display: inline-block;
-    width: unset;
-    text-align: center;
-    position: relative;
-    max-width: 400px;
-    margin: 10px auto;
-    padding: 2px;
-    border-radius: 30px;
-    max-height: 50px;
-
-    button{
-      background:#000 !important;
-      position: relative;
-      border-radius: 30px;
-      border-color: transparent;
-    }
-
-  }
 
 .pool.container {
   .card-body {
@@ -704,6 +790,8 @@ section{
     background: #1b2028 !important;
     padding: 0 !important;
     border-radius:5px !important;
+    display: inline-block;
+    width: unset;
     button{
       background: #1b2028 !important;
       width: 41px !important;
@@ -719,6 +807,28 @@ section{
     .minus.ant-btn:hover, .minus.ant-btn:focus{
       color:#f00 !important
     }
+  }
+
+
+  .create {
+    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    display: inline-block;
+    width: unset;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 2px;
+    border-radius: 30px;
+    max-height: 50px;
+
+    button{
+      background:#000 !important;
+      position: relative;
+      border-radius: 30px;
+      border-color: transparent;
+    }
+
   }
 
 
