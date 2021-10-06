@@ -11,7 +11,7 @@
             <div v-for="farm in labelizedAmms" :key="farm.pla" slot="header" class="pf-record" :class="isMobile ? 'is-mobile singleFarm' : ' singleFarm'" :gutter="0" >
                 <div class="pf-record-content">
                   <div class="labelaner">{{farm.customForcedHeader ? farm.customForcedHeader : farm.calculateNextStep }}</div>
-                  <img class="small" :src="importIcon(`/coins/${farm.airdrop.symbol}.png`)" alt="" />
+                  <img class="small" :src="importIcon(`/coins/${farm.tokenA.symbol}.png`)" alt="" />
                   <div class="banner"><img :src="farm.links.banner" class="large" alt="" /></div>
 
                      
@@ -244,6 +244,8 @@ export default Vue.extend({
     background:#000;
     border-radius:25px;
 
+
+
     .labelaner{
         background:#16edac;
         background:linear-gradient(180deg, #16edac 0%, #14bb89 100%);
@@ -286,7 +288,7 @@ export default Vue.extend({
 
 
     .banner{
-      height:140px;
+      height:132px;
       position:relative;
       overflow:hidden;
 
@@ -305,7 +307,7 @@ export default Vue.extend({
     .followerscount{
       text-align: right;
       font-weight: normal;
-      font-size: 17px;
+      font-size: 24px;
       color:#fff;
       margin-top:40px;
 
@@ -352,7 +354,11 @@ export default Vue.extend({
   } 
 }
 
-
+@media (max-width: 700px){
+    .singleFarm{
+        width:calc(100% - 20px) !important
+    }
+}
 
 
 </style>
