@@ -429,7 +429,7 @@ export default Vue.extend({
   data() {
     return {
       isMobile: false,
-
+      ammId : '',
       farms: [] as any[],
       showFarms:[] as any[],
       searchName:"",
@@ -591,7 +591,7 @@ export default Vue.extend({
 
             if(query.get('f') && element.slug == query.get('f')){
               element.calculateNextStep = 'Bla bla bla'
-
+              this.ammId = element.ammID
               this.labelizedAmms[element.ammID] = element;
               try{
                 responseData2 = await fetch(
@@ -608,24 +608,6 @@ export default Vue.extend({
     //            this.labelizedAmms[element.ammID].twitterShare = `http://twitter.com/share?text=Earn ${this.labelizedAmms[element.ammID].tokenA.symbol} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${this.labelizedAmms[element.ammID].tokenA.symbol},${this.labelizedAmms[element.ammID].tokenB.symbol},yieldfarming,Solana`
 
                     document.title = 'Fertilizez - CropperFinance x ' + element.name ;
-
-
-                    if(responseData2[this.wallet.address]){
-                      if(responseData2[this.wallet.address].submit > 0){
-                        this.isRegistered = true;
-                        this.registeredDatas = responseData2[this.wallet.address];
-                        this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + element.slug + "&r=" + this.wallet.address;
-                      }
-
-                      this.followed = true;
-                      
-                    }
-                    
-
-
-
-
-
 
                 this.nbFarmsLoaded++;
               }
@@ -735,6 +717,40 @@ export default Vue.extend({
                   const query = new URLSearchParams(window.location.search);
                   if(query.get('f') && this.labelizedAmms[liquidityItem.ammId].slug == query.get('f')){
                     isPFO = true;
+
+                     newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
+
+
+                    farms.push({
+                      labelized,
+                      userInfo,
+                      farmInfo: newFarmInfo
+                    })
+
+                    document.title = 'Fertilizez - CropperFinance x ' + this.labelizedAmms[liquidityItem.ammId].name ;
+
+                    let responseData
+                    try{
+                      responseData = await fetch(
+                        'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
+                      ).then(res => res.json());
+                    }
+                    catch{
+                    }
+                    finally{
+                      if(responseData[this.wallet.address]){
+                        if(responseData[this.wallet.address].submit > 0){
+                          this.isRegistered = true;
+                          this.registeredDatas = responseData[this.wallet.address];
+                          this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[liquidityItem.ammId].slug + "&r=" + this.wallet.address;
+                        }
+
+                        this.followed = true;
+                        
+                      }
+                      this.followerCount = Object.keys(responseData).length;
+                    }
+
                   }
                 }
               }
@@ -745,6 +761,27 @@ export default Vue.extend({
 
 
 
+      let responseData
+      try{
+        responseData = await fetch(
+          'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[this.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
+        ).then(res => res.json());
+      }
+      catch{
+      }
+      finally{
+        if(responseData[this.wallet.address]){
+          if(responseData[this.wallet.address].submit > 0){
+            this.isRegistered = true;
+            this.registeredDatas = responseData[this.wallet.address];
+            this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[this.ammId].slug + "&r=" + this.wallet.address;
+          }
+
+          this.followed = true;
+          
+        }
+        this.followerCount = Object.keys(responseData).length;
+      }
 
       this.farms = farms.sort((a: any, b: any ) => (b.farmInfo.liquidityUsdValue - a.farmInfo.liquidityUsdValue));
       this.endedFarmsPoolId = endedFarmsPoolId
