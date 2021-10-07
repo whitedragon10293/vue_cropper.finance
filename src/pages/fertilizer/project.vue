@@ -2154,6 +2154,15 @@ main{
     white-space:nowrap
 }
 
+ .fertilizeruniq div.inputContent{
+    margin-bottom:5px;
+    width:100%;
+
+ }
+
+ .fertilizeruniq div.inputContent .twlink{
+    width: calc(100% - 80px);
+  }
 }
 
 </style>

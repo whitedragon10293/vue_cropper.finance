@@ -683,4 +683,18 @@ span.inputContent{
   padding: 20px;
   margin: auto;
 }
+
+
+@media (max-width: 700px){
+
+  .multistepmodal .steps > div{
+    margin: 10px -30px 10px 40px;
+  }
+
+  span.inputContent .twlink{
+    width: 190px;
+  }
+
+}
+
 </style>
