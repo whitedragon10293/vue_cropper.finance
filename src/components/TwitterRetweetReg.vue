@@ -45,8 +45,28 @@
                       Join <b>CropperFinance</b> on Telegram</div>
                 </div>
 
+
+                <div v-if="this.farm.links.twitter" :class="this.twitterB ? 'notdone' : 'notdone' " >
+                    <span v-if="!this.twitterB">3</span>
+                    <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
+                    <div>
+                      <a :href="this.farm.links.twitter" target="_blank" @click="validateTwitterB()" >
+                        <img src="@/assets/icons/twitter.svg" width="40" height="40" />
+                      </a> Follow <b>{{this.farm.shortname}}</b> on Twitter</div>
+                </div>
+
+                <div v-if="this.farm.links.telegram" :class="this.telegramB ? 'notdone' : 'notdone' " >
+                    <span v-if="!this.telegramB">4</span>
+                    <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
+                    <div>
+                      <a :href="this.farm.links.telegram" target="_blank" @click="validateTelegramB()" >
+                        <img src="@/assets/icons/telegram.svg" width="40" height="40" />
+                      </a> Join <b>{{this.farm.shortname}}</b> on Telegram</div>
+                </div>
+
+
                 <div :class="this.inputtwitter ? 'notdone' : 'notdone' ">
-                    <span v-if="!this.inputtwitter">3</span>
+                    <span v-if="!this.inputtwitter">{{this.farm.links.twitter ? 5 : 3}}</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span> 
                     <div>Input your twitter ID 
                       <div>
@@ -59,7 +79,7 @@
                 </div>
 
                 <div :class="this.inputtelegram ? 'notdone' : 'notdone' ">
-                    <span v-if="!this.inputtelegram">4</span>
+                    <span v-if="!this.inputtelegram">{{this.farm.links.twitter ? 6 : 4}}</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
                     <div>Input your telegram ID 
                       <div>
@@ -69,24 +89,6 @@
                         </span>
                       </div>
                     </div>
-                </div>
-
-                <div v-if="this.farm.links.twitter" :class="this.twitterB ? 'notdone' : 'notdone' " >
-                    <span v-if="!this.twitterB">5</span>
-                    <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
-                    <div>
-                      <a :href="this.farm.links.twitter" target="_blank" @click="validateTwitterB()" >
-                        <img src="@/assets/icons/twitter.svg" width="40" height="40" />
-                      </a> Follow <b>{{this.farm.shortname}}</b> on Twitter</div>
-                </div>
-
-                <div v-if="this.farm.links.telegram" :class="this.telegramB ? 'notdone' : 'notdone' " >
-                    <span v-if="!this.telegramB">5</span>
-                    <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
-                    <div>
-                      <a :href="this.farm.links.telegram" target="_blank" @click="validateTelegramB()" >
-                        <img src="@/assets/icons/telegram.svg" width="40" height="40" />
-                      </a> Join <b>{{this.farm.shortname}}</b> on Telegram</div>
                 </div>
 
 

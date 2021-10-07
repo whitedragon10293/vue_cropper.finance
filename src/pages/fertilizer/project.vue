@@ -184,7 +184,7 @@
                 <div :class="farm.pla_ts < currentTimestamp ? 'done' : 'notdone' " >
                     <span v-if="farm.pla_ts > currentTimestamp">2</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
-                    <div><b class="t">Withelist</b> - You can now whitelist yourself for the lottery.
+                    <div><b class="t">Withelist</b> - You can now whitelist yourself for the lottery.<br />
                     <div class="date"> {{farm.pla}} </div></div>
                 </div>
                 <div :class="farm.pla_end_ts < currentTimestamp ? 'done' : 'notdone' ">
@@ -532,6 +532,14 @@ export default Vue.extend({
         this.updateCurrentLp(newTokenAccounts)
       },
       deep: true
+    },
+
+    'wallet.address' : {
+      handler(newTokenAccounts: any) {
+       this.updateFarms()
+      },
+      deep: true
+
     },
 
     showCollapse: {

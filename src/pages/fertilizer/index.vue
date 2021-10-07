@@ -293,7 +293,6 @@ export default Vue.extend({
       overflow:hidden;
 
       .large{
-        background:#f00;
         height:140px;
         min-width:100%;
         left:50%;
