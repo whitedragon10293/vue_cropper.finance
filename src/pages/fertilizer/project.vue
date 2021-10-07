@@ -16,7 +16,7 @@
 
        <div class="card-body" style="grid-row-gap: 0; row-gap: 0; padding-bottom: 15px">
 
-          <div class="followerscount">{{followerCount}} followers</div>
+          <div class="followerscount"><img src="@/assets/right-user.png" width="28" height="26" /> Follower <span>{{followerCount}}</span> </div>
 
           <Row class="full-border">
             <Col :span="24" class="">
@@ -44,30 +44,57 @@
                 <div class="rewardAmount">Total Airdrop allocated : <b>{{farm.airdrop.amount}} {{farm.airdrop.symbol}}
                   <CoinIcon :mint-address="farm.airdrop.mint" /></b></div>
 
-                <div class="airdropInfo">{{farm.airdrop.info}}</div>
 
-                <div class="infoTickets" v-if="farm.pla_end_ts > currentTimestamp && isRegistered">You have {{registeredDatas.submit}} lottery ticket{{registeredDatas.submit > 1 ? 's' : ''}} !</div>
+                <div class="rewardNFT" v-if="farm.nft_airdrop">{{farm.nft_airdrop.info}} 
+                  <b v-for="nft in farm.nft_airdrop.list" :key="nft.picto"><img :src="nft.picto" /> {{nft.info}}</b></div>
+
+                <div class="airdropInfo"><img src="@/assets/info.png" width="22" height="22" /> {{farm.airdrop.info}}</div>
+
+                <div class="infoTickets" v-if="farm.pla_end_ts > currentTimestamp && isRegistered">
+                  You’ve well registered into the whithelist.<br />
+                  You have {{registeredDatas.submit}} lottery ticket{{registeredDatas.submit > 1 ? 's' : ''}} !
+                </div>
+                <div class="infoTickets" v-else-if="farm.pla_end_ts < currentTimestamp && isRegistered">
+
+                    <span v-if="farm.airdrop.status == 'lottery'" >
+                      You’ve well registered into the whithelist.<br />
+                      You have {{registeredDatas.submit}} lottery ticket{{registeredDatas.submit > 1 ? 's' : ''}} !
+                    </span>
+                    <span v-else-if="registeredDatas.won == 0 && registeredDatas.won_nft == 0" >
+                      You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
+                    </span>
+                    <span v-else-if="registeredDatas.won" >
+                      Congratulation! Airdrop winner
+                      <div class="airdropWinner">{{farm.airdrop.singleValue}} {{farm.airdrop.symbol}} <CoinIcon :mint-address="farm.airdrop.mint" /></div>
+                    </span>
+                    <span v-else-if="registeredDatas.won_nft" >
+                      Congratulation! NFT winner
+                      <div class="nftWinner"><img :src="registeredDatas.won_nft" /> x1</div>
+                    </span>
+
+                </div>
               </div>
 
 
 
-              <div class="text-center largepdding">
+              <div class="text-center">
 
-                  <div v-if="!wallet.connected" class="btncontainer">
-                    <Button
-                      size="large"
-                      ghost
-                      class="button_div"
-                      style="z-index: 999; width: 100%"
-                      @click="$accessor.wallet.openModal"
-                    >
-                      Connect wallet
-                    </Button>
+                  <div class="largepdding" v-if="!wallet.connected"> 
+                    <div class="btncontainer">
+                      <Button
+                        size="large"
+                        ghost
+                        class="button_div"
+                        style="z-index: 999; width: 100%"
+                        @click="$accessor.wallet.openModal"
+                      >
+                        Connect wallet
+                      </Button>
+                    </div>
                   </div>
 
-                  <div v-else-if="farm.pla_ts > currentTimestamp && !followed">
-                    <div class="info">The registration hasn't started yet</div>
-                    <div class="share">
+                  <div v-else-if="farm.pla_ts > currentTimestamp && !followed" class="largepdding">
+                    <div class="share text-center">
                         <div class="btncontainer">
                           <Button
                             size="large"
@@ -82,9 +109,8 @@
 
                     </div>
                   </div>
-                  <div v-else-if="farm.pla_ts > currentTimestamp && followed">
-                    <div class="info">The registration hasn't started yet</div>
-                    <div class="share">
+                  <div v-else-if="farm.pla_ts > currentTimestamp && followed" class="largepdding">
+                    <div class="share text-center">
 
                       You are following this project
 
@@ -93,12 +119,27 @@
 
                   <div v-else-if="farm.pla_end_ts > currentTimestamp && isRegistered">
                     <div class="share">
-                    Share your Referral link and earn more tickets
-                    <input type="text" class="link" :value="shareWalletAddress" />
+                    Share your referal link to earn more lottery ticket
+
+                    <div class="inputContent">
+                      <button class="submitbutton" @click="copyToClipboard()">Copy</button>
+                      <input type="text" class="twlink" :value="shareWalletAddress" />
+                    </div>
+
+                    <a :href="tgShareAdress" target="_blank" class="sharer">
+                      <img src="@/assets/icons/telegram.svg" height="39" width="39" />
+                    </a>
+
+                    <a :href="twShareAdress" target="_blank" class="sharer">
+                      <img src="@/assets/icons/twitter.svg" height="39" width="39" />
+                    </a>
+
+
                     </div>
                   </div>
 
-                  <div v-else-if="farm.pla_end_ts > currentTimestamp" class="btncontainer">
+                  <div v-else-if="farm.pla_end_ts > currentTimestamp" class="largepdding">
+                  <div class="btncontainer">
                     <Button
                       size="large"
                       ghost
@@ -109,21 +150,19 @@
                       + Register for Whitelist
                     </Button>
                   </div>
-                  <div v-else-if="farm.pla_end_ts < currentTimestamp && !isRegistered">
+                  </div>
+                  <div v-else-if="farm.pla_end_ts < currentTimestamp && !isRegistered" class="airdropStatus">
                     You did not participate, please wait for the public opening
                   </div>
-                  <div v-else-if="farm.pla_end_ts < currentTimestamp">
+                  <div v-else-if="farm.pla_end_ts < currentTimestamp" class="airdropStatus">
                     <span v-if="farm.airdrop.status == 'lottery'" >
-                      You have {{registeredDatas.submit}} ticket{{registeredDatas.submit > 1 ? 's' : ''}}<br/>
                       Lottery in progress...
                     </span>
                     <span v-else-if="farm.airdrop.status == 'in progress'" >
-                      You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
-                      Airdrop in progress...
+                      Prize distribution in progress...
                     </span>
                     <span v-else-if="farm.airdrop.status == 'done'" >
-                      You have {{registeredDatas.won}}/{{registeredDatas.submit}} winning ticket{{registeredDatas.won > 1 ? 's' : ''}}<br/>
-                      Airdrop done
+                      Prize distribution complete
                     </span>
                   </div>
                   <div v-else-if="farm.pfrom_ts < currentTimestamp">
@@ -146,25 +185,25 @@
                     <span v-if="farm.pla_ts > currentTimestamp">2</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
                     <div><b class="t">Withelist</b> - You can now whitelist yourself for the lottery.
-                    <div class="date"> {{farm.pla}} UTC </div></div>
+                    <div class="date"> {{farm.pla}} </div></div>
                 </div>
-                <div :class="farm.pla_end_ts > currentTimestamp ? 'done' : 'notdone' ">
-                    <span v-if="farm.pla_end_ts < currentTimestamp">3</span>
+                <div :class="farm.pla_end_ts < currentTimestamp ? 'done' : 'notdone' ">
+                    <span v-if="farm.pla_end_ts > currentTimestamp">3</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
                     <div><b class="t">Airdrop Lottery</b> - See if you have any winning lottery tickets.<br/>
-                    <div class="date"> {{farm.pla_end}} UTC </div></div>
+                    <div class="date"> {{farm.pla_end}} </div></div>
                 </div>
                 <div :class="farm.pfrom_ts < currentTimestamp ? 'done' : 'notdone' ">
                     <span v-if="farm.pfrom_ts > currentTimestamp">4</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span> 
                     <div><b class="t">Private Farm</b> - You can now stack LP in {{farm.tokenA.symbol}}-{{farm.tokenB.symbol}} farm.<br/>
-                    <div class="date"> {{farm.pfrom}} UTC </div></div>
+                    <div class="date"> {{farm.pfrom}} </div></div>
                 </div>
                 <div :class="farm.pto_ts < currentTimestamp ? 'done' : 'notdone' ">
                     <span v-if="farm.pto_ts > currentTimestamp">5</span>
                     <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
                     <div><b class="t">Public Farm</b> - {{farm.tokenA.symbol}}-{{farm.tokenB.symbol}} farm goes public<br/>
-                    <div class="date"> {{farm.pto}} UTC </div></div>
+                    <div class="date"> {{farm.pto}} </div></div>
                 </div>
             </Col>
           </Row>
@@ -441,6 +480,8 @@ export default Vue.extend({
       isRegistered: false,
       registeredDatas: false,
       shareWalletAddress: '',
+      twShareAdress: '',
+      tgShareAdress: '',
       rewardCoin: null,
       farmInfo: null as any,
       harvesting: false,
@@ -487,6 +528,7 @@ export default Vue.extend({
   watch: {
     'wallet.tokenAccounts': {
       handler(newTokenAccounts: any) {
+       // this.updateFarms()
         this.updateCurrentLp(newTokenAccounts)
       },
       deep: true
@@ -550,6 +592,14 @@ export default Vue.extend({
         }
       }
     },
+    copyToClipboard(){
+      var textField = document.createElement('textarea')
+      textField.innerText = this.shareWalletAddress
+      document.body.appendChild(textField)
+      textField.select()
+      document.execCommand('copy')
+      textField.remove()
+    },
     startRegistering(){
         this.registerTwitterRetweet = true;
     },
@@ -605,9 +655,9 @@ export default Vue.extend({
                 this.followerCount = Object.keys(responseData2).length;
 
 
-    //            this.labelizedAmms[element.ammID].twitterShare = `http://twitter.com/share?text=Earn ${this.labelizedAmms[element.ammID].tokenA.symbol} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${this.labelizedAmms[element.ammID].tokenA.symbol},${this.labelizedAmms[element.ammID].tokenB.symbol},yieldfarming,Solana`
+                //this.labelizedAmms[element.ammID].twitterShare = `http://twitter.com/share?text=Earn ${this.labelizedAmms[element.ammID].tokenA.symbol} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${this.labelizedAmms[element.ammID].tokenA.symbol},${this.labelizedAmms[element.ammID].tokenB.symbol},yieldfarming,Solana`
 
-                    document.title = 'Fertilizez - CropperFinance x ' + element.name ;
+                    document.title = 'Fertilizer - CropperFinance x ' + element.name ;
 
                 this.nbFarmsLoaded++;
               }
@@ -727,7 +777,7 @@ export default Vue.extend({
                       farmInfo: newFarmInfo
                     })
 
-                    document.title = 'Fertilizez - CropperFinance x ' + this.labelizedAmms[liquidityItem.ammId].name ;
+                    document.title = 'Fertilizer - CropperFinance x ' + this.labelizedAmms[liquidityItem.ammId].name ;
 
                     let responseData
                     try{
@@ -743,6 +793,7 @@ export default Vue.extend({
                           this.isRegistered = true;
                           this.registeredDatas = responseData[this.wallet.address];
                           this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[liquidityItem.ammId].slug + "&r=" + this.wallet.address;
+
                         }
 
                         this.followed = true;
@@ -774,7 +825,18 @@ export default Vue.extend({
           if(responseData[this.wallet.address].submit > 0){
             this.isRegistered = true;
             this.registeredDatas = responseData[this.wallet.address];
+            console.log(this.registeredDatas);
             this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[this.ammId].slug + "&r=" + this.wallet.address;
+
+            let shareWalletAddressEsc = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[this.ammId].slug + "%26r=" + this.wallet.address;
+
+
+
+
+            this.twShareAdress = `http://twitter.com/share?text=Register for whishlist ${document.title}&url=${shareWalletAddressEsc} &hashtags=${this.labelizedAmms[this.ammId].tokenA.symbol},${this.labelizedAmms[this.ammId].tokenB.symbol},fertilizer,Solana,Airdrop`
+
+            this.tgShareAdress = `https://telegram.me/share/url?text=Register for whishlist ${document.title}&url=${shareWalletAddressEsc} `
+
           }
 
           this.followed = true;
@@ -1440,6 +1502,7 @@ export default Vue.extend({
       text-align: left;
       font-weight: bold;
       font-size: 17px;
+      margin:16px;
     }
 
     .ant-col{
@@ -1478,7 +1541,7 @@ export default Vue.extend({
 <style lang="less">
 
 .text-center{
-  text-align:center
+  text-align:center !important
 }
 
 .fertilizeruniq {
@@ -1486,6 +1549,39 @@ export default Vue.extend({
   h1{
       margin:20px;
       font-size:30px;
+  }
+
+
+div.inputContent{
+  background: #09B17F;
+  padding: 2px;
+  display: inline-block;
+  border-radius: 5px;
+  margin-top:3px;
+
+  .twlink{
+    border:none;
+    padding:9px 10px;
+    border-radius:5px 0 0 5px;
+    background:#1B2028;
+    width: 293px; 
+  }
+
+  .submitbutton{
+    border:none;
+    padding:9px 10px;
+    border-radius:5px;
+    margin-right:5px;
+    background:#09B17F;
+    cursor:pointer;
+  }
+}
+
+  .airdropStatus{
+    font-weight: 500;
+    font-size: 21px;
+    line-height: 25px;
+    margin-top:29px;
   }
 
   .info{
@@ -1507,6 +1603,38 @@ export default Vue.extend({
     padding:16px 12px;
   }
 
+  .airdropWinner{
+    color:#13ECAB;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 21px;
+    img{
+      margin-left: 10px;
+      border-radius:50%;
+      width:20px;
+      position:relative;
+      top:-3px;
+    }
+  }
+
+  .nftWinner{
+    color:#13ECAB;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 21px;
+    img{
+      margin-left: 10px;
+      border-radius:50%;
+      width:51px;
+      position:relative;
+      top:-3px;
+    }
+  }
+
   input.link{
     color: #000;
     padding: 5px 20px;
@@ -1516,8 +1644,30 @@ export default Vue.extend({
     border: none;
     margin-top: 5px;
   }
+  
+  .text-center{
+    text-align:center;
+  } 
 
+  .largepdding{
+    padding-top:55px;
+  }
 
+   .followerscount span{
+      color:#13ECAB
+    }
+
+   .followerscount img{
+      position:relative;
+      top:-3px;
+    }
+
+    .share{
+    text-align:left;
+    margin-top:10px;
+    font-size: 16px;
+    line-height: 19px;
+    }
 
   .steps > div{
     background:#000;
@@ -1617,11 +1767,18 @@ export default Vue.extend({
 
   .followerscount{
     font-size:24px;
+    margin:16px;
+
+  }
+
+  .sharer{
+    float:right;
+    margin-left:12px;
   }
 
   .icons img{
     max-width:43px;
-    margin-right:10px;
+    margin-right:4px;
     margin-bottom:10px;
     border-radius:50%;
   }
@@ -1748,6 +1905,10 @@ export default Vue.extend({
       position: relative;
       border-radius: 30px;
       border-color: transparent;
+
+      &.button_div{
+        padding: 10px 20px;
+      }
     }
 
   }

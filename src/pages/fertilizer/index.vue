@@ -18,13 +18,13 @@
 
 
                     <div class="addPadding">
-                    <Col class="state pf-arrow" :span="14">
+                    <Col class="state pf-arrow" :span="16">
                         <div class="title">{{farm.name}}</div>
                         <div class="desc">{{farm.desc}}</div>
                         
                     </Col>
 
-                    <Col class="followerscount" :span="10">
+                    <Col class="followerscount" :span="8">
                         Followers<br />
                         <span>{{farm.followers}}</span>
                     </Col>
@@ -319,13 +319,14 @@ export default Vue.extend({
     .title{
       text-align:left;
       font-weight: normal;
-      font-size: 17px;
-      margin-top:40px;
+      font-size: 17px;    
+      margin-top: 48px;
     }
 
     .desc{
       font-size: 14px;
       text-align:left;
+      min-height:90px;
     }
 
     .ant-col{
@@ -357,6 +358,10 @@ export default Vue.extend({
 @media (max-width: 700px){
     .singleFarm{
         width:calc(100% - 20px) !important
+    }
+
+    .fertilizer.cont {
+      max-width: 95%;
     }
 }
 
@@ -407,7 +412,7 @@ export default Vue.extend({
 
 
 .fertilizer.cont {
-  max-width: 1200px;
+  max-width: calc(100% - 80px);
   background: #1B2028;
   margin-left:auto;
   margin-right:auto;

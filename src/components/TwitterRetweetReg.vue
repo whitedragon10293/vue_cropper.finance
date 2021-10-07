@@ -71,6 +71,26 @@
                     </div>
                 </div>
 
+                <div v-if="this.farm.links.twitter" :class="this.twitterB ? 'notdone' : 'notdone' " >
+                    <span v-if="!this.twitterB">5</span>
+                    <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
+                    <div>
+                      <a :href="this.farm.links.twitter" target="_blank" @click="validateTwitterB()" >
+                        <img src="@/assets/icons/twitter.svg" width="40" height="40" />
+                      </a> Follow <b>{{this.farm.shortname}}</b> on Twitter</div>
+                </div>
+
+                <div v-if="this.farm.links.telegram" :class="this.telegramB ? 'notdone' : 'notdone' " >
+                    <span v-if="!this.telegramB">5</span>
+                    <span v-else class="span"><img src="https://cropper.finance/distant/check-one.png?t=1" alt=""></span>
+                    <div>
+                      <a :href="this.farm.links.telegram" target="_blank" @click="validateTelegramB()" >
+                        <img src="@/assets/icons/telegram.svg" width="40" height="40" />
+                      </a> Join <b>{{this.farm.shortname}}</b> on Telegram</div>
+                </div>
+
+
+
 
         </div>
 
@@ -296,10 +316,13 @@ export default Vue.extend({
       if(!this.twitterA) { this.stepAok = false; return; }
       if(!this.telegramA) { this.stepAok =  false; return; }
 
-      if(this.farm.links.twitterB){
+      if(this.farm.links.twitter){
         if(!this.twitterB) { this.stepAok =  false; return; }
-        if(!this.telegramB) { this.stepAok =  false; return; }   
       }
+
+      if(this.farm.links.telegram){
+        if(!this.telegramB) { this.stepAok =  false; return; }  
+      } 
 
       if(this.inputtelegramContent.length < 5 || this.inputtelegramContent == false){  this.stepAok =  false; return;  }
       if(this.inputtwitterContent.length < 5 || this.inputtwitterContent == false){  this.stepAok =  false; return;  }
