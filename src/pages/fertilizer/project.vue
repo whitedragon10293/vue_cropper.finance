@@ -41,11 +41,11 @@
 
 
               <div class="walContent">
-                <div class="rewardAmount">Total Airdrop allocated : <b>{{farm.airdrop.amount}} {{farm.airdrop.symbol}}
+                <div class="rewardAmount"><span>Total Airdrop allocated :</span> <b>{{farm.airdrop.amount}} {{farm.airdrop.symbol}}
                   <CoinIcon :mint-address="farm.airdrop.mint" /></b></div>
 
 
-                <div class="rewardNFT" v-if="farm.nft_airdrop">{{farm.nft_airdrop.info}} 
+                <div class="rewardNFT" v-if="farm.nft_airdrop"><span>{{farm.nft_airdrop.info}} </span>
                   <b v-for="nft in farm.nft_airdrop.list" :key="nft.picto"><img :src="nft.picto" /> {{nft.info}}</b></div>
 
                 <div class="airdropInfo"><img src="@/assets/info.png" width="22" height="22" /> {{farm.airdrop.info}}</div>
@@ -827,20 +827,14 @@ export default Vue.extend({
             this.registeredDatas = responseData[this.wallet.address];
             console.log(this.registeredDatas);
             this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[this.ammId].slug + "&r=" + this.wallet.address;
-
             let shareWalletAddressEsc = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[this.ammId].slug + "%26r=" + this.wallet.address;
-
-
-
 
             this.twShareAdress = `http://twitter.com/share?text=Register for whishlist ${document.title}&url=${shareWalletAddressEsc} &hashtags=${this.labelizedAmms[this.ammId].tokenA.symbol},${this.labelizedAmms[this.ammId].tokenB.symbol},fertilizer,Solana,Airdrop`
 
             this.tgShareAdress = `https://telegram.me/share/url?text=Register for whishlist ${document.title}&url=${shareWalletAddressEsc} `
 
           }
-
-          this.followed = true;
-          
+          this.followed = true; 
         }
         this.followerCount = Object.keys(responseData).length;
       }
@@ -2137,6 +2131,31 @@ main{
     margin-bottom: 0;
   }
 }
+
+@media (max-width: 700px){
+  .fertilizeruniq .notstep,
+  .fertilizeruniq .steps,
+  .fertilizeruniq .twlink{
+  width:100%;
+  }
+  .rewardAmount > span,
+  .rewardNFT > span{
+    display:block;
+    margin-top:5px;
+    margin-bottom:5px;
+  }
+
+.fertilizeruniq .rewardAmount b {
+    float: unset;
+}
+
+.fertilizeruniq .rewardNFT b {
+    float: unset;
+    white-space:nowrap
+}
+
+}
+
 </style>
 
 
