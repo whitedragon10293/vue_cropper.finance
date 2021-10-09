@@ -647,9 +647,10 @@ export default Vue.extend({
           let labelized = false;
           if(lp){
             const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
-            if(this.labelizedAmms[liquidityItem.ammId]){
+
+            if(this.labelizedAmms[newFarmInfo.poolId]){
               labelized = true;
-                if(this.labelizedAmmsExtended[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmmsExtended[liquidityItem.ammId].pfarmID){   
+                if(this.labelizedAmmsExtended[newFarmInfo.poolId].pfo == true && newFarmInfo.poolId == this.labelizedAmmsExtended[newFarmInfo.poolId].pfarmID){   
                     isPFO = true;
                 }
               

@@ -768,12 +768,12 @@ export default Vue.extend({
           let labelized = false;
           if(lp){
             const liquidityItem = get(this.liquidity.infos, lp.mintAddress)
-            if(this.labelizedAmms[liquidityItem.ammId]){
-              labelized = this.labelizedAmms[liquidityItem.ammId];
+            if(this.labelizedAmms[newFarmInfo.poolId]){
+              labelized = this.labelizedAmms[newFarmInfo.poolId];
               if(labelized){
-                if(this.labelizedAmms[liquidityItem.ammId].pfo == true && newFarmInfo.poolId == this.labelizedAmms[liquidityItem.ammId].pfarmID){       
+                if(this.labelizedAmms[newFarmInfo.poolId].pfo == true && newFarmInfo.poolId == this.labelizedAmms[newFarmInfo.poolId].pfarmID){       
                   const query = new URLSearchParams(window.location.search);
-                  if(query.get('f') && this.labelizedAmms[liquidityItem.ammId].slug == query.get('f')){
+                  if(query.get('f') && this.labelizedAmms[newFarmInfo.poolId].slug == query.get('f')){
                     isPFO = true;
 
                      newFarmInfo.twitterShare = `http://twitter.com/share?text=Earn ${newFarmInfo.reward.name} with our new farm on @CropperFinance&url=https://cropper.finance?s=${newFarmInfo.poolId} &hashtags=${newFarmInfo.lp.coin.symbol},${newFarmInfo.lp.pc.symbol},yieldfarming,Solana`
@@ -785,12 +785,12 @@ export default Vue.extend({
                       farmInfo: newFarmInfo
                     })
 
-                    document.title = 'Fertilizer - CropperFinance x ' + this.labelizedAmms[liquidityItem.ammId].name ;
+                    document.title = 'Fertilizer - CropperFinance x ' + this.labelizedAmms[newFarmInfo.poolId].name ;
 
                     let responseData
                     try{
                       responseData = await fetch(
-                        'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[liquidityItem.ammId].pfarmID + '&t='+ Math.round(moment().unix()/60)
+                        'https://api.cropper.finance/pfo/?farmId='+ this.labelizedAmms[newFarmInfo.poolId].pfarmID + '&t='+ Math.round(moment().unix()/60)
                       ).then(res => res.json());
                     }
                     catch{
@@ -800,7 +800,7 @@ export default Vue.extend({
                         if(responseData[this.wallet.address].submit > 0){
                           this.isRegistered = true;
                           this.registeredDatas = responseData[this.wallet.address];
-                          this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[liquidityItem.ammId].slug + "&r=" + this.wallet.address;
+                          this.shareWalletAddress = "http://cropper.finance/fertilizer/project/?f=" + this.labelizedAmms[newFarmInfo.poolId].slug + "&r=" + this.wallet.address;
 
                         }
 
