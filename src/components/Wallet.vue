@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <div class="btncontainer" v-if="!wallet.connected" ghost @click="$accessor.wallet.openModal">
+    <div class="btncontainer" v-if="wallet.connected" ghost @click="$accessor.wallet.openModal">
     <Button>
       <Icon type="wallet" />
       Connect
@@ -11,9 +11,9 @@
     <div class="btncontainer" v-else ghost @click="$accessor.wallet.openModal">
     <Button>
       <Icon type="wallet" />
-      {{ wallet.address.substr(0, 4) }}
-      ...
-      {{ wallet.address.substr(wallet.address.length - 4, 4) }}
+        {{ "6vdC" }}
+            ...
+        {{ "F4cN" }}
     </Button>
     </div>
 
@@ -565,7 +565,7 @@ export default class Wallet extends Vue {
 
   
 header .btncontainer {
-    background: linear-gradient(91.9deg, rgba(19, 236, 171, 0.8) -8.51%, rgba(200, 52, 247, 0.8) 110.83%);
+    background: linear-gradient(91.9deg, rgba(40, 12, 134, 1) -8.51%, rgba(34, 181, 182, 1) 110.83%);
     display: block;
     text-align: center;
     position: relative;
@@ -576,7 +576,7 @@ header .btncontainer {
     line-height: 36px;
 
     button{
-      background: #000 !important;
+      background:#01033C !important;
       position: relative;
       border-radius: 30px;
       border-color: transparent;

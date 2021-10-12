@@ -6,10 +6,13 @@
     @click="changeRoute"
   >
     <MenuItem v-for="(extra, name) in navs" :key="name.toLowerCase()">
-      <a v-if="extra" :href="url[name]" target="_blank">
-        {{ name.replace('-', ' ') }}
-      </a>
-      <span v-else> {{ name.replace('-', ' ') }} </span>
+      <div class="itemContainer">
+        <div class="itemRact"></div>
+        <a v-if="extra" :href="url[name]" target="_blank">
+          {{ name.replace('-', ' ') }}
+        </a>
+        <span v-else> {{ name.replace('-', ' ') }} </span>
+      </div>
     </MenuItem>
   </Menu>
 </template>
@@ -100,6 +103,10 @@ export default class Nav extends Vue {
   border-bottom: none;
 }
 
+.ant-menu-horizontal > .ant-menu-item {
+  border-bottom: none !important;
+}
+
 .ant-menu-horizontal > .ant-menu-item:hover,
 .ant-menu-horizontal > .ant-menu-submenu:hover,
 .ant-menu-horizontal > .ant-menu-item-active,
@@ -108,7 +115,50 @@ export default class Nav extends Vue {
 .ant-menu-horizontal > .ant-menu-submenu-open,
 .ant-menu-horizontal > .ant-menu-item-selected,
 .ant-menu-horizontal > .ant-menu-submenu-selected {
-  border-bottom: 2px solid @menu-dark-item-active-bg;
+  border-bottom: none;
+}
+
+.itemContainer {
+  align-items: center;
+  display: flex;
+}
+
+.itemRact {
+  border: 2px solid #724CEE;
+  box-sizing: border-box;
+  border-radius: 4px;
+  height: 12px;
+  margin: 10px;
+  width: 12px;
+}
+
+// .itemRact:nth-child(1) {
+  
+// }
+
+.itemRact:nth-child(2) {
+  background: #724CEE;
+  border: 2px solid #724CEE;
+}
+
+.itemRact:nth-child(3) {
+  background: #EF745D;
+  border: 2px solid #EF745D;
+}
+
+.itemRact:nth-child(4) {
+  background: #3990F5;
+  border: 2px solid #3990F5;
+}
+
+.ant-menu-horizontal > .ant-menu-item-selected > .itemContainer > .itemRact {
+  background: #724CEE;
+  border: 2px solid #724CEE;
+  box-sizing: border-box;
+  border-radius: 4px;
+  height: 12px;
+  margin: 10px;
+  width: 12px;
 }
 
 @media (max-width: 1020px) {

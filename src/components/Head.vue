@@ -53,10 +53,10 @@ export default Vue.extend({
 @import '../styles/variables';
 
 .header {
-  border-bottom: 2px solid @modal-header-bg;
 
   .logo {
-    height: 26px;
+    height: 42px;
+    width: 206px;
   }
 
   .mobile-nav {
@@ -134,5 +134,10 @@ export default Vue.extend({
 
 .header.mobile {
   padding: 0 20px;
+}
+
+.ant-layout-header {
+  height: 100px;
+  padding-top: 50px;
 }
 </style>
