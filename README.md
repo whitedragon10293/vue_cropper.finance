@@ -19,3 +19,7 @@ $ yarn generate
 ```
 
 For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+
+## Live Website
+
+Explore the live website: [Cropper Finance](https://cropper.finance/)
